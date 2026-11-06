@@ -36,12 +36,14 @@ export function ProblemNext({ market }: { market: Market }) {
   );
 }
 
-export default function Problem({ market }: { market: Market }) {
+/** plain: not inside the scroll story, so nothing travels here. Each part just fades in. */
+export default function Problem({ market, plain }: { market: Market; plain?: boolean }) {
   const l = (t: string) => localize(market, t);
+  const reveal = plain ? { "data-reveal": true } : {};
   return (
     <section id="problem" aria-labelledby="problem-title" className="problem" data-problem>
       <div className="wrap problem-inner">
-        <header className="problem-head">
+        <header className="problem-head" {...reveal}>
           <p className="label">The problem</p>
           <h2 id="problem-title" className="h2 problem-title">
             Your experience isn’t the problem. <em>{l("Your CV is.")}</em>
@@ -50,14 +52,14 @@ export default function Problem({ market }: { market: Market }) {
         </header>
 
         <div className="problem-grid">
-          <figure className="p-fig p-fig-a" data-slot="a">
+          <figure className="p-fig p-fig-a" data-slot="a" {...reveal}>
             <CvPaper cv="a" sizes={FIG_SIZES} alt={l("Example of a two-column CV with common problems")} highlights="static" />
           </figure>
 
           <div className="p-slot">
             <ol className="p-cards">
               {CARDS.map((c, i) => (
-                <li key={c.title} className="p-card" data-card>
+                <li key={c.title} className="p-card" data-card {...reveal}>
                   <span className="p-num" aria-hidden="true">
                     0{i + 1}
                   </span>
@@ -74,7 +76,7 @@ export default function Problem({ market }: { market: Market }) {
             </div>
           </div>
 
-          <figure className="p-fig p-fig-good" data-slot="good">
+          <figure className="p-fig p-fig-good" data-slot="good" {...reveal}>
             <CvPaper cv="good" sizes={FIG_SIZES} alt={l("Example of a single-column ATS-friendly CV by Pixely Careers")} highlights="static" />
           </figure>
         </div>

@@ -1,6 +1,7 @@
 import type { Market } from "@/config/markets";
 import { ArrowDown, ArrowRight } from "@/components/ui/Icons";
 import { WHATSAPP_URL } from "@/lib/site";
+import AeCvStack from "./AeCvStack";
 import CvPaper from "./CvPaper";
 
 const CV_SIZES = "(min-width: 1024px) 34vw, 62vw";
@@ -41,6 +42,7 @@ const word = (text: string, i: number) => (
 );
 
 export default function Hero({ market }: { market: Market }) {
+  const ae = market.key === "ae";
   return (
     <section id="top" className="hero">
       <div className="wrap hero-inner">
@@ -61,7 +63,7 @@ export default function Hero({ market }: { market: Market }) {
             <p className="mt-5 max-w-[460px] text-[clamp(18px,1.45vw,21px)] leading-[1.5] text-pretty text-navy/75 lg:mt-6">
               {market.hero.line}
             </p>
-            <div className="mt-7 flex flex-col items-stretch gap-x-7 gap-y-2 sm:flex-row sm:items-center lg:mt-8">
+            <div className={`mt-7 flex flex-col items-stretch gap-x-7 gap-y-2 sm:flex-row sm:items-center lg:mt-8 ${ae ? "relative" : ""}`}>
               <a href="#pricing" className="btn btn-primary min-h-14 px-8 text-[1.0625rem]" data-cta="hero-see-packages">
                 See Packages
                 <ArrowRight />
@@ -70,6 +72,11 @@ export default function Hero({ market }: { market: Market }) {
                 How it works
                 <ArrowDown />
               </a>
+              {ae && (
+                <span aria-hidden="true" className="ae-cue">
+                  Scroll ↓
+                </span>
+              )}
             </div>
             <div className="hero-late mt-5 text-sm lg:mt-7">
               <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-navy/60">
@@ -89,7 +96,7 @@ export default function Hero({ market }: { market: Market }) {
             </div>
           </div>
           <div className="hero-visual col-span-12 lg:col-span-6">
-            <CvStack />
+            {ae ? <AeCvStack /> : <CvStack />}
           </div>
         </div>
       </div>

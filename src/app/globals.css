@@ -45,6 +45,28 @@ html[data-no-bar] {
   --bar-h: 0px;
 }
 
+/* /ae hero: one number drives the rise, one the fan-out, two the cursor tilt */
+@property --rise {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --fan {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1;
+}
+@property --mx {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+@property --my {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
 html {
   /* Keeps focused controls clear of the header. Sections cancel it, since their own padding already clears it. */
   scroll-padding-top: 80px;
@@ -395,6 +417,453 @@ html[data-intro="on"] :is(.cv-load, .hero-late) {
   animation-play-state: paused;
 }
 
+/* /ae hero: the best CV comes out of the bad stack. Everything below is written from --rise. */
+.ae-stack {
+  --gw: min(56vw, 420px);
+  position: relative;
+  width: var(--gw);
+  aspect-ratio: 1 / 1.4142;
+  margin: 88px 4% 72px auto;
+  font-size: calc(var(--gw) / 100);
+  line-height: 1.5;
+  text-align: left;
+}
+.ae-pile,
+.ae-good {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+.ae-pile {
+  opacity: calc(1 - var(--rise) * 0.4);
+  filter: blur(0.6px);
+  transform: translate(calc(-20% - var(--rise) * 5em), calc(-1% + var(--rise) * 1.5em)) perspective(373em) rotateX(calc(30deg + var(--my) * 0.6)) rotateY(calc(6deg + var(--mx) * 0.6)) rotateZ(-14deg) scale(0.92);
+  animation: ae-fan 400ms ease-out 300ms both;
+}
+html[data-intro="on"] .ae-pile {
+  animation-play-state: paused;
+}
+@keyframes ae-fan {
+  from {
+    --fan: 0;
+  }
+  to {
+    --fan: 1;
+  }
+}
+.ae-sheet {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border: 1px solid #c9ccd3;
+  border-radius: 0.8em;
+  background: #e9ebef;
+  box-shadow: 0 0.4em 1.4em -0.4em rgb(1 12 40 / 0.28);
+  transform: translate(calc(var(--dx) * var(--fan) * 1em), calc(var(--dy) * var(--fan) * 1em)) rotate(calc(var(--a) * var(--fan) * 1deg));
+}
+.ae-good {
+  transform: translate(calc((1 - var(--rise)) * -20%), calc((1 - var(--rise)) * -1%)) perspective(373em) rotateX(calc((1 - var(--rise)) * 30deg + var(--rise) * 4deg + var(--my))) rotateY(calc((1 - var(--rise)) * 6deg - var(--rise) * 5deg + var(--mx)))
+    rotateZ(calc((1 - var(--rise)) * -14deg - var(--rise) * 4deg)) scale(calc(0.92 + var(--rise) * 0.08)) translateY(calc((1 - var(--rise)) * -20%));
+}
+.ae-good-shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 0.8em;
+  opacity: calc((var(--rise) - 0.35) * 1.6);
+  box-shadow:
+    0 4em 8em -2em rgb(1 12 40 / 0.34),
+    0 10em 18em -6em rgb(1 12 40 / 0.3);
+}
+/* The clip is what keeps it tucked: only the top 20% shows above the top sheet, then it opens as the CV comes out. */
+.ae-paper {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid #dfe3ea;
+  border-radius: 0.8em;
+  color: var(--color-navy);
+  background: #fff;
+  clip-path: inset(-1px -1px max(0%, calc(80% - var(--rise) * 125%)) -1px);
+}
+/* Greyed while it is in the pile */
+.ae-paper::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #c9ccd3;
+  opacity: calc((1 - var(--rise) * 1.5) * 0.5);
+  pointer-events: none;
+}
+.ae-band {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 23em;
+  padding: 0 8em;
+  color: #fff;
+  background: var(--color-vivid);
+}
+.ae-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #8e939e;
+  opacity: calc(1 - var(--rise) * 1.4);
+}
+.ae-band > * {
+  position: relative;
+}
+.ae-name {
+  font-family: var(--font-head);
+  font-size: 8.4em;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+.ae-role {
+  margin-top: 0.3em;
+  font-size: 3.7em;
+  font-weight: 500;
+  line-height: 1.2;
+}
+.ae-mark {
+  width: 9.5em;
+  height: auto;
+}
+.ae-pixel {
+  position: absolute;
+  top: 1.8em;
+  right: 1.8em;
+  width: 2em;
+  height: 2em;
+  background: var(--color-cyan-accent);
+}
+.ae-body {
+  padding: 3em 8em 0;
+}
+.ae-contact {
+  font-size: 2.3em;
+  line-height: 1.45;
+  color: rgb(1 12 40 / 0.68);
+}
+.ae-h {
+  margin-top: 1.7em;
+  margin-bottom: 0.65em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--color-vivid);
+  font-size: 2.4em;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  color: var(--color-vivid);
+}
+.ae-t {
+  font-size: 2.45em;
+  line-height: 1.5;
+  color: rgb(1 12 40 / 0.72);
+}
+.ae-r {
+  display: flex;
+  justify-content: space-between;
+  gap: 1em;
+  margin-top: 0.5em;
+  font-size: 2.45em;
+  line-height: 1.45;
+}
+.ae-r b {
+  font-weight: 600;
+}
+.ae-r span {
+  flex: none;
+  font-size: 0.86em;
+  color: rgb(1 12 40 / 0.68);
+}
+.ae-ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ae-ul li {
+  position: relative;
+  padding-left: 1.2em;
+  font-size: 2.4em;
+  line-height: 1.5;
+  color: rgb(1 12 40 / 0.72);
+}
+.ae-ul li::before {
+  content: "";
+  position: absolute;
+  top: 0.58em;
+  left: 0.2em;
+  width: 0.34em;
+  height: 0.34em;
+  background: var(--color-vivid);
+}
+/* The weak CVs */
+.ae-bad {
+  height: 100%;
+  color: #5f646e;
+}
+.ae-bad-t {
+  overflow: hidden;
+  font-family: Georgia, serif;
+  font-size: 1.9em;
+  line-height: 1.32;
+}
+.ae-bad-h {
+  margin-top: 1.1em;
+  margin-bottom: 0.4em;
+  font-size: 2.1em;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.ae-bad-box {
+  margin: 0.9em 0 0.45em;
+  padding: 0.3em 0.5em;
+  font-size: 2.2em;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fff;
+  background: #858a94;
+}
+.ae-bad-box-light {
+  color: #5f646e;
+  background: #d6d9de;
+}
+.ae-photo {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 19em;
+  height: 23em;
+  overflow: hidden;
+  background: #aeb2b9;
+}
+.ae-photo i {
+  position: absolute;
+  top: 18%;
+  left: 31%;
+  width: 38%;
+  height: 32%;
+  border-radius: 50%;
+  background: #dcdee2;
+}
+.ae-photo b {
+  position: absolute;
+  bottom: -14%;
+  left: 14%;
+  width: 72%;
+  height: 50%;
+  border-radius: 50%;
+  background: #dcdee2;
+}
+.ae-bars span {
+  display: block;
+  height: 1.1em;
+  margin-top: 1.1em;
+  background: #a4a8b0;
+}
+.ae-bars i {
+  display: block;
+  height: 100%;
+  background: #e2e4e7;
+}
+.ae-bad-side {
+  display: grid;
+  grid-template-columns: 34% 1fr;
+}
+.ae-side {
+  padding: 4em 3em;
+  color: #eef0f2;
+  background: #8b9099;
+}
+.ae-side .ae-photo {
+  margin-inline: auto;
+}
+.ae-main {
+  min-width: 0;
+  padding: 4em 3.4em;
+}
+.ae-bad-name {
+  font-family: Georgia, serif;
+  font-size: 5em;
+  font-weight: 600;
+  line-height: 1.1;
+}
+.ae-bad-cols {
+  position: relative;
+  padding: 5em 4.5em;
+}
+.ae-bad-cols > .ae-photo {
+  position: absolute;
+  top: 3em;
+  right: 4em;
+}
+.ae-bad-title {
+  max-width: 62%;
+  padding-bottom: 0.2em;
+  border-bottom: 0.08em solid currentColor;
+  font-family: Georgia, serif;
+  font-size: 4.4em;
+  font-weight: 600;
+  line-height: 1.15;
+}
+.ae-two {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3.6em;
+  margin-top: 14em;
+}
+.ae-bad-band-top {
+  padding: 3.4em 5em 3em;
+  font-size: 1em;
+  color: #fff;
+  background: #969aa3;
+}
+.ae-bad-band-top {
+  font-family: var(--font-head);
+  font-size: 5.6em;
+  font-weight: 600;
+  line-height: 1.1;
+  padding: 0.6em 0.9em;
+}
+.ae-bad-band-body {
+  padding: 3em 5em;
+}
+.ae-bad-intro {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3em;
+  max-height: 24em;
+  overflow: hidden;
+}
+/* Floating labels: they belong to the good CV, so they appear as it comes out of the stack */
+.ae-chip {
+  position: absolute;
+  z-index: 1;
+  opacity: calc((var(--rise) - 0.55) * 2.5);
+  pointer-events: none;
+}
+.ae-chip > span {
+  display: block;
+  padding: 7px 12px;
+  border-radius: 10px;
+  font-family: var(--font-head);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: var(--color-navy);
+  background: #fff;
+  box-shadow: 0 10px 28px -8px rgb(1 12 40 / 0.3);
+}
+.ae-chip-1 {
+  top: 15%;
+  left: -12%;
+  rotate: -4deg;
+}
+.ae-chip-2 {
+  top: 58%;
+  right: -7%;
+  rotate: 6deg;
+}
+.ae-chip-3 {
+  bottom: 7%;
+  left: -14%;
+  rotate: 1deg;
+}
+@media (min-width: 1024px) {
+  .ae-chip > span {
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .ae-chip > span {
+    animation: ae-chip-float 5s ease-in-out infinite alternate;
+  }
+  .ae-chip-2 > span {
+    animation-duration: 6.5s;
+    animation-delay: -2s;
+  }
+  .ae-chip-3 > span {
+    animation-duration: 5.8s;
+    animation-delay: -4s;
+  }
+}
+@keyframes ae-chip-float {
+  from {
+    translate: 0 -5px;
+  }
+  to {
+    translate: 0 5px;
+  }
+}
+/* The Problem section right after this hero: its CVs line up with the top of the cards */
+@media (min-width: 1024px) {
+  .rise-track + .problem .problem-grid {
+    align-items: start;
+  }
+}
+/* "Scroll" cue: out of the layout, and gone as soon as scrolling starts */
+.ae-cue {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .ae-stack {
+    --gw: min(calc((100svh - 240px) / 1.408), 30vw);
+    margin: 0 4% 0 auto;
+  }
+}
+@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
+  .rise-track {
+    /* One screen, plus 60vh held in place */
+    height: 160svh;
+    transition:
+      --mx 400ms ease-out,
+      --my 400ms ease-out;
+  }
+  .rise-stage {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: clip;
+    background: #fff;
+  }
+  .ae-cue {
+    position: absolute;
+    top: 100%;
+    left: 2px;
+    display: block;
+    margin-top: 2px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: rgb(1 12 40 / 0.6);
+    opacity: calc(1 - var(--rise) * 25);
+    pointer-events: none;
+  }
+}
+@media (max-width: 1023.98px) and (prefers-reduced-motion: no-preference) {
+  .rise-track {
+    transition: --rise 800ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .rise-track.is-out {
+    --rise: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rise-track {
+    --rise: 1;
+  }
+  .ae-pile {
+    animation: none;
+  }
+}
+
 /* Problem section */
 .problem {
   background: #fff;
@@ -577,76 +1046,76 @@ html[data-intro="on"] :is(.cv-load, .hero-late) {
     overflow-clip-margin: 90px;
     background: #fff;
   }
-  .hero,
-  .problem {
+  .story-track .hero,
+  .story-track .problem {
     position: absolute;
     inset: 0 0 auto;
     height: 100svh;
     background: transparent;
   }
-  .hero {
+  .story-track .hero {
     z-index: 2;
     pointer-events: none;
   }
-  .hero-copy {
+  .story-track .hero-copy {
     pointer-events: auto;
   }
-  .problem {
+  .story-track .problem {
     z-index: 3;
     pointer-events: none;
     padding-block: 92px 0;
   }
   /* Hidden until the CVs have cleared its space: see CvStory */
-  .problem-head {
+  .story-track .problem-head {
     opacity: 0;
   }
-  .p-cards {
+  .story-track .p-cards {
     grid-template: 1fr / 1fr;
   }
-  .p-card {
+  .story-track .p-card {
     grid-area: 1 / 1;
     opacity: 0;
     pointer-events: auto;
   }
-  .p-dots {
+  .story-track .p-dots {
     display: flex;
     justify-content: center;
     gap: 8px;
     margin-top: 16px;
     opacity: 0;
   }
-  .p-dots i {
+  .story-track .p-dots i {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     background: var(--color-vivid);
     opacity: 0.25;
   }
-  .hl-story {
+  .story-track .hl-story {
     display: block;
   }
-  .hl-story .hl {
+  .story-track .hl-story .hl {
     opacity: 0;
   }
-  .hl-story b {
+  .story-track .hl-story b {
     opacity: 0;
   }
   /* The traveling CVs take these places: the section keeps only their reserved space */
-  .p-fig .cv-paper {
+  .story-track .p-fig .cv-paper {
     visibility: hidden;
   }
-  .p-fig .cv-img {
+  .story-track .p-fig .cv-img {
     display: none;
   }
 }
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) and (max-height: 700px) {
-  .p-card {
+  .story-track .p-card {
     padding: 22px;
   }
-  .p-title {
+  .story-track .p-title {
     font-size: 19px;
   }
-  .p-num {
+  .story-track .p-num {
     font-size: 38px;
   }
 }

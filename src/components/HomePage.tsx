@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { getHomeFaq, type Market } from "@/config/markets";
 import CvStory from "@/components/hero/CvStory";
 import Hero from "@/components/hero/Hero";
+import HeroRise from "@/components/hero/HeroRise";
 import Faq from "@/components/sections/Faq";
 import FinalCta from "@/components/sections/FinalCta";
 import Formats from "@/components/sections/Formats";
@@ -25,10 +26,19 @@ export default function HomePage({ market }: { market: Market }) {
       <JsonLd data={homeJsonLd(market)} />
       {market.path !== "/" && <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: market.areaServed, path: market.path }])} />}
       <MarketSync market={market.key} />
-      <CvStory>
-        <Hero market={market} />
-        <Problem market={market} />
-      </CvStory>
+      {market.key === "ae" ? (
+        <>
+          <HeroRise>
+            <Hero market={market} />
+          </HeroRise>
+          <Problem market={market} plain />
+        </>
+      ) : (
+        <CvStory>
+          <Hero market={market} />
+          <Problem market={market} />
+        </CvStory>
+      )}
       <ProblemNext market={market} />
       <Suspense>
         <Services market={market.key} />
