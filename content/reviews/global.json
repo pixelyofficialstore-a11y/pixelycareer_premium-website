@@ -1,0 +1,21 @@
+{
+  "_howTo": "Add real, approved reviews to the reviews list below. The section stays hidden while every list is empty. Put screenshots in public/reviews/. Blur phone numbers and get the client's permission first.",
+  "_example": {
+    "type": "text",
+    "name": "First name + initial",
+    "role": "Job title",
+    "country": "Country",
+    "quote": "The client's real words",
+    "source": "Facebook",
+    "sourceUrl": "https://..."
+  },
+  "_exampleScreenshot": {
+    "type": "screenshot",
+    "name": "First name + initial",
+    "role": "Job title",
+    "country": "Country",
+    "image": "/reviews/file-name.webp",
+    "source": "WhatsApp"
+  },
+  "reviews": []
+}
