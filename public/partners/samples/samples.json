@@ -2,57 +2,50 @@
   {
     "image": "/formats/ae/1.webp",
     "type": "ATS CV",
-    "profession": "UAE format",
-    "tab": "Gulf CVs",
-    "alt": "Single-column ATS CV from the UAE homepage portfolio"
+    "profession": "Maria Santos · Staff Nurse (ICU) · Philippines → Qatar",
+    "tab": "ATS CVs",
+    "alt": "ATS CV sample for Maria Santos, a staff nurse applying from the Philippines to Qatar"
   },
   {
-    "image": "/formats/pk/5.webp",
-    "type": "Designed CV",
-    "profession": "Sidebar layout",
-    "tab": "Designed CVs",
-    "alt": "Navy sidebar CV with a profile photo from the Pakistan portfolio"
+    "image": "/formats/ae/4.webp",
+    "type": "ATS CV with photo",
+    "profession": "Dr. Rehan Malik · General Practitioner · Pakistan → UAE",
+    "tab": "ATS CVs",
+    "alt": "ATS CV with photo sample for Dr. Rehan Malik applying from Pakistan to the UAE"
   },
   {
     "image": "/formats/pk/7.webp",
     "type": "Europass CV",
-    "profession": "European format",
+    "profession": "Bilal Ahmed · Mechanical Engineer · Pakistan → Germany",
     "tab": "Europass",
-    "alt": "Europass CV from the Pakistan homepage portfolio"
+    "alt": "Europass CV sample for Bilal Ahmed applying from Pakistan to Germany"
   },
   {
-    "image": "/formats/pk/2.webp",
-    "type": "ATS CV",
-    "profession": "Finance",
-    "tab": "Gulf CVs",
-    "alt": "Senior finance executive CV with a clean single-column layout"
-  },
-  {
-    "image": "/formats/pk/3.webp",
-    "type": "Designed CV",
-    "profession": "Graphic design",
-    "tab": "Designed CVs",
-    "alt": "Graphic designer CV with teal headings and a structured layout"
-  },
-  {
-    "image": "/formats/ae/4.webp",
-    "type": "CV with photo",
-    "profession": "UAE format",
-    "tab": "Gulf CVs",
-    "alt": "UAE CV format with a photo and a single-column experience section"
+    "image": "/partners/samples/cover-letter-rahul-menon.webp",
+    "type": "Cover letter",
+    "profession": "Rahul Menon · Accountant · India → Qatar",
+    "tab": "Cover letters",
+    "alt": "Cover letter sample for Rahul Menon, an accountant applying from India to Qatar"
   },
   {
     "image": "/formats/pk/6.webp",
     "type": "Designed CV",
-    "profession": "Header layout",
+    "profession": "Hamza Iqbal · Electrical Technician · Pakistan → Saudi Arabia",
     "tab": "Designed CVs",
-    "alt": "CV with a navy header and neatly separated content sections"
+    "alt": "Designed CV sample for Hamza Iqbal, an electrical technician applying from Pakistan to Saudi Arabia"
   },
   {
-    "image": "/formats/uk/7.webp",
-    "type": "Europass CV",
-    "profession": "European format",
-    "tab": "Europass",
-    "alt": "Europass CV from the UK homepage portfolio"
+    "type": "Designed CV",
+    "image": "/formats/pk/5.webp",
+    "profession": "Grace Wanjiru · Guest Relations Executive · Kenya → UAE",
+    "tab": "Designed CVs",
+    "alt": "Designed CV sample for Grace Wanjiru applying from Kenya to the UAE"
+  },
+  {
+    "image": "/formats/pk/2.webp",
+    "type": "ATS CV",
+    "profession": "Bikash Thapa · Heavy Vehicle Driver · Nepal → Qatar",
+    "tab": "ATS CVs",
+    "alt": "ATS CV sample for Bikash Thapa applying from Nepal to Qatar"
   }
 ]

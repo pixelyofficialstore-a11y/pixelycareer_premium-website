@@ -21,11 +21,11 @@ The sample-work section should have a centered headline, no eyebrow, category fi
 
 **How to apply:** Keep the carousel and manual navigation without adding category controls back.
 
-Use only approved agency proof figures: 20+ partner agencies, 1,800+ clients served, and 3+ years of experience.
+Use the partner proof figures the user specified: 20+ agencies, 1,800+ CVs delivered, and 3+ years in overseas recruitment.
 
-**Why:** The user explicitly corrected the larger agency and resume counts as unapproved.
+**Why:** The user’s latest page brief explicitly updates the 1,800+ label and the experience wording.
 
-**How to apply:** Do not infer growth or substitute different metrics without the user's approval.
+**How to apply:** Do not infer extra counts or substitute different figures without the user's approval.
 
 Reuse the existing homepage CV and format portfolio for partner-page visuals before requesting new uploads or using blank mockups.
 

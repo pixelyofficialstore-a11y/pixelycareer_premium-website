@@ -11,24 +11,30 @@ import PartnersCarousel from "./PartnersCarousel";
 import type { AgencySample } from "./types";
 import "./partners.css";
 
+const AUDIENCES = [
+  { label: "Recruitment agencies", text: "One consistent CV standard for every candidate you submit." },
+  { label: "OEPs", text: "Gulf and Europe ready CVs for Pakistani workers going abroad." },
+  { label: "Career and interview coaches", text: "Hand off the writing. Keep the coaching." },
+  { label: "Employers and HR", text: "Clean, uniform CVs for internal transfers and bulk hiring." },
+  { label: "Training institutes", text: "Job ready CVs for every graduating batch." },
+];
+
 const WHY = [
-  { title: "Stronger candidate CVs", text: "ATS-ready, recruiter-focused CVs for Gulf and European employers.", icon: "document" },
-  { title: "A new income line", text: "You set your own price and keep the difference.", icon: "growth" },
-  { title: "No team to hire", text: "We write, design and format everything.", icon: "team" },
+  { title: "No hiring needed.", text: "Skip full time writers. Scale up or down with your candidate flow.", icon: "team" },
+  { title: "48 hour turnaround.", text: "Fast, steady delivery that keeps your pipeline moving.", icon: "growth" },
+  { title: "Built for every market.", text: "Formats for the Gulf, UK, Europe (Europass) and North America.", icon: "document" },
 ];
 
 const MODELS = {
   "White label": {
-    title: "Under your agency's name",
-    points: ["Your branding and templates", "You keep the candidate relationship", "We stay behind the scenes"],
-    best: "Best for agencies that want control and extra margin.",
-    flow: ["Candidate", "Your agency", "Pixely Careers", "Your agency", "Employer"],
+    title: "Your brand. Our engine.",
+    points: ["Your logo, colors and templates", "You own the candidate and the price", "Set your own margin on every order"],
+    best: "Best for: full brand control and higher margins",
   },
   Referral: {
-    title: "Under the Pixely Careers name",
-    points: ["Send interested candidates to us", "We handle everything directly", "You earn a commission on every order"],
-    best: "Best for agencies that want zero effort.",
-    flow: ["Your agency", "Refers the candidate", "Pixely Careers", "Candidate", "You earn a commission"],
+    title: "Zero work. Pure commission.",
+    points: ["Share your partner link", "We handle writing, revisions and support", "Commission paid on every completed order"],
+    best: "Best for: hands off extra income",
   },
 } as const;
 
@@ -100,20 +106,26 @@ function HeroStack() {
       <div className="agency-hero-orbit agency-hero-orbit-two" />
       <div ref={scrollLayerRef} className="agency-cv-scroll-layer">
         <div className="agency-cv-stack" style={{ "--tilt-x": `${tilt.x}deg`, "--tilt-y": `${tilt.y}deg` } as CSSProperties}>
-          {[
-            { name: "Gulf-format CV with navy sidebar", src: "/formats/pk/5.webp" },
-            { name: "CV with a navy header", src: "/formats/pk/6.webp" },
-            { name: "Clean ATS-friendly CV", src: "/cv/ae/good.webp" },
-          ].map((sample, index) => (
-            <div className={`agency-cv-card agency-cv-card-${index + 1}`} key={sample.src}>
-              <img src={sample.src} alt={sample.name} />
-            </div>
-          ))}
+          <div className="agency-cv-card agency-cv-card-1"><img src="/formats/pk/5.webp" alt="Gulf format CV with navy sidebar" /></div>
+          <div className="agency-cv-card agency-cv-card-2"><img src="/formats/pk/6.webp" alt="CV with a navy header" /></div>
+          <div className="agency-cv-card agency-cv-card-3 agency-candidate-cv" role="img" aria-label="Maria Santos, Staff Nurse ICU, Manila, Philippines, target Qatar. Phone plus 63 917 000 0000. Email maria.santos@email.com.">
+            <header>
+              <strong>Maria Santos</strong>
+              <span>Staff Nurse (ICU)</span>
+              <small>Manila, Philippines · Target: Qatar</small>
+              <small>+63 917 000 0000 · maria.santos@email.com</small>
+            </header>
+            <section><b>PROFESSIONAL SUMMARY</b><p>Compassionate registered nurse with intensive care experience and a focus on safe, patient centered care.</p></section>
+            <section><b>PROFESSIONAL EXPERIENCE</b><h4>Staff Nurse · Intensive Care Unit</h4><p>Monitored patient condition and supported coordinated care in a fast paced clinical setting.</p><i /><i /><i /></section>
+            <section><b>CORE SKILLS</b><p>Critical care · Patient monitoring · Care planning · Clinical documentation</p></section>
+            <section><b>EDUCATION</b><h4>Bachelor of Science in Nursing</h4><p>Registered Nurse</p></section>
+          </div>
         </div>
       </div>
-      <span className="agency-logo-placeholder">Your agency logo</span>
-      <div className="agency-float-chip agency-float-chip-one"><span className="agency-chip-dot" />24-hour first drafts</div>
-      <div className="agency-float-chip agency-float-chip-two"><span className="agency-chip-spark" aria-hidden="true" />Your branding or ours</div>
+      <span className="agency-logo-placeholder">Your logo here</span>
+      <div className="agency-float-chip agency-float-chip-one"><span className="agency-chip-dot" />Delivered under your brand</div>
+      <div className="agency-float-chip agency-float-chip-two"><span className="agency-chip-spark" aria-hidden="true" />Gulf, UK and Europe formats</div>
+      <div className="agency-float-chip agency-float-chip-three"><span className="agency-chip-dot" />Full batches in 48 hours</div>
     </div>
   );
 }
@@ -133,7 +145,7 @@ function ProofBand() {
     observer.observe(node);
     return () => observer.disconnect();
   }, []);
-  const values = [{ value: 20, suffix: "+", label: "partner agencies" }, { value: 1800, suffix: "+", label: "clients served" }, { value: 3, suffix: "+", label: "years of experience" }];
+const values = [{ value: 20, suffix: "+", label: "Partner agencies" }, { value: 1800, suffix: "+", label: "CVs delivered" }, { value: 3, suffix: "+", label: "Years in overseas recruitment" }];
   return (
     <section className="agency-proof" aria-label="Partnership experience" ref={root} data-agency-reveal>
       <div className="agency-wrap agency-proof-grid">
@@ -178,27 +190,72 @@ function WhySection() {
   </section>;
 }
 
+function WhoItsFor() {
+  const [active, setActive] = useState(0);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+    if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const next = event.key === "Home" ? 0 : event.key === "End" ? AUDIENCES.length - 1
+      : (active + (event.key === "ArrowRight" ? 1 : -1) + AUDIENCES.length) % AUDIENCES.length;
+    setActive(next);
+    tabRefs.current[next]?.focus();
+  };
+  return <section className="agency-section agency-audience-section" aria-labelledby="agency-audience-title" data-agency-reveal>
+    <div className="agency-wrap">
+      <h2 className="agency-title" id="agency-audience-title">Who it&apos;s <em>for.</em></h2>
+      <div className="agency-audience-tabs" role="tablist" aria-label="Who we work with">
+        {AUDIENCES.map((item, index) => <button
+          key={item.label}
+          ref={(element) => { tabRefs.current[index] = element; }}
+          id={`audience-tab-${index}`}
+          type="button"
+          role="tab"
+          aria-selected={active === index}
+          aria-controls="agency-audience-panel"
+          tabIndex={active === index ? 0 : -1}
+          onClick={() => setActive(index)}
+          onKeyDown={onKeyDown}
+        >{item.label}</button>)}
+      </div>
+      <div className="agency-audience-panel" id="agency-audience-panel" role="tabpanel" aria-labelledby={`audience-tab-${active}`} key={active}>
+        <span className="agency-audience-mark"><FeatureIcon type="document" /></span>
+        <div><h3>{AUDIENCES[active].label}</h3><p>{AUDIENCES[active].text}</p></div>
+      </div>
+    </div>
+  </section>;
+}
+
 function ModelFlow({ model }: { model: keyof typeof MODELS }) {
   const isWhiteLabel = model === "White label";
-  const steps = isWhiteLabel
-    ? ["Candidate", "Your agency", "Pixely Careers", "Your agency", "Employer"]
-    : ["Your agency", "Pixely Careers", "Candidate", "You earn a commission"];
+  const steps: Array<{ title: string; subtitle?: string; badge?: string; kind?: string; connector?: string }> = isWhiteLabel
+    ? [
+      { title: "Candidate", connector: "sends details" },
+      { title: "Your Agency", badge: "YOU", kind: "agency", connector: "forwards" },
+      { title: "Pixely", badge: "BEHIND THE SCENES", kind: "behind", connector: "returns CV" },
+      { title: "Your Agency", subtitle: "branded CV", kind: "agency" },
+    ]
+    : [
+      { title: "Your Agency", kind: "agency", connector: "shares link" },
+      { title: "Pixely Careers", subtitle: "handles CV and client", connector: "completed order" },
+      { title: "Earn Commission", subtitle: "per order", kind: "commission" },
+    ];
   return <div className={`agency-flow agency-flow-${isWhiteLabel ? "white" : "referral"}`} aria-label={`${model} workflow`}>
-    {steps.map((step, index) => <div className="agency-flow-step" key={`${step}-${index}`}>
-      <div className={`agency-flow-node${isWhiteLabel && index === 2 ? " is-muted" : ""}${!isWhiteLabel && index === 3 ? " is-commission" : ""}`}>
-        <span>{step}</span>
-        {isWhiteLabel && index === 2 && <small>behind the scenes</small>}
-        {!isWhiteLabel && index === 3 && <span className="agency-coin" aria-hidden="true">$</span>}
+    {steps.map((step, index) => <div className="agency-flow-step" key={`${step.title}-${index}`}>
+      <div className={`agency-flow-node${step.kind ? ` is-${step.kind}` : ""}`}>
+        {step.badge && <b className="agency-flow-badge">{step.badge}</b>}
+        <span>{step.title}</span>
+        {step.subtitle && <small>{step.subtitle}</small>}
       </div>
       {index < steps.length - 1 && <div className="agency-flow-connector">
-        {!isWhiteLabel && index === 0 && <span className="agency-flow-note">refers the candidate</span>}
+        {step.connector && <span className="agency-flow-note">{step.connector}</span>}
         <svg className="agency-flow-arrow" viewBox="0 0 12 24" fill="none" aria-hidden="true"><path d="M6 1v21m0 0 5-5m-5 5-5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </div>}
     </div>)}
   </div>;
 }
 
-function WaysSection() {
+function WaysSection({ onBecomePartner }: { onBecomePartner: (model: keyof typeof MODELS) => void }) {
   const [model, setModel] = useState<keyof typeof MODELS>("White label");
   const modelTabs = useRef<Array<HTMLButtonElement | null>>([]);
   const data = MODELS[model];
@@ -221,7 +278,8 @@ function WaysSection() {
         <div className="agency-model-copy">
           <h3>{data.title}</h3>
           <ul>{data.points.map((point) => <li key={point}><span className="agency-check" aria-hidden="true">✓</span>{point}</li>)}</ul>
-          <p className="agency-model-best">{data.best}</p>
+          <p className="agency-model-best"><b>Best for:</b> {data.best.replace(/^Best for: /, "")}</p>
+          <a className="btn btn-primary agency-model-cta" href="#agency-enquiry" data-cta={`agency-become-partner-${model === "White label" ? "white-label" : "referral"}`} onClick={() => onBecomePartner(model)}>Become a partner <ArrowIcon /></a>
         </div>
         <div className="agency-model-flow-panel"><ModelFlow model={model} /></div>
       </div>
@@ -231,20 +289,19 @@ function WaysSection() {
 
 function ProcessVisual({ number }: { number: number }) {
   if (number === 0) return <div className="agency-process-visual agency-chat-visual"><span className="agency-chat-label">NEW REQUEST</span><div className="agency-chat-bubble">New candidate: Staff Nurse, KSA <svg viewBox="0 0 24 24" fill="none" aria-label="attachment"><path d="m8 12 5.8-5.8a3 3 0 014.2 4.2l-7.4 7.4a5 5 0 01-7.1-7.1l7.1-7.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></div><span className="agency-chat-time">10:42 am</span></div>;
-  if (number === 1) return <div className="agency-process-visual agency-draft-visual"><div className="agency-draft-paper"><span className="agency-draft-tag">Draft 1 · 24h</span><CvMock role="Staff Nurse" mini /></div></div>;
+  if (number === 1) return <div className="agency-process-visual agency-draft-visual"><div className="agency-draft-paper"><span className="agency-draft-tag">Draft · 48h</span><CvMock role="Staff Nurse" mini /></div></div>;
   if (number === 2) return <div className="agency-process-visual agency-comment-visual"><div className="agency-comment-card"><span className="agency-comment-avatar">PC</span><div><b>Review note</b><p>Add ICU experience</p></div><span className="agency-comment-check">✓</span></div><div className="agency-comment-rule" /></div>;
   return <div className="agency-process-visual agency-files-visual"><span className="agency-file-chip"><b>PDF</b><small>Ready to share</small></span><span className="agency-file-chip"><b>Word</b><small>Editable file</small></span></div>;
 }
 
 function AgencyProcess() {
   const steps = [
-    ["01", "Send the brief", "Share the candidate and target role."],
-    ["02", "We prepare a draft", "Built around their experience."],
-    ["03", "Review together", "We make the requested edits."],
-    ["04", "Receive final files", "Ready to share with your candidate."],
+    ["01", "Send candidate details", "Share an old CV, form or notes on WhatsApp or email."],
+    ["02", "We write and optimize", "An ATS ready CV targeted to the role and country, within 48 hours."],
+    ["03", "Review and brand check", "You get Word and PDF files with your agency header."],
+    ["04", "Deliver and place", "Send a polished CV to the employer and close placements faster."],
   ];
   const sectionRef = useRef<HTMLElement>(null);
-  const stickyRef = useRef<HTMLDivElement>(null);
   const desktopPathRef = useRef<SVGPathElement>(null);
   const mobilePathRef = useRef<SVGPathElement>(null);
   const desktopMarkerRef = useRef<SVGRectElement>(null);
@@ -252,12 +309,11 @@ function AgencyProcess() {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
     const section = sectionRef.current;
-    const pinned = stickyRef.current;
     const desktopPath = desktopPathRef.current;
     const mobilePath = mobilePathRef.current;
     const desktopMarker = desktopMarkerRef.current;
     const mobileMarker = mobileMarkerRef.current;
-    if (!section || !pinned || !desktopPath || !mobilePath || !desktopMarker || !mobileMarker) return;
+    if (!section || !desktopPath || !mobilePath || !desktopMarker || !mobileMarker) return;
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const setPathFinal = (path: SVGPathElement, marker: SVGRectElement) => {
@@ -276,9 +332,8 @@ function AgencyProcess() {
       const timeline = gsap.timeline({
         scrollTrigger: {
           trigger: section,
-          ...(mobile ? {} : { pin: pinned, pinSpacing: true, anticipatePin: 1 }),
-          start: "top top",
-          end: mobile ? "bottom 30%" : "+=120%",
+          start: mobile ? "top 80%" : "top 75%",
+          end: "bottom 25%",
           scrub: true,
           invalidateOnRefresh: true,
         },
@@ -291,7 +346,7 @@ function AgencyProcess() {
   }, []);
 
   return <section ref={sectionRef} className="agency-section agency-process" aria-labelledby="agency-process-title">
-    <div className="agency-process-sticky" ref={stickyRef}>
+    <div className="agency-process-sticky">
       <div className="agency-wrap agency-process-inner">
         <div className="agency-process-heading" data-agency-reveal><h2 className="agency-title" id="agency-process-title">A straightforward <em>process.</em></h2></div>
         <div className="agency-process-track">
@@ -313,6 +368,10 @@ function AgencyProcess() {
 }
 
 export default function PartnersPage({ samples }: { samples: AgencySample[] }) {
+  const [preferredModel, setPreferredModel] = useState<{ model: keyof typeof MODELS; request: number } | null>(null);
+  const chooseModelForEnquiry = (model: keyof typeof MODELS) => {
+    setPreferredModel((current) => ({ model, request: (current?.request ?? 0) + 1 }));
+  };
   useEffect(() => {
     const nodes = document.querySelectorAll<HTMLElement>(".agency-page [data-agency-reveal]");
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches || !("IntersectionObserver" in window)) {
@@ -338,8 +397,8 @@ export default function PartnersPage({ samples }: { samples: AgencySample[] }) {
           <h1 id="agency-hero-title">Your agency&apos;s <em>CV department.</em></h1>
           <p className="agency-hero-sub">A dependable outsourced CV and documentation team for recruitment agencies.</p>
           <div className="agency-hero-actions">
-            <a className="btn btn-primary agency-hero-primary" href="#agency-enquiry" data-cta="partners-hero-call">Book a 15-minute call <ArrowIcon /></a>
-            <a className="agency-quiet-link agency-outline-link" href="#samples">See sample work <ArrowIcon direction="down" /></a>
+            <a className="btn btn-primary agency-hero-primary" href="#agency-enquiry" data-cta="agency-hero-call">Book a 15 minute call <ArrowIcon /></a>
+            <a className="agency-quiet-link agency-outline-link" href="#samples" data-cta="agency-hero-samples">See sample work <ArrowIcon direction="down" /></a>
           </div>
         </div>
         <HeroStack />
@@ -347,14 +406,16 @@ export default function PartnersPage({ samples }: { samples: AgencySample[] }) {
     </section>
     <ProofBand />
     <WhySection />
-    <WaysSection />
+    <WhoItsFor />
+    <WaysSection onBecomePartner={chooseModelForEnquiry} />
     <section className="agency-section agency-samples" id="samples" aria-labelledby="agency-samples-title" data-agency-reveal>
       <div className="agency-wrap">
         <h2 className="agency-title" id="agency-samples-title">Every format your <em>candidates need.</em></h2>
+        <p className="agency-samples-sub">ATS CVs, Gulf CVs with photo, Europass, cover letters and LinkedIn profiles, all matched to your agency&apos;s standard.</p>
         <PartnersCarousel samples={samples} />
         <div className="agency-template-strip">
-          <p>Already have a format? Send us your template and we will work on it.</p>
-          <a className="btn btn-primary" href="#agency-enquiry">Book a 15-minute call <ArrowIcon /></a>
+          <p>Want CVs in your own agency template?</p>
+          <a className="btn btn-primary" href="#agency-enquiry" data-cta="agency-sample-pack">Request a sample pack <ArrowIcon /></a>
         </div>
       </div>
     </section>
@@ -364,9 +425,9 @@ export default function PartnersPage({ samples }: { samples: AgencySample[] }) {
       <div className="agency-wrap agency-final-grid">
         <div className="agency-final-copy">
           <h2 className="agency-title" id="agency-final-title">Let&apos;s talk for <em>15 minutes.</em></h2>
-          <p>Tell us about your agency and we&apos;ll get back to you on WhatsApp.</p>
+          <p>No hard pitch. Tell us your volume and workflow. We&apos;ll send a partner rate card and a free test sample.</p>
         </div>
-        <AgencyEnquiryForm />
+        <AgencyEnquiryForm preferredModel={preferredModel} />
       </div>
     </section>
   </div>;

@@ -1,5 +1,5 @@
 import { formatPrice, homeHref, localize, type Market } from "@/config/markets";
-import { WHATSAPP_URL, whatsappMessage } from "@/lib/site";
+import { WHATSAPP_URL } from "@/lib/site";
 
 /**
  * The announcement bar's messages.
@@ -9,8 +9,6 @@ import { WHATSAPP_URL, whatsappMessage } from "@/lib/site";
 export type Announcement = { key: string; text: string; href: string; ctaLabel?: string };
 
 const PRICING = "#pricing";
-const PARTNER_WHATSAPP = whatsappMessage("Hi, I'm from [agency name]. I'd like to discuss a CV partnership.");
-
 const GULF = "Applying in the Gulf? CVs built for UAE & Saudi roles →";
 const BUNDLE = "CV + cover letter + LinkedIn, from {price} →";
 
@@ -31,7 +29,7 @@ const PAGES: { match: (path: string) => boolean; message: Announcement }[] = [
   { match: (p) => p.startsWith("/services/"), message: { key: "services", text: BUNDLE, href: PRICING } },
   { match: (p) => p === "/pricing", message: { key: "pricing", text: "Not sure which package? Ask us on WhatsApp →", href: WHATSAPP_URL } },
   { match: (p) => p.startsWith("/blog/"), message: { key: "blog", text: "Want your CV fixed for you? Get a free review →", href: "/free-cv-review" } },
-  { match: (p) => p === "/partners", message: { key: "partners", text: "Partner rates on a 15-minute call. No minimum volume →", href: PARTNER_WHATSAPP } },
+  { match: (p) => p === "/partners", message: { key: "partners", text: "Partner rates on a 15 minute call. No minimum volume →", href: "#agency-enquiry" } },
 ];
 
 const FALLBACK: Announcement = { key: "free-review", text: "Free CV review. Send your CV on WhatsApp →", href: "/free-cv-review" };

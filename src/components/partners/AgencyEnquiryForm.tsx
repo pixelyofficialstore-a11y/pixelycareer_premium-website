@@ -6,38 +6,35 @@ import { whatsappMessage } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
 import "./enquiry-form.css";
 
-const ORGANIZATIONS = ["Recruitment agency", "Overseas employment promoter (OEP)", "Career / interview coach", "Employer / HR team", "Training institute", "Other"];
-const COUNTRIES = ["Pakistan", "Saudi Arabia", "UAE", "Qatar", "Oman", "Kuwait", "Bahrain", "UK", "Other"];
-const DESTINATIONS = ["Saudi Arabia", "UAE", "Qatar", "Oman", "Kuwait", "Bahrain", "UK", "Europe", "Pakistan", "Other"];
-const DOCUMENTS = ["ATS CVs", "Europass CVs", "Cover letters", "LinkedIn / Indeed / Naukrigulf profiles", "SOPs & LORs", "Interview guides", "Other"];
-const VOLUMES = ["1–10", "11–25", "26–50", "51–100", "100+"];
+const ORGANIZATIONS = ["Recruitment agency", "OEP", "Career coach", "Employer or HR", "Training institute", "Other"];
+const COUNTRIES = ["Pakistan", "Qatar", "Saudi Arabia", "UAE", "Kuwait", "Oman", "Bahrain", "UK", "Other"];
+const VOLUMES = ["1 to 10", "10 to 30", "30 to 100", "100+"];
 const CODES = [["PK", "+92"], ["SA", "+966"], ["AE", "+971"], ["QA", "+974"], ["OM", "+968"], ["KW", "+965"], ["BH", "+973"], ["UK", "+44"], ["US / CA", "+1"], ["IN", "+91"], ["BD", "+880"], ["PH", "+63"], ["NP", "+977"], ["LK", "+94"], ["EG", "+20"]];
 
 type Enquiry = {
-  organization: string; organizationType: string; name: string; designation: string;
+  organization: string; organizationType: string; name: string;
   code: string; phone: string; email: string; country: string;
-  destinations: string[]; volume: string; documents: string[]; model: string; notes: string;
+  volume: string; model: string; notes: string;
 };
 type Errors = Partial<Record<keyof Enquiry, string>>;
 const initial: Enquiry = {
-  organization: "", organizationType: "", name: "", designation: "", code: "+92", phone: "", email: "",
-  country: "", destinations: [], volume: "", documents: [], model: "Not sure yet", notes: "",
+  organization: "", organizationType: "", name: "", code: "+92", phone: "", email: "",
+  country: "", volume: "", model: "", notes: "",
 };
 
 function validate(form: Enquiry, step: number): Errors {
   const errors: Errors = {};
   if (step === 1) {
-    if (!form.organization.trim()) errors.organization = "Enter your organization name.";
-    if (!form.organizationType) errors.organizationType = "Choose an organization type.";
     if (!form.name.trim()) errors.name = "Enter your name.";
+    if (!form.organization.trim()) errors.organization = "Enter your agency name.";
+    if (!form.organizationType) errors.organizationType = "Choose an organization type.";
+    if (!form.country) errors.country = "Choose your country.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = "Enter a valid work email address.";
     const digits = `${form.code}${form.phone}`.replace(/\D/g, "").length;
     if (!form.phone.trim() || !/^[\d\s().-]+$/.test(form.phone) || digits < 7 || digits > 15) errors.phone = "Enter a valid WhatsApp number without the country code.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) errors.email = "Enter a valid email address.";
-    if (!form.country) errors.country = "Choose your country.";
   } else {
-    if (!form.destinations.length) errors.destinations = "Choose at least one destination.";
     if (!form.volume) errors.volume = "Choose your monthly volume.";
-    if (!form.documents.length) errors.documents = "Choose at least one document type.";
+    if (!form.model) errors.model = "Choose a partnership model.";
   }
   return errors;
 }
@@ -45,19 +42,17 @@ function validate(form: Enquiry, step: number): Errors {
 function messageFor(form: Enquiry) {
   return [
     "New agency enquiry",
-    `Organization: ${form.organization.trim()} (type: ${form.organizationType})`,
-    `Contact: ${form.name.trim()} (designation: ${form.designation.trim() || "Not provided"})`,
+    `Contact: ${form.name.trim()}`,
+    `Agency: ${form.organization.trim()} (type: ${form.organizationType})`,
     `WhatsApp: ${form.code} ${form.phone.trim()} | Email: ${form.email.trim()}`,
     `Country: ${form.country}`,
-    `Candidates applying to: ${form.destinations.join(", ")}`,
-    `Volume: ${form.volume} per month`,
-    `Documents: ${form.documents.join(", ")}`,
-    `Model: ${form.model}`,
+    `Monthly candidates: ${form.volume}`,
+    `Preferred model: ${form.model}`,
     `Notes: ${form.notes.trim() || "Not provided"}`,
   ].join("\n");
 }
 
-export default function AgencyEnquiryForm() {
+export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: { model: string; request: number } | null }) {
   const [form, setForm] = useState<Enquiry>(initial);
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<Errors>({});
@@ -70,14 +65,14 @@ export default function AgencyEnquiryForm() {
     if (firstRender.current) { firstRender.current = false; return; }
     headingRef.current?.focus({ preventScroll: true });
   }, [step, submitted]);
+  useEffect(() => {
+    if (preferredModel) setForm((current) => ({ ...current, model: preferredModel.model }));
+  }, [preferredModel]);
 
   const update = <K extends keyof Enquiry>(field: K, value: Enquiry[K]) => {
     setForm((current) => ({ ...current, [field]: value }));
     setErrors((current) => ({ ...current, [field]: undefined }));
   };
-  const toggle = (field: "destinations" | "documents", value: string) =>
-    update(field, form[field].includes(value) ? form[field].filter((item) => item !== value) : [...form[field], value]);
-
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const nextErrors = validate(form, step);
@@ -107,22 +102,22 @@ export default function AgencyEnquiryForm() {
   const fieldProps = (field: keyof Enquiry) => ({
     "aria-invalid": Boolean(errors[field]), "aria-describedby": errors[field] ? `error-${field}` : undefined,
   });
-  const choices = (field: "destinations" | "volume" | "documents" | "model", label: string, options: string[], multiple = false, required = false) => (
+  const choices = (field: "volume" | "model", label: string, options: string[], required = false) => (
     <fieldset className="agency-choice-group" aria-describedby={errors[field] ? `error-${field}` : undefined}>
       <legend>{label}{required && <span aria-hidden="true"> *</span>}</legend>
-      <div className="agency-choice-list" role={multiple ? "group" : "radiogroup"} aria-label={label} aria-required={!multiple && required ? true : undefined}>
+      <div className="agency-choice-list" role="radiogroup" aria-label={label} aria-required={required || undefined}>
         {options.map((option) => {
-          const selected = Array.isArray(form[field]) ? (form[field] as string[]).includes(option) : form[field] === option;
-          return <button type="button" key={option} className="agency-choice" role={multiple ? undefined : "radio"} aria-checked={multiple ? undefined : selected} aria-pressed={multiple ? selected : undefined} aria-invalid={Boolean(errors[field])}
+          const selected = form[field] === option;
+          return <button type="button" key={option} className="agency-choice" role="radio" aria-checked={selected} aria-invalid={Boolean(errors[field])}
             onKeyDown={(event) => {
-              if (multiple || !["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
+              if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End"].includes(event.key)) return;
               event.preventDefault();
               const index = options.indexOf(option);
               const next = event.key === "Home" ? 0 : event.key === "End" ? options.length - 1 : (index + (["ArrowRight", "ArrowDown"].includes(event.key) ? 1 : -1) + options.length) % options.length;
-              update(field as "volume" | "model", options[next]);
+              update(field, options[next]);
               (event.currentTarget.parentElement?.children[next] as HTMLElement)?.focus();
             }}
-            onClick={() => multiple ? toggle(field as "destinations" | "documents", option) : update(field as "volume" | "model", option)}>{option}</button>;
+            onClick={() => update(field, option)}>{option}</button>;
         })}
       </div>
       {error(field)}
@@ -142,6 +137,7 @@ export default function AgencyEnquiryForm() {
   return (
     <div className="agency-enquiry">
       <form className="agency-form-card" onSubmit={submit} noValidate aria-label="Agency partnership enquiry">
+        <h2 className="agency-form-heading">Book a 15 minute partner call</h2>
         <ol className="agency-form-progress" aria-label="Enquiry progress">
           <li aria-current={step === 1 ? "step" : undefined} data-complete={step > 1}><span aria-hidden="true">1</span>About you</li>
           <li aria-current={step === 2 ? "step" : undefined}><span aria-hidden="true">2</span>Your needs</li>
@@ -150,26 +146,23 @@ export default function AgencyEnquiryForm() {
           <h3 ref={headingRef} tabIndex={-1} className="agency-form-step-title">Step {step} of 2: {step === 1 ? "About you" : "Your needs"}</h3>
           {step === 1 ? (
             <div className="agency-form-grid">
-              <div className="agency-field agency-field-wide"><label htmlFor="agency-name">Organization name *</label><input id="agency-name" name="organization" autoComplete="organization" value={form.organization} onChange={(e) => update("organization", e.target.value)} required {...fieldProps("organization")} />{error("organization")}</div>
-              <div className="agency-field agency-field-wide"><label htmlFor="organization-type">Organization type *</label><select id="organization-type" value={form.organizationType} onChange={(e) => update("organizationType", e.target.value)} required {...fieldProps("organizationType")}><option value="">Select organization type</option>{ORGANIZATIONS.map((item) => <option key={item}>{item}</option>)}</select>{error("organizationType")}</div>
               <div className="agency-field"><label htmlFor="your-name">Your name *</label><input id="your-name" autoComplete="name" value={form.name} onChange={(e) => update("name", e.target.value)} required {...fieldProps("name")} />{error("name")}</div>
-              <div className="agency-field"><label htmlFor="designation">Designation</label><input id="designation" autoComplete="organization-title" value={form.designation} onChange={(e) => update("designation", e.target.value)} /></div>
+              <div className="agency-field"><label htmlFor="agency-name">Agency name *</label><input id="agency-name" name="organization" autoComplete="organization" value={form.organization} onChange={(e) => update("organization", e.target.value)} required {...fieldProps("organization")} />{error("organization")}</div>
+              <div className="agency-field agency-field-wide"><label htmlFor="organization-type">Agency type *</label><select id="organization-type" value={form.organizationType} onChange={(e) => update("organizationType", e.target.value)} required {...fieldProps("organizationType")}><option value="">Select agency type</option>{ORGANIZATIONS.map((item) => <option key={item}>{item}</option>)}</select>{error("organizationType")}</div>
+              <div className="agency-field agency-field-wide"><label htmlFor="agency-country">Country *</label><select id="agency-country" value={form.country} autoComplete="country-name" onChange={(e) => update("country", e.target.value)} required {...fieldProps("country")}><option value="">Select country</option>{COUNTRIES.map((item) => <option key={item}>{item}</option>)}</select>{error("country")}</div>
+              <div className="agency-field agency-field-wide"><label htmlFor="agency-email">Work email *</label><input id="agency-email" type="email" autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} required {...fieldProps("email")} />{error("email")}</div>
               <div className="agency-field agency-field-wide"><label htmlFor="whatsapp-number">WhatsApp number *</label><div className="agency-phone-input"><select aria-label="Country calling code" autoComplete="tel-country-code" value={form.code} onChange={(e) => update("code", e.target.value)}>{CODES.map(([country, code]) => <option value={code} key={country}>{country} {code}</option>)}</select><input id="whatsapp-number" type="tel" inputMode="tel" autoComplete="tel-national" value={form.phone} onChange={(e) => update("phone", e.target.value)} required {...fieldProps("phone")} /></div>{error("phone")}</div>
-              <div className="agency-field agency-field-wide"><label htmlFor="agency-email">Email *</label><input id="agency-email" type="email" autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} required {...fieldProps("email")} />{error("email")}</div>
-              <div className="agency-field agency-field-wide"><label htmlFor="agency-country">Your country *</label><select id="agency-country" value={form.country} autoComplete="country-name" onChange={(e) => update("country", e.target.value)} required {...fieldProps("country")}><option value="">Select country</option>{COUNTRIES.map((item) => <option key={item}>{item}</option>)}</select>{error("country")}</div>
             </div>
           ) : (
             <div className="agency-needs-fields">
-              {choices("destinations", "Where are your candidates applying?", DESTINATIONS, true, true)}
-              {choices("volume", "Candidates per month", VOLUMES, false, true)}
-              {choices("documents", "Documents you need", DOCUMENTS, true, true)}
-              {choices("model", "Preferred model", ["White label", "Referral", "Not sure yet"])}
-              <div className="agency-field"><label htmlFor="agency-notes">Anything else?</label><textarea id="agency-notes" rows={2} value={form.notes} onChange={(e) => update("notes", e.target.value)} /></div>
+              {choices("volume", "Monthly candidates", VOLUMES, true)}
+              {choices("model", "Preferred model", ["White label", "Referral", "Both"], true)}
+              <div className="agency-field"><label htmlFor="agency-notes">Notes (optional)</label><textarea id="agency-notes" rows={2} value={form.notes} onChange={(e) => update("notes", e.target.value)} /></div>
             </div>
           )}
           <div className="agency-form-navigation">
             {step === 2 && <button type="button" className="agency-form-back" onClick={() => { setErrors({}); setStep(1); }}>Back</button>}
-            <button className="agency-form-submit" type="submit" data-cta={step === 1 ? "partners-form-next" : "partners-form-submit"}>{step === 1 ? "Next" : "Send enquiry"} <span className="agency-button-arrow">→</span></button>
+            <button className="agency-form-submit" type="submit" data-cta={step === 1 ? "agency-form-next" : "agency-form-schedule"}>{step === 1 ? "Next" : "Schedule my call"} <span className="agency-button-arrow">→</span></button>
           </div>
         </div>
       </form>

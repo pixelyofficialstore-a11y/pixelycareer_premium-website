@@ -6,8 +6,8 @@ import { QUESTIONS } from "@/components/partners/faq-data";
 import { JsonLd, SITE, breadcrumbJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
 import sampleDefinitions from "../../../public/partners/samples/samples.json";
 
-const title = "CV Writing Partner for Recruitment Agencies | Pixely Careers";
-const description = "White label CVs, cover letters and job profiles for recruitment agencies and overseas employment promoters. First drafts in 24 hours. No minimum volume.";
+const title = "For Agencies | White Label CV Writing Partner | Pixely Careers";
+const description = "A dependable outsourced CV and documentation team for recruitment agencies in Pakistan and the Gulf. White label or referral. No minimum volume.";
 const baseMetadata = pageMetadata("/partners", title, description, "/partners/opengraph-image");
 
 export const metadata = {
@@ -15,7 +15,7 @@ export const metadata = {
   alternates: { canonical: "https://pixelycareers.com/partners" },
   openGraph: {
     ...baseMetadata.openGraph,
-    title: "Your agency's CV department | Pixely Careers",
+    title,
   },
 };
 
