@@ -9,8 +9,14 @@ On the agency partnership page, never show partner prices or name any partner ag
 
 **How to apply:** Preserve these constraints in future page copy, sample work, structured data, proposal links, and promotional additions. Discuss rates privately rather than adding public price tables.
 
-Keep the agency page simple, clean and minimal: no repeated eyebrow labels, dense sales copy, category/filter duplication or repeated promotional CTAs. Call-booking links should lead to the final enquiry form. Avoid pinned process animations.
+Keep agency page text minimal and call-booking links directed to the final enquiry form. The current direction explicitly allows audience and sample tabs, model switching, and a desktop pinned S-curve process, despite earlier requests to remove these.
 
-**Why:** The user explicitly rejected the clutter and process animation and asked for a quieter page with fewer CTAs.
+**Why:** The user rejected dense copy and excessive CTAs, then supplied a new brief requesting richer visuals and interactions rather than additional paragraphs.
 
-**How to apply:** Keep benefits and partnership models brief, show samples as a carousel with document-type captions, and treat the final form as the main conversion point.
+**How to apply:** Preserve concise copy and the final enquiry form as the main conversion point; respect mobile and reduced-motion alternatives when adding motion.
+
+Use only approved agency proof figures: 20+ partner agencies, 1,800+ clients served, and 3+ years of experience.
+
+**Why:** The user explicitly corrected the larger agency and resume counts as unapproved.
+
+**How to apply:** Do not infer growth or substitute different metrics without the user's approval.
