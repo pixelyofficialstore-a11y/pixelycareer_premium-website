@@ -14,3 +14,9 @@ For the split laptop layout, fit the full A4 comparison and text into the viewpo
 **Why:** After seeing the hero-size heading wrap into four lines and dominate the section, the user explicitly returned to the smaller two-line option.
 
 **How to apply:** Size the portrait CV from available height, not a landscape thumbnail. Balance the smaller heading and supporting text vertically alongside it. Keep the main-page-only approval boundary.
+
+Match the Before/After section's typography and spacing to the hero's minimal, premium feel rather than treating it as a separate visual style.
+
+**Why:** The user repeated this direction after rejecting a thin heading with small, quiet supporting text.
+
+**How to apply:** Use the hero as the visual reference for font treatment and hierarchy while preserving the two-line heading and full A4 comparison.

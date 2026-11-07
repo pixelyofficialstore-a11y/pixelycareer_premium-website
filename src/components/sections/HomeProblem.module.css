@@ -279,10 +279,10 @@
     grid-column: 1;
     grid-row: 2;
     max-width: 560px;
-    font-size: clamp(44px, 5vw, 68px);
-    font-weight: 500;
-    line-height: 1.04;
-    letter-spacing: -.035em;
+    font-size: clamp(44px, 4.1vw, 56px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -.02em;
     text-wrap: initial;
   }
 
@@ -295,9 +295,10 @@
     grid-column: 1;
     grid-row: 3;
     margin-top: 24px;
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 400;
-    color: #6b7280;
+    color: rgb(1 12 40 / .75);
+    line-height: 1.5;
   }
 
   .comparison {
@@ -324,36 +325,30 @@
     grid-row: 4;
     width: 392px;
     grid-template-columns: 180px 180px;
-    margin-top: 48px;
-    font-size: 14px;
+    margin-top: 32px;
+    font-size: 15px;
     font-weight: 400;
-    color: #6b7280;
-    line-height: 1.7;
+    color: rgb(1 12 40 / .7);
+    line-height: 1.6;
     gap: 32px;
   }
 
   .mobileSummary h3 {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .08em;
+    text-transform: none;
+    letter-spacing: 0;
   }
 
   .review {
     grid-column: 1;
     grid-row: 5;
     justify-self: start;
-    margin-top: 48px;
+    margin-top: 32px;
     padding-block: 0 6px;
-    font-size: 15px;
-    font-weight: 500;
+    font-size: 16px;
+    font-weight: 600;
     line-height: 1.5;
-  }
-}
-
-@media (min-width: 1366px) {
-  .title {
-    white-space: nowrap;
   }
 }
 
@@ -374,7 +369,10 @@
 
   .title {
     max-width: 520px;
-    font-size: clamp(34px, 9vw, 44px);
+    font-size: clamp(34px, 8.7vw, 40px);
+    font-weight: 600;
+    line-height: 1.04;
+    letter-spacing: -.025em;
   }
 
   .title span {
@@ -382,6 +380,9 @@
   }
 
   .subtitle {
+    margin-top: 14px;
+    font-size: 16px;
+    line-height: 1.5;
     white-space: nowrap;
   }
 
@@ -396,6 +397,14 @@
 
   .mobileSummary {
     margin-top: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .mobileSummary h3 {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .03em;
   }
 
   .mobileSummary > div {
@@ -404,6 +413,8 @@
 
   .review {
     margin-top: 24px;
+    font-size: 15px;
+    font-weight: 600;
   }
 }
 
