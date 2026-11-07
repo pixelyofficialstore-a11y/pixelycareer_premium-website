@@ -18,4 +18,32 @@
   .mainMobileHero :global(.hero-actions) {
     margin-top: 32px;
   }
+
+  .mainMobileHero :global(.hs) {
+    --rise: 1;
+    --gw: min(64vw, 280px);
+    margin: 88px auto 72px;
+  }
+
+  .mainMobileHero :global(.hs-good) {
+    transform: perspective(900px) rotateY(-5deg) rotateZ(-3deg);
+  }
+
+  .mainMobileHero :global(.hs-pile) {
+    transform: translate(8%, 6%) perspective(900px) rotateX(8deg) scale(.94);
+  }
+
+  .mainMobileHero :global(.hs-chip) {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+  }
+
+  .mainMobileHero :global(.hs-chip-2) {
+    left: -12%;
+  }
+
+  .mainMobileHero :global(.hs-chip-3) {
+    right: -4%;
+  }
 }
