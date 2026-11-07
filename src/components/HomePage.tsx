@@ -10,6 +10,8 @@ import Pricing from "@/components/sections/Pricing";
 import Problem, { ProblemNext } from "@/components/sections/Problem";
 import HomeProblem from "@/components/sections/HomeProblem";
 import Process from "@/components/sections/Process";
+import HomeProcess from "@/components/sections/HomeProcess";
+import HomeWhatsApp from "@/components/ui/HomeWhatsApp";
 import Reviews from "@/components/sections/Reviews";
 import Services from "@/components/sections/Services";
 import HomeServices from "@/components/sections/HomeServices";
@@ -23,7 +25,12 @@ import { JsonLd, breadcrumbJsonLd, faqJsonLd, homeJsonLd } from "@/lib/seo";
 
 /** One template for every market. Each boundary hydrates in its own task, so nothing visibly loads in. */
 export default function HomePage({ market, useHomeProblem = false }: { market: Market; useHomeProblem?: boolean }) {
-  const faq = getHomeFaq(market);
+  const faq = getHomeFaq(market).map((item) => market.path === "/" ? {
+    q: item.q.replace(/[-–—]/g, " "),
+    a: (item.a.includes("[CONFIRM")
+      ? "Place your order online. We confirm the details on WhatsApp and share available payment options there."
+      : item.a).replace(/[-–—]/g, " "),
+  } : item);
   return (
     <>
       <JsonLd data={faqJsonLd(faq)} />
@@ -48,17 +55,17 @@ export default function HomePage({ market, useHomeProblem = false }: { market: M
       </Suspense>
       <Reviews market={market} reviews={getReviews(market.key)} />
       <Suspense>
-        <Process market={market.key} />
+        {market.path === "/" ? <HomeProcess /> : <Process market={market.key} />}
       </Suspense>
       <Suspense>
         <Pricing market={market.key} variant={market.path === "/" ? "compact" : "default"} />
       </Suspense>
       <Suspense>
-        <Faq items={faq} />
+        <Faq items={faq} homepage={market.path === "/"} />
       </Suspense>
       <FinalCta market={market} />
       <Suspense>
-        <StickyBar market={market.key} />
+        {market.path === "/" ? <HomeWhatsApp /> : <StickyBar market={market.key} />}
       </Suspense>
       <Reveal />
     </>

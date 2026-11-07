@@ -16,11 +16,11 @@ export default function FinalCta({ market }: { market: Market }) {
             {localize(market, "Recruiters give your CV seconds.")} <em>Make them count.</em>
           </h2>
           <div className="final-actions">
-            <Link href={orderHref(market)} className="btn btn-white min-h-14 px-8 text-[1.0625rem]" data-cta="cta-order">
-              Start Your Order
+            <Link href={orderHref(market)} className={`btn ${market.path === "/" ? "btn-primary border border-white/50" : "btn-white"} min-h-14 px-8 text-[1.0625rem]`} data-cta={market.path === "/" ? "home-final-order" : "cta-order"}>
+              {market.path === "/" ? "Start your order" : "Start Your Order"}
               <ArrowRight />
             </Link>
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="link-u font-head font-medium" data-cta="cta-whatsapp">
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="link-u font-head font-medium" data-cta={market.path === "/" ? "home-final-whatsapp" : "cta-whatsapp"}>
               Or chat on WhatsApp
             </a>
           </div>

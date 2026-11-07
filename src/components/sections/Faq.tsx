@@ -2,7 +2,7 @@ import Accordion from "@/components/ui/Accordion";
 import { ArrowRight } from "@/components/ui/Icons";
 import { WHATSAPP_URL } from "@/lib/site";
 
-export default function Faq({ items }: { items: { q: string; a: string }[] }) {
+export default function Faq({ items, homepage = false }: { items: { q: string; a: string }[]; homepage?: boolean }) {
   return (
     <section id="faq" aria-labelledby="faq-title" className="section bg-white">
       <div className="wrap grid12 gap-y-14">
@@ -12,8 +12,8 @@ export default function Faq({ items }: { items: { q: string; a: string }[] }) {
             <h2 id="faq-title" className="h2 mt-6">
               Fair <em>questions.</em>
             </h2>
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="link-u font-head mt-6 font-medium" data-cta="faq-whatsapp">
-              Still unsure? Ask us on WhatsApp
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="link-u font-head mt-6 font-medium" data-cta={homepage ? "home-faq-whatsapp" : "faq-whatsapp"}>
+              {homepage ? "Still unsure? Ask on WhatsApp" : "Still unsure? Ask us on WhatsApp"}
               <ArrowRight />
             </a>
           </div>

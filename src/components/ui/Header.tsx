@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { MARKETS, orderHref } from "@/config/markets";
 import { NAV } from "@/lib/site";
 import { useMarket } from "./useMarket";
 
 export default function Header() {
+  const homepage = usePathname() === "/";
   const market = MARKETS[useMarket()];
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -72,8 +74,8 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center justify-end gap-2 lg:gap-4">
-            <Link href={orderHref(market)} className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta="header-order">
-              Start Your Order
+            <Link href={orderHref(market)} className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta={homepage ? "home-header-order" : "header-order"}>
+              {homepage ? "Start your order" : "Start Your Order"}
             </Link>
             <button
               ref={menuButton}
@@ -117,8 +119,8 @@ export default function Header() {
                   </li>
                 ))}
               </ul>
-              <Link href={orderHref(market)} onClick={() => setOpen(false)} className="btn btn-primary mt-10 w-full" data-cta="menu-order">
-                Start Your Order
+              <Link href={orderHref(market)} onClick={() => setOpen(false)} className="btn btn-primary mt-10 w-full" data-cta={homepage ? "home-menu-order" : "menu-order"}>
+                {homepage ? "Start your order" : "Start Your Order"}
               </Link>
             </nav>
           </div>

@@ -67,7 +67,7 @@ export default function HomeServices({ marketKey }: { marketKey: MarketKey }) {
 
         <ul className={styles.gallery}>
           <li className={styles.card}>
-            <Link href={SERVICES[0].href} className={styles.service}>
+            <Link href={SERVICES[0].href} className={styles.service} data-cta="home-services-cv">
               <div className={styles.frame} aria-hidden="true">
                 <div className={`${styles.mockup} ${styles.resume}`}>
                   <Image
@@ -89,7 +89,7 @@ export default function HomeServices({ marketKey }: { marketKey: MarketKey }) {
           </li>
 
           <li className={styles.card}>
-            <Link href={SERVICES[1].href} className={styles.service}>
+            <Link href={SERVICES[1].href} className={styles.service} data-cta="home-services-linkedin">
               <div className={styles.frame} aria-hidden="true">
                 <div className={`${styles.mockup} ${styles.profile}`}>
                   <div className={styles.profileBanner} />
@@ -110,7 +110,7 @@ export default function HomeServices({ marketKey }: { marketKey: MarketKey }) {
           </li>
 
           <li className={styles.card}>
-            <Link href={SERVICES[2].href} className={styles.service}>
+            <Link href={SERVICES[2].href} className={styles.service} data-cta="home-services-website">
               <div className={styles.frame} aria-hidden="true">
                 <div className={`${styles.mockup} ${styles.website}`}>
                   <div className={styles.browserBar}>{persona.domain}</div>

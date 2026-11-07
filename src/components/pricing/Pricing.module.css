@@ -1,3 +1,7 @@
+.singleServiceLine { margin: 16px 0 0; color: #6b7280; font-size: 14px; text-align: center; }
+.singleServiceLine a { display: inline-flex; align-items: center; gap: 5px; color: #0048ff; font-weight: 500; }
+.singleServiceLine svg { width: 15px; height: 15px; }
+
 .page {
   --price-blue: #0048ff;
   --price-ink: #010c28;

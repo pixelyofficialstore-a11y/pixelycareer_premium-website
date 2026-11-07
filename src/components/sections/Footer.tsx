@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MARKETS, localizeTitle } from "@/config/markets";
 import { useMarket } from "@/components/ui/useMarket";
@@ -26,6 +27,7 @@ function Col({ title, links }: { title: string; links: { label: string; href: st
 }
 
 export default function Footer() {
+  const homepage = usePathname() === "/";
   const market = MARKETS[useMarket()];
   // Quiet region links, hidden for visitors arriving from an ad. No prices here.
   const [fromAd, setFromAd] = useState(false);
@@ -63,11 +65,11 @@ export default function Footer() {
           <div className="col-span-12 md:col-span-5 lg:col-span-3">
             <h2 className={colTitle}>Contact</h2>
             <ul className="mt-4">
-              <li>
+              {!homepage && <li>
                 <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={linkCls} data-cta="footer-whatsapp">
                   WhatsApp 0370-6404900
                 </a>
-              </li>
+              </li>}
               <li>
                 <a href="https://www.instagram.com/pixelycareers.pk" target="_blank" rel="noopener noreferrer" className={linkCls}>
                   Instagram @pixelycareers.pk

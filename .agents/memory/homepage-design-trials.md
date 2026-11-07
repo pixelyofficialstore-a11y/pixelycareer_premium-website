@@ -56,3 +56,9 @@ The new trust strip is main homepage only, not country homepages.
 **Why:** The user narrowed the original all-homepages trust-strip request to “Only on Main page.”
 
 **How to apply:** Keep this strip off localized homepages unless the user requests expansion. Existing hero and other sections must remain unchanged.
+
+The orders, forms, services, and CTA cleanup brief is restricted to homepage changes for now. Its new forms, database, payments, admin, and other-page changes are deferred.
+
+**Why:** The user appended “for now only fix the main page” to the broader brief.
+
+**How to apply:** Keep CTA and process trials on the root homepage. The user chose the existing Services page as the temporary single-service destination rather than expanding the pricing page.

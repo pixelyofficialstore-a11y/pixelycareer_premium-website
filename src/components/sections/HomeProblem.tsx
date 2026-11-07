@@ -245,8 +245,8 @@ export default function HomeProblem() {
           </div>
         </div>
 
-        <Link href="/free-cv-review" className={styles.review} data-cta="problem-free-review">
-          Get a free CV review <ArrowRight size={17} />
+        <Link href="/free-cv-review" className={styles.review} data-cta="home-problem-review">
+          Free CV review <ArrowRight size={17} />
         </Link>
       </div>
     </section>

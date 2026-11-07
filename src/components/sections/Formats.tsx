@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { FORMATS, FORMAT_LABELS } from "@/config/formats";
 import type { MarketKey } from "@/config/markets";
@@ -178,6 +179,11 @@ export default function Formats({ market }: { market: MarketKey }) {
           </div>
 
         </div>
+        <nav className={styles.serviceLinks} aria-label="Explore document services">
+          <Link href="/services/ats-cv" data-cta="home-formats-cv">ATS CVs <span aria-hidden="true">→</span></Link>
+          <Link href="/services/cover-letter" data-cta="home-formats-cover">Cover letters <span aria-hidden="true">→</span></Link>
+          <Link href="/services/linkedin" data-cta="home-formats-linkedin">LinkedIn <span aria-hidden="true">→</span></Link>
+        </nav>
       </div>
     </section>
   );

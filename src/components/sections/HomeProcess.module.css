@@ -1,0 +1,28 @@
+.section { padding-block: 96px; scroll-margin-top: 0; background: #010c28; color: #fff; }
+.title { margin: 0; text-align: center; font-family: var(--font-head); font-size: clamp(40px, 4.6vw, 60px); font-weight: 500; letter-spacing: -.035em; line-height: 1.1; }
+.title em { color: #4576ff; font-style: normal; }
+.cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 0; margin: 48px 0 0; list-style: none; }
+.card { min-width: 0; padding: 16px 16px 26px; border: 1px solid rgb(255 255 255 / .1); border-radius: 20px; background: linear-gradient(180deg, rgb(255 255 255 / .06), rgb(255 255 255 / .015)); }
+.visual { height: 140px; }
+.number { display: block; margin: 22px 10px 0; font-size: 12px; color: #4576ff; letter-spacing: .08em; }
+.card h3 { margin: 6px 10px 0; font-family: var(--font-head); font-size: 24px; font-weight: 500; line-height: 1.2; }
+.card p { margin: 8px 10px 0; font-size: 15px; color: rgb(255 255 255 / .7); line-height: 1.5; }
+.formPreview { display: grid; width: 144px; gap: 5px; padding: 12px; border-radius: 12px; background: #fff; color: #6b7280; font-size: 9px; box-shadow: 0 16px 32px -14px rgb(0 0 0 / .6); }
+.formPreview i { height: 7px; background: #eef1f6; border-radius: 3px; }
+.formButton { margin-top: 3px; padding: 5px; border-radius: 5px; background: #0048ff; color: #fff; text-align: center; font-size: 10px; }
+.dots { display: none; }
+@media (max-width: 1023px) {
+  .section { padding-block: 64px; }
+  .inner { padding-inline: 0; }
+  .title { padding-inline: 16px; }
+  .cards { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 16px; scroll-padding-inline: 16px; }
+  .cards::-webkit-scrollbar { display: none; }
+  .card { flex: 0 0 82%; max-width: 400px; scroll-snap-align: start; }
+  .dots { display: flex; justify-content: center; margin-top: 20px; }
+  .dots button { display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: transparent; cursor: pointer; }
+  .dots span { width: 6px; height: 6px; border-radius: 999px; background: rgb(255 255 255 / .3); }
+  .dots button[aria-pressed="true"] span { width: 20px; background: #4576ff; }
+}
+@media (max-width: 767px) {
+  .title em { display: block; }
+}

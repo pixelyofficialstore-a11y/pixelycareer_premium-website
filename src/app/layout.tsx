@@ -51,7 +51,7 @@ const STRUCTURED_DATA = {
 };
 
 // The server sends en-US. This sets the market home's language before anything is read.
-const SET_LANG = `document.documentElement.lang={"/pk":"en-PK","/ae":"en-AE","/sa":"en-SA","/uk":"en-GB"}[location.pathname]||"en-US";var p=location.pathname;if(p==="/order"||p.indexOf("/order/")===0||p==="/free-cv-review")document.documentElement.setAttribute("data-no-bar","");try{if(sessionStorage.getItem("pixely-bar-closed"))document.documentElement.setAttribute("data-bar-closed","")}catch(e){}`;
+const SET_LANG = `document.documentElement.lang={"/pk":"en-PK","/ae":"en-AE","/sa":"en-SA","/uk":"en-GB"}[location.pathname]||"en-US";var p=location.pathname;if(p==="/"||p==="/order"||p.indexOf("/order/")===0||p==="/free-cv-review")document.documentElement.setAttribute("data-no-bar","");try{if(sessionStorage.getItem("pixely-bar-closed"))document.documentElement.setAttribute("data-bar-closed","")}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

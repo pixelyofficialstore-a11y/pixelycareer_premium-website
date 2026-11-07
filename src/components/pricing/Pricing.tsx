@@ -145,8 +145,8 @@ export default function Pricing({
                       <PriceAmount label={p.priceLabel} />
                     </div>
                     <p className={styles.resultLine}><ArrowIcon className={styles.resultArrow} /><span>{m.pricingResults[p.id]}</span></p>
-                    <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={`pricing-choose-${p.id}`}>
-                      {content.button}<ArrowIcon />
+                    <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended || compact ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`} aria-label={compact ? `Start your order for ${content.name}` : undefined}>
+                      {compact ? "Start your order" : content.button}<ArrowIcon />
                     </Link>
                     {compact ? (
                       <div className={styles.compactSupportRow}>
@@ -195,6 +195,7 @@ export default function Pricing({
               </a>
             </nav>
           )}
+          {compact && <p className={styles.singleServiceLine}>Need just one service? <Link href={`/services?m=${market}`} data-cta="home-pricing-services">See single services <ArrowIcon /></Link></p>}
         </div>
       </section>
 

@@ -24,7 +24,7 @@ export default function AnnouncementBar() {
   const path = usePathname();
   const market = MARKETS[useMarket()];
   const [campaign, setCampaign] = useState<string | null>(null);
-  const hidden = isBarHidden(path);
+  const hidden = isBarHidden(path) || path === "/";
 
   // Moving between pages with and without a bar: the header and page spacing follow --bar-h.
   useLayoutEffect(() => {
