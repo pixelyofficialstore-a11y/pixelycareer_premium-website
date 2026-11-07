@@ -38,3 +38,9 @@ For the formats trial, match the hero headline typography on both desktop and mo
 **Why:** The user rejected the smaller, lighter heading and extra subtitle, captions and service links.
 
 **How to apply:** Reuse the hero typography instead of approximating it with separate size and weight values. Retain accessible sample labels without adding visible text.
+
+Keep the desktop formats samples at a moderate, readable size, with compact surrounding spacing.
+
+**Why:** The user rejected both undersized samples from viewport-height subtraction and the subsequent oversized version.
+
+**How to apply:** Use bounded width-based sizing rather than large swings based on viewport height. Preserve A4 proportions and balance the samples with the headline.
