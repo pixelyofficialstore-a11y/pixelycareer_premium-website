@@ -45,7 +45,7 @@ html[data-no-bar] {
   --bar-h: 0px;
 }
 
-/* /ae hero: one number drives the rise, one the fan-out, two the cursor tilt */
+/* Hero: one number drives the rise, one the fan-out, two the cursor tilt */
 @property --rise {
   syntax: "<number>";
   inherits: true;
@@ -124,19 +124,12 @@ body {
   font-weight: 600;
 }
 .h1 {
-  font-size: clamp(52px, 5.8vw, 88px);
+  font-size: clamp(52px, 5.6vw, 84px);
   line-height: 1;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
-/* "from the stack." needs about 7.2em: narrow phones give "stack." its own line */
-.h1-last {
-  display: block;
-}
-@media (min-width: 430px) {
-  .h1-last {
-    display: inline;
-  }
+@media (min-width: 1024px) {
   .h1 > span {
     white-space: nowrap;
   }
@@ -151,6 +144,9 @@ body {
 :is(.h1, .h2, .page-h1) em {
   font-style: normal;
   color: var(--color-vivid);
+}
+.on-dark .h2 em {
+  color: var(--color-periwinkle);
 }
 .on-blue .h2 em {
   color: var(--color-cyan-accent);
@@ -215,6 +211,15 @@ body {
 .btn-primary {
   background: var(--color-vivid);
   color: #fff;
+}
+.btn-outline {
+  color: var(--color-navy);
+  background: #fff;
+  border: 1.5px solid var(--color-navy);
+}
+.btn-outline:hover {
+  color: #fff;
+  background: var(--color-navy);
 }
 .btn-primary:hover {
   background: var(--color-royal);
@@ -312,138 +317,74 @@ html[data-intro="on"] .word > span {
 .hero-copy {
   padding-top: calc(104px + var(--bar-h));
 }
-.hero-eyebrow {
-  font-size: 14px;
-  line-height: 1.4;
-  letter-spacing: 0.02em;
-  color: var(--color-vivid);
+.hero-sub {
+  max-width: 520px;
+  margin-top: 24px;
+  font-size: 20px;
+  line-height: 1.5;
+  color: rgb(1 12 40 / 0.75);
 }
-.hero-late {
-  animation: hero-late 400ms ease-out 800ms both;
+.hero-actions {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 40px;
 }
-@keyframes hero-late {
-  from {
-    opacity: 0;
+@media (min-width: 640px) {
+  .hero-actions {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
   }
 }
+.hero-cue {
+  display: none;
+}
 
-/* The three CVs. --gw is the good CV's width; everything else follows from it. */
-.cv-comp {
-  --gw: min(60vw, 420px);
+/* CV images */
+.cv-sheet {
   position: relative;
-  width: var(--gw);
-  aspect-ratio: 1655 / 2340;
-  margin: 40px 5% 64px auto;
-}
-.cv-move {
-  position: absolute;
-  inset: 0;
-  transform-origin: 0 0;
-}
-.cv-move-a,
-.cv-move-b {
-  width: 94%;
-  height: auto;
-  aspect-ratio: 1655 / 2340;
-  top: 4%;
-}
-.cv-move-a {
-  left: -22%;
-}
-.cv-move-b {
-  left: -34%;
-  top: 11%;
-  opacity: 0.85;
-}
-.cv-move-good .cv-tilt {
-  transform: rotate(3deg);
-}
-.cv-move-a .cv-tilt {
-  transform: rotate(-5deg);
-}
-.cv-move-b .cv-tilt {
-  transform: rotate(-10deg);
-}
-.cv-paper {
-  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1.4142;
   overflow: hidden;
-  aspect-ratio: 1655 / 2340;
-  background: #fff;
-  border: 1px solid #e1e4ea;
+  border: 1px solid #dfe3ea;
   border-radius: 4px;
-  box-shadow:
-    0 1px 2px rgb(1 12 40 / 0.06),
-    0 8px 18px -8px rgb(1 12 40 / 0.16);
+  background: #fff;
 }
-.cv-move-good .cv-paper {
-  box-shadow:
-    0 2px 4px rgb(1 12 40 / 0.08),
-    0 18px 34px -12px rgb(1 12 40 / 0.26),
-    0 44px 80px -28px rgb(1 12 40 / 0.34);
-}
-.cv-img {
+
+.cv-image {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
 }
 
-/* Load: H1 words first, then the bad CVs fan out from a straight stack, then the good CV slides on top. */
-.cv-move-a .cv-load {
-  animation: cv-fan-a 300ms ease-out 300ms both;
-}
-.cv-move-b .cv-load {
-  animation: cv-fan-b 300ms ease-out 300ms both;
-}
-.cv-move-good .cv-load {
-  animation: cv-slide 500ms var(--ease-out-soft) 600ms both;
-}
-@keyframes cv-fan-a {
-  from {
-    transform: translateX(34%) rotate(5deg);
-  }
-}
-@keyframes cv-fan-b {
-  from {
-    transform: translate(48%, -7%) rotate(10deg);
-  }
-}
-/* Slide only, no fade: a CV that is invisible until the animation runs would delay LCP. */
-@keyframes cv-slide {
-  from {
-    transform: translateY(30%);
-  }
-}
-html[data-intro="on"] :is(.cv-load, .hero-late) {
-  animation-play-state: paused;
-}
-
-/* /ae hero: the best CV comes out of the bad stack. Everything below is written from --rise. */
-.ae-stack {
-  --gw: min(56vw, 420px);
+/* Hero stack. Everything below is written from --rise, so the start and end states exist without any script. */
+.hs {
+  --gw: min(58vw, 420px);
   position: relative;
   width: var(--gw);
   aspect-ratio: 1 / 1.4142;
-  margin: 88px 4% 72px auto;
+  margin: 104px auto 72px;
   font-size: calc(var(--gw) / 100);
-  line-height: 1.5;
-  text-align: left;
 }
-.ae-pile,
-.ae-good {
+.hs-pile,
+.hs-good {
   position: absolute;
   inset: 0;
   will-change: transform;
 }
-.ae-pile {
+.hs-pile {
   opacity: calc(1 - var(--rise) * 0.4);
-  filter: blur(0.6px);
-  transform: translate(calc(-20% - var(--rise) * 5em), calc(-1% + var(--rise) * 1.5em)) perspective(373em) rotateX(calc(30deg + var(--my) * 0.6)) rotateY(calc(6deg + var(--mx) * 0.6)) rotateZ(-14deg) scale(0.92);
-  animation: ae-fan 400ms ease-out 300ms both;
+  filter: grayscale(0.75) contrast(0.85) blur(1px);
+  transform: translate(calc(-12% - var(--rise) * 5em), calc(-1% + var(--rise) * 1.5em)) perspective(240em) rotateX(calc(22deg + var(--my) * 0.6)) rotateY(calc(10deg + var(--mx) * 0.6)) scale(0.92);
+  animation: hs-fan 400ms ease-out 300ms both;
 }
-html[data-intro="on"] .ae-pile {
+html[data-intro="on"] .hs-pile {
   animation-play-state: paused;
 }
-@keyframes ae-fan {
+@keyframes hs-fan {
   from {
     --fan: 0;
   }
@@ -451,400 +392,145 @@ html[data-intro="on"] .ae-pile {
     --fan: 1;
   }
 }
-.ae-sheet {
+.hs-sheet {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border: 1px solid #c9ccd3;
-  border-radius: 0.8em;
-  background: #e9ebef;
-  box-shadow: 0 0.4em 1.4em -0.4em rgb(1 12 40 / 0.28);
-  transform: translate(calc(var(--dx) * var(--fan) * 1em), calc(var(--dy) * var(--fan) * 1em)) rotate(calc(var(--a) * var(--fan) * 1deg));
+  border-radius: 4px;
+  background: #e8eaef;
+  box-shadow: 0 0.4em 1.6em -0.4em rgb(1 12 40 / 0.3);
+  transform: translate(calc(var(--dx) * var(--fan) * 1em), calc(var(--dy) * var(--fan) * 1em)) rotate(calc(-8deg + var(--a) * var(--fan) * 1deg));
 }
-.ae-good {
-  transform: translate(calc((1 - var(--rise)) * -20%), calc((1 - var(--rise)) * -1%)) perspective(373em) rotateX(calc((1 - var(--rise)) * 30deg + var(--rise) * 4deg + var(--my))) rotateY(calc((1 - var(--rise)) * 6deg - var(--rise) * 5deg + var(--mx)))
-    rotateZ(calc((1 - var(--rise)) * -14deg - var(--rise) * 4deg)) scale(calc(0.92 + var(--rise) * 0.08)) translateY(calc((1 - var(--rise)) * -20%));
+.hs-plain {
+  border: 1px solid #d3d6dd;
 }
-.ae-good-shadow {
+.hs-good {
+  transform: translate(calc((1 - var(--rise)) * -12%), calc((1 - var(--rise)) * -1%)) perspective(240em) translateZ(calc(var(--rise) * (1 - var(--rise)) * 60em)) rotateX(calc((1 - var(--rise)) * 22deg + var(--rise) * 4deg + var(--my))) rotateY(calc((1 - var(--rise)) * 10deg - var(--rise) * 7deg - var(--rise) * (1 - var(--rise)) * 60deg + var(--mx))) rotateZ(calc((1 - var(--rise)) * -8deg - var(--rise) * 4deg))
+    scale(calc(0.92 + var(--rise) * 0.08)) translateY(calc((1 - var(--rise)) * -20%));
+}
+.hs-shadow {
   position: absolute;
   inset: 0;
-  border-radius: 0.8em;
-  opacity: calc((var(--rise) - 0.35) * 1.6);
+  border-radius: 4px;
+  opacity: calc((var(--rise) - 0.3) * 1.5);
+  transition: opacity 300ms ease;
   box-shadow:
     0 4em 8em -2em rgb(1 12 40 / 0.34),
     0 10em 18em -6em rgb(1 12 40 / 0.3);
 }
 /* The clip is what keeps it tucked: only the top 20% shows above the top sheet, then it opens as the CV comes out. */
-.ae-paper {
+.hs-paper {
   position: relative;
   height: 100%;
-  overflow: hidden;
-  border: 1px solid #dfe3ea;
-  border-radius: 0.8em;
-  color: var(--color-navy);
+  filter: grayscale(calc(1 - var(--rise)));
+  clip-path: inset(-30% -30% max(-30%, calc(80% - var(--rise) * 125%)) -30%);
+}
+/* A market with a second good CV spins between the two */
+.hs-flip {
+  position: relative;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: perspective(900em) rotateY(var(--flip, 0deg));
+  transition: transform 1100ms cubic-bezier(0.6, 0, 0.2, 1);
+}
+.is-spinning .hs-shadow {
+  opacity: 0;
+}
+/* Once out, the CV floats gently */
+@media (prefers-reduced-motion: no-preference) {
+  .chips-on .hs-paper {
+    animation: hs-idle 4.5s ease-in-out infinite alternate;
+  }
+}
+@keyframes hs-idle {
+  to {
+    translate: 0 -8px;
+  }
+}
+.hs-face {
+  position: absolute;
+  inset: 0;
   background: #fff;
-  clip-path: inset(-1px -1px max(0%, calc(80% - var(--rise) * 125%)) -1px);
+  backface-visibility: hidden;
 }
-/* Greyed while it is in the pile */
-.ae-paper::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: #c9ccd3;
-  opacity: calc((1 - var(--rise) * 1.5) * 0.5);
-  pointer-events: none;
+.hs-face-back {
+  transform: rotateY(180deg);
 }
-.ae-band {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 23em;
-  padding: 0 8em;
-  color: #fff;
-  background: var(--color-vivid);
-}
-.ae-band::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: #8e939e;
-  opacity: calc(1 - var(--rise) * 1.4);
-}
-.ae-band > * {
-  position: relative;
-}
-.ae-name {
-  font-family: var(--font-head);
-  font-size: 8.4em;
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-}
-.ae-role {
-  margin-top: 0.3em;
-  font-size: 3.7em;
-  font-weight: 500;
-  line-height: 1.2;
-}
-.ae-mark {
-  width: 9.5em;
-  height: auto;
-}
-.ae-pixel {
-  position: absolute;
-  top: 1.8em;
-  right: 1.8em;
-  width: 2em;
-  height: 2em;
-  background: var(--color-cyan-accent);
-}
-.ae-body {
-  padding: 3em 8em 0;
-}
-.ae-contact {
-  font-size: 2.3em;
-  line-height: 1.45;
-  color: rgb(1 12 40 / 0.68);
-}
-.ae-h {
-  margin-top: 1.7em;
-  margin-bottom: 0.65em;
-  padding-bottom: 0.3em;
-  border-bottom: 1px solid var(--color-vivid);
-  font-size: 2.4em;
-  font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.1em;
-  color: var(--color-vivid);
-}
-.ae-t {
-  font-size: 2.45em;
-  line-height: 1.5;
-  color: rgb(1 12 40 / 0.72);
-}
-.ae-r {
-  display: flex;
-  justify-content: space-between;
-  gap: 1em;
-  margin-top: 0.5em;
-  font-size: 2.45em;
-  line-height: 1.45;
-}
-.ae-r b {
-  font-weight: 600;
-}
-.ae-r span {
-  flex: none;
-  font-size: 0.86em;
-  color: rgb(1 12 40 / 0.68);
-}
-.ae-ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.ae-ul li {
-  position: relative;
-  padding-left: 1.2em;
-  font-size: 2.4em;
-  line-height: 1.5;
-  color: rgb(1 12 40 / 0.72);
-}
-.ae-ul li::before {
-  content: "";
-  position: absolute;
-  top: 0.58em;
-  left: 0.2em;
-  width: 0.34em;
-  height: 0.34em;
-  background: var(--color-vivid);
-}
-/* The weak CVs */
-.ae-bad {
+.hs-face .cv-sheet {
   height: 100%;
-  color: #5f646e;
 }
-.ae-bad-t {
-  overflow: hidden;
-  font-family: Georgia, serif;
-  font-size: 1.9em;
-  line-height: 1.32;
-}
-.ae-bad-h {
-  margin-top: 1.1em;
-  margin-bottom: 0.4em;
-  font-size: 2.1em;
-  font-weight: 600;
-  line-height: 1.2;
-}
-.ae-bad-box {
-  margin: 0.9em 0 0.45em;
-  padding: 0.3em 0.5em;
-  font-size: 2.2em;
-  font-weight: 600;
-  line-height: 1.25;
-  color: #fff;
-  background: #858a94;
-}
-.ae-bad-box-light {
-  color: #5f646e;
-  background: #d6d9de;
-}
-.ae-photo {
-  position: relative;
-  display: block;
-  flex: none;
-  width: 19em;
-  height: 23em;
-  overflow: hidden;
-  background: #aeb2b9;
-}
-.ae-photo i {
-  position: absolute;
-  top: 18%;
-  left: 31%;
-  width: 38%;
-  height: 32%;
-  border-radius: 50%;
-  background: #dcdee2;
-}
-.ae-photo b {
-  position: absolute;
-  bottom: -14%;
-  left: 14%;
-  width: 72%;
-  height: 50%;
-  border-radius: 50%;
-  background: #dcdee2;
-}
-.ae-bars span {
-  display: block;
-  height: 1.1em;
-  margin-top: 1.1em;
-  background: #a4a8b0;
-}
-.ae-bars i {
-  display: block;
-  height: 100%;
-  background: #e2e4e7;
-}
-.ae-bad-side {
-  display: grid;
-  grid-template-columns: 34% 1fr;
-}
-.ae-side {
-  padding: 4em 3em;
-  color: #eef0f2;
-  background: #8b9099;
-}
-.ae-side .ae-photo {
-  margin-inline: auto;
-}
-.ae-main {
-  min-width: 0;
-  padding: 4em 3.4em;
-}
-.ae-bad-name {
-  font-family: Georgia, serif;
-  font-size: 5em;
-  font-weight: 600;
-  line-height: 1.1;
-}
-.ae-bad-cols {
-  position: relative;
-  padding: 5em 4.5em;
-}
-.ae-bad-cols > .ae-photo {
-  position: absolute;
-  top: 3em;
-  right: 4em;
-}
-.ae-bad-title {
-  max-width: 62%;
-  padding-bottom: 0.2em;
-  border-bottom: 0.08em solid currentColor;
-  font-family: Georgia, serif;
-  font-size: 4.4em;
-  font-weight: 600;
-  line-height: 1.15;
-}
-.ae-two {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3.6em;
-  margin-top: 14em;
-}
-.ae-bad-band-top {
-  padding: 3.4em 5em 3em;
-  font-size: 1em;
-  color: #fff;
-  background: #969aa3;
-}
-.ae-bad-band-top {
-  font-family: var(--font-head);
-  font-size: 5.6em;
-  font-weight: 600;
-  line-height: 1.1;
-  padding: 0.6em 0.9em;
-}
-.ae-bad-band-body {
-  padding: 3em 5em;
-}
-.ae-bad-intro {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 3em;
-  max-height: 24em;
-  overflow: hidden;
-}
-/* Floating labels: they belong to the good CV, so they appear as it comes out of the stack */
-.ae-chip {
+/* Chips: they pop in as the CV clears the stack. They sit around it, clear of the name and the summary. */
+.hs-chip {
   position: absolute;
   z-index: 1;
-  opacity: calc((var(--rise) - 0.55) * 2.5);
+  opacity: 0;
+  scale: 0.9;
+  translate: 0 8px;
+  transition:
+    opacity 220ms ease-out,
+    scale 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    translate 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition-delay: calc(var(--i) * 100ms);
   pointer-events: none;
 }
-.ae-chip > span {
+.chips-on .hs-chip {
+  opacity: 1;
+  scale: 1;
+  translate: 0 0;
+}
+.chips-on.is-spinning .hs-chip {
+  opacity: 0;
+  scale: 0.9;
+  translate: 0 8px;
+  transition-delay: 0ms;
+}
+.hs-chip > span {
   display: block;
-  padding: 7px 12px;
+  padding: 7px 11px;
   border-radius: 10px;
   font-family: var(--font-head);
   font-size: 11px;
   font-weight: 500;
   line-height: 1.2;
-  letter-spacing: 0.04em;
   white-space: nowrap;
-  text-transform: uppercase;
   color: var(--color-navy);
   background: #fff;
-  box-shadow: 0 10px 28px -8px rgb(1 12 40 / 0.3);
+  box-shadow: 0 10px 28px -8px rgb(1 12 40 / 0.32);
 }
-.ae-chip-1 {
-  top: 15%;
-  left: -12%;
-  rotate: -4deg;
+.hs-chip-1 {
+  top: -6.5%;
+  right: 3%;
+  rotate: 3deg;
 }
-.ae-chip-2 {
-  top: 58%;
-  right: -7%;
-  rotate: 6deg;
+.hs-chip-2 {
+  top: 60%;
+  left: -27%;
+  rotate: -3deg;
 }
-.ae-chip-3 {
-  bottom: 7%;
-  left: -14%;
-  rotate: 1deg;
-}
-@media (min-width: 1024px) {
-  .ae-chip > span {
-    padding: 10px 16px;
-    border-radius: 12px;
-    font-size: 13px;
-  }
+.hs-chip-3 {
+  bottom: -2%;
+  right: -6%;
+  rotate: 2deg;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .ae-chip > span {
-    animation: ae-chip-float 5s ease-in-out infinite alternate;
+  .hs-chip > span {
+    animation: hs-chip-float 3.2s ease-in-out infinite alternate;
   }
-  .ae-chip-2 > span {
-    animation-duration: 6.5s;
-    animation-delay: -2s;
+  .hs-chip-2 > span {
+    animation-duration: 3.9s;
+    animation-delay: -1.4s;
   }
-  .ae-chip-3 > span {
-    animation-duration: 5.8s;
-    animation-delay: -4s;
+  .hs-chip-3 > span {
+    animation-duration: 3.5s;
+    animation-delay: -2.4s;
   }
 }
-@keyframes ae-chip-float {
+@keyframes hs-chip-float {
   from {
-    translate: 0 -5px;
+    translate: 0 -3px;
   }
   to {
-    translate: 0 5px;
-  }
-}
-/* The Problem section right after this hero: its CVs line up with the top of the cards */
-@media (min-width: 1024px) {
-  .rise-track + .problem .problem-grid {
-    align-items: start;
-  }
-}
-/* "Scroll" cue: out of the layout, and gone as soon as scrolling starts */
-.ae-cue {
-  display: none;
-}
-@media (min-width: 1024px) {
-  .ae-stack {
-    --gw: min(calc((100svh - 240px) / 1.408), 30vw);
-    margin: 0 4% 0 auto;
-  }
-}
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  .rise-track {
-    /* One screen, plus 60vh held in place */
-    height: 160svh;
-    transition:
-      --mx 400ms ease-out,
-      --my 400ms ease-out;
-  }
-  .rise-stage {
-    position: sticky;
-    top: 0;
-    height: 100svh;
-    overflow: clip;
-    background: #fff;
-  }
-  .ae-cue {
-    position: absolute;
-    top: 100%;
-    left: 2px;
-    display: block;
-    margin-top: 2px;
-    font-size: 12.5px;
-    line-height: 1.5;
-    color: rgb(1 12 40 / 0.6);
-    opacity: calc(1 - var(--rise) * 25);
-    pointer-events: none;
+    translate: 0 3px;
   }
 }
 @media (max-width: 1023.98px) and (prefers-reduced-motion: no-preference) {
@@ -859,15 +545,21 @@ html[data-intro="on"] .ae-pile {
   .rise-track {
     --rise: 1;
   }
-  .ae-pile {
+  .hs-pile {
     animation: none;
+  }
+  .hs-chip {
+    opacity: 1;
+    scale: 1;
+    translate: 0 0;
+    transition: none;
   }
 }
 
-/* Problem section */
+/* Problem section: readable at a glance, no overlays on the CVs */
 .problem {
+  padding-block: 80px 40px;
   background: #fff;
-  padding-block: 80px 0;
 }
 .problem-head {
   text-align: center;
@@ -875,115 +567,73 @@ html[data-intro="on"] .ae-pile {
 .problem-title {
   margin-top: 12px;
 }
-.problem-sub {
-  margin-top: 10px;
-  font-size: 1.0625rem;
-  color: rgb(1 12 40 / 0.7);
-}
 .problem-grid {
   margin-top: 32px;
   display: grid;
-  gap: 24px;
+  gap: 28px;
 }
 .p-fig {
   margin: 0;
 }
-.p-cards {
-  display: grid;
-  gap: 16px;
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.p-fig .cv-sheet {
+  box-shadow:
+    0 2px 4px rgb(1 12 40 / 0.06),
+    0 24px 44px -20px rgb(1 12 40 / 0.3);
 }
-.p-card {
-  padding: 32px;
-  background: #fff;
-  border: 1px solid #e6e9f0;
-  border-radius: 20px;
+.p-tag {
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.p-tag-bad {
+  color: #b42318;
+}
+.p-tag-good {
+  color: var(--color-vivid);
+}
+.p-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.p-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid #e6e9f0;
+}
+.p-row:last-child {
+  border-bottom: 0;
 }
 .p-num {
-  display: block;
   font-family: var(--font-head);
+  font-size: 32px;
   font-weight: 600;
-  font-size: 48px;
   line-height: 1;
   letter-spacing: -0.02em;
   color: var(--color-vivid);
 }
 .p-title {
-  margin-top: 14px;
   font-family: var(--font-head);
+  font-size: 19px;
   font-weight: 600;
-  font-size: 22px;
   line-height: 1.25;
   letter-spacing: -0.01em;
-  color: var(--color-navy);
 }
 .p-line {
-  margin-top: 10px;
-  font-size: 15px;
-  line-height: 1.5;
+  margin-top: 6px;
+  font-size: 14.5px;
+  line-height: 1.45;
   color: rgb(1 12 40 / 0.7);
 }
 .p-fix {
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid #e6e9f0;
+  margin-top: 6px;
   font-size: 14px;
+  font-weight: 500;
   line-height: 1.4;
   color: var(--color-vivid);
-}
-.p-dots {
-  display: none;
-}
-
-/* Highlight areas and their numbered markers */
-.hl-zone {
-  position: absolute;
-}
-.hl {
-  position: absolute;
-  inset: 0;
-  border-radius: 6px;
-}
-.hl-bad {
-  background: rgb(220 38 38 / 0.1);
-  border: 1.5px solid rgb(220 38 38 / 0.6);
-}
-.hl-fix {
-  background: rgb(0 72 255 / 0.08);
-  border: 1.5px solid #0048ff;
-}
-.hl-zone b {
-  position: absolute;
-  z-index: 1;
-  top: -12px;
-  left: -12px;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 13px;
-  font-weight: 600;
-  color: #fff;
-  background: var(--color-vivid);
-}
-.hl-story {
-  display: none;
-}
-/* Area 1 on the bad CV starts at the page corner, so its marker stays inside */
-.cv-paper-a .hl-zone:first-of-type b {
-  top: 8px;
-  left: 8px;
-}
-/* Area 1 on the good CV starts where area 2 does, so its marker moves to the empty bottom corner */
-.cv-paper-good .hl-zone:first-of-type b {
-  top: auto;
-  left: auto;
-  right: 8px;
-  bottom: 8px;
 }
 
 /* Two-column layouts, for reduced motion on a large screen too */
@@ -1001,30 +651,28 @@ html[data-intro="on"] .ae-pile {
   .hero-copy {
     padding-top: 0;
   }
-  .cv-comp {
+  .hs {
     --gw: min(calc((100svh - 240px) / 1.408), 30vw);
-    margin: 0 4% 0 auto;
+    margin: 0 6% 0 auto;
   }
-  .cv-move-a {
-    left: -32%;
-  }
-  .cv-move-b {
-    left: -46%;
-    filter: blur(1px);
+  .hs-chip > span {
+    padding: 9px 14px;
+    border-radius: 12px;
+    font-size: 13px;
   }
   .problem {
-    padding-top: 120px;
+    padding-block: 104px 40px;
   }
   .problem-grid {
-    margin-top: 20px;
-    grid-template-columns: minmax(0, 1fr) clamp(300px, 26vw, 360px) minmax(0, 1fr);
-    gap: clamp(24px, 3.4vw, 56px);
+    margin-top: 24px;
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 1.25fr) minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 72px);
     align-items: center;
   }
   .p-fig {
-    width: min(100%, calc((100svh - 344px) / 1.4139));
+    width: min(100%, calc((100svh - 340px) / 1.4142));
   }
-  .p-fig-a {
+  .p-fig-bad {
     justify-self: end;
   }
   .p-fig-good {
@@ -1032,337 +680,221 @@ html[data-intro="on"] .ae-pile {
   }
 }
 
-/* The scroll story: large screens with motion allowed */
+/* Held in place while the animation scrubs: large screens with motion allowed */
 @media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  .story-track {
-    /* Stage, plus one screen of travel, plus 150vh in place */
-    height: 350svh;
+  .rise-track {
+    /* One screen, plus 160vh held in place: the rise takes about 100vh, then the CV stays out */
+    height: 260svh;
+    transition:
+      --mx 400ms ease-out,
+      --my 400ms ease-out;
   }
-  .story-stage {
+  .rise-stage {
     position: sticky;
     top: 0;
     height: 100svh;
     overflow: clip;
-    overflow-clip-margin: 90px;
     background: #fff;
   }
-  .story-track .hero,
-  .story-track .problem {
+  .hero-cue {
     position: absolute;
-    inset: 0 0 auto;
-    height: 100svh;
-    background: transparent;
-  }
-  .story-track .hero {
-    z-index: 2;
-    pointer-events: none;
-  }
-  .story-track .hero-copy {
-    pointer-events: auto;
-  }
-  .story-track .problem {
-    z-index: 3;
-    pointer-events: none;
-    padding-block: 92px 0;
-  }
-  /* Hidden until the CVs have cleared its space: see CvStory */
-  .story-track .problem-head {
-    opacity: 0;
-  }
-  .story-track .p-cards {
-    grid-template: 1fr / 1fr;
-  }
-  .story-track .p-card {
-    grid-area: 1 / 1;
-    opacity: 0;
-    pointer-events: auto;
-  }
-  .story-track .p-dots {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 16px;
-    opacity: 0;
-  }
-  .story-track .p-dots i {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-vivid);
-    opacity: 0.25;
-  }
-  .story-track .hl-story {
+    top: 100%;
+    left: 2px;
     display: block;
-  }
-  .story-track .hl-story .hl {
-    opacity: 0;
-  }
-  .story-track .hl-story b {
-    opacity: 0;
-  }
-  /* The traveling CVs take these places: the section keeps only their reserved space */
-  .story-track .p-fig .cv-paper {
-    visibility: hidden;
-  }
-  .story-track .p-fig .cv-img {
-    display: none;
-  }
-}
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) and (max-height: 700px) {
-  .story-track .p-card {
-    padding: 22px;
-  }
-  .story-track .p-title {
-    font-size: 19px;
-  }
-  .story-track .p-num {
-    font-size: 38px;
+    margin-top: 10px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: rgb(1 12 40 / 0.6);
+    opacity: calc(1 - var(--rise) * 25);
+    pointer-events: none;
   }
 }
 
-/* What we build: bento */
-.bento {
-  margin-top: 40px;
+/* What we build: three equal layers */
+.layers {
+  list-style: none;
+  margin: 40px 0 0;
+  padding: 0;
   display: grid;
   gap: 20px;
 }
-.card.bento-large,
-.card.bento-small {
+.layer {
   position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 0;
-}
-.bento-visual {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  overflow: hidden;
+  border: 1px solid #e6e9f0;
+  border-radius: 20px;
   background: #fff;
+  transition:
+    transform 300ms var(--ease-out-soft),
+    box-shadow 300ms ease;
 }
-.bento-large .bento-visual {
-  height: 380px;
-  background: var(--color-mist);
+.layer:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px -28px rgb(1 12 40 / 0.35);
 }
-.bento-small .bento-visual {
-  background: var(--color-mist);
-}
-.bento-tilt {
+.layer-visual {
+  position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: center;
+  height: 280px;
+  overflow: hidden;
+  padding-top: 32px;
+  background: linear-gradient(180deg, #eef3ff, #f6f8fc);
+}
+.layer-cv {
+  width: 72%;
+  box-shadow: 0 20px 40px -20px rgb(1 12 40 / 0.4);
+}
+.layer-mock {
+  display: flex;
   justify-content: center;
   width: 100%;
-  height: 100%;
-  transition: transform 400ms var(--ease-out-soft);
+  zoom: 0.85;
 }
-.bento-cv {
-  width: auto;
-  height: 90%;
-  border: 1px solid #e1e4ea;
-  border-radius: 4px;
-  rotate: -3deg;
-  box-shadow: 0 24px 40px -18px rgb(1 12 40 / 0.35);
+.layer-copy {
+  padding: 24px 32px 30px;
 }
-.bento-copy {
-  padding: 28px 32px 22px;
+.layer-n {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-vivid);
 }
 @media (min-width: 1024px) {
-  .bento {
-    height: clamp(440px, calc(100svh - 300px), 620px);
-    grid-template-columns: 1fr 1.1fr;
-    grid-template-rows: 1fr 1fr;
+  .layers {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .bento-large {
-    grid-row: span 2;
-  }
-  .card.bento-large {
-    flex-direction: row-reverse;
-    align-items: stretch;
-  }
-  .bento-large .bento-visual {
-    flex: 1 1 58%;
-    min-width: 0;
-    height: auto;
-  }
-  .card.bento-small {
-    flex-direction: row;
-    align-items: stretch;
-    min-height: 0;
-  }
-  .bento-small .bento-visual {
-    flex: 1 1 44%;
-    min-width: 0;
-    height: auto;
-  }
-  .bento-mock {
-    zoom: 0.6;
-  }
-  .bento-small .bento-copy {
-    flex: 1 1 56%;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 18px 22px;
-  }
-  .bento-small .p-num {
-    font-size: 36px;
-  }
-  .bento-copy .card-title {
-    font-size: clamp(19px, 1.6vw, 22px);
-  }
-  .bento-large .bento-copy {
-    flex: 1 1 42%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 32px;
-  }
-  .bento-large .bento-copy .p-num {
-    font-size: 36px;
-  }
-  .bento-large .bento-copy .mt-3,
-  .bento-small .bento-copy .mt-3 {
-    margin-top: 6px;
+  .layer-visual {
+    height: clamp(220px, calc(100svh - 500px), 340px);
   }
 }
 
-/* How it works: navy, one screen */
-.proc-area {
-  position: relative;
-  margin-top: 36px;
-}
-.proc-svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-.proc-steps {
+/* How it works: one calm row on navy */
+.steps {
   list-style: none;
-  margin: 0;
+  margin: 48px 0 0;
+  padding: 0;
   display: grid;
-  gap: 36px;
-  padding: 0 0 0 32px;
+  gap: 16px;
 }
-.proc-step {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  column-gap: 14px;
-  row-gap: 12px;
-  align-items: start;
+.step {
+  padding: 16px 16px 26px;
+  border: 1px solid rgb(255 255 255 / 0.1);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.015));
 }
-.proc-num {
-  display: block;
-  font-family: var(--font-head);
+.step-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 30%, rgb(69 118 255 / 0.28), rgb(69 118 255 / 0.05) 70%);
+}
+.step-n {
+  margin: 22px 10px 0;
+  font-size: 13px;
   font-weight: 600;
-  font-size: 48px;
+  letter-spacing: 0.1em;
+  color: var(--color-periwinkle);
+}
+.step-title {
+  margin: 6px 10px 0;
+  font-family: var(--font-head);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+.step-line {
+  margin: 8px 10px 0;
+  font-size: 15px;
+  line-height: 1.5;
+  text-wrap: pretty;
+  color: rgb(255 255 255 / 0.75);
+}
+.mini {
+  display: flex;
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--color-navy);
+  background: #fff;
+  box-shadow: 0 16px 32px -14px rgb(0 0 0 / 0.6);
+}
+.mini-pack {
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 18px;
+  font-weight: 500;
+}
+.mini-pack b {
+  font-size: 20px;
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.02em;
   color: var(--color-vivid);
-  transition: color 250ms ease;
 }
-.proc-copy,
-.proc-mini {
-  transition:
-    opacity 350ms ease,
-    transform 350ms var(--ease-out-soft);
+.mini-chat {
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 14px 14px 3px 14px;
+  background: #dcf8c6;
 }
-.proc-mini {
-  grid-column: 2;
+.mini-draft {
+  position: relative;
+  flex-direction: column;
+  gap: 6px;
+  width: 104px;
+  padding: 26px 14px 16px;
 }
-.proc-visual {
-  width: 120px;
-  min-height: 72px;
-  padding: 10px;
-  border-radius: 10px;
+.mini-draft em {
+  position: absolute;
+  top: 8px;
+  left: 14px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--color-vivid);
 }
-.proc-bubble {
-  min-height: 0;
-  border-bottom-right-radius: 2px;
+.mini-draft i {
+  height: 4px;
+  border-radius: 2px;
+  background: #d8dce6;
 }
-.proc-armed .proc-step:not(.is-on) .proc-num {
-  color: rgb(255 255 255 / 0.3);
+.mini-draft i:nth-child(2) {
+  width: 60%;
+  background: var(--color-navy);
 }
-.proc-armed .proc-step:not(.is-on) :is(.proc-copy, .proc-mini) {
-  opacity: 0;
-  transform: translateY(16px);
+.mini-done {
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px 12px 12px;
+  font-weight: 500;
+}
+.mini-done b {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--color-vivid);
+}
+@media (min-width: 640px) {
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 @media (min-width: 1024px) {
-  .proc-frame {
-    display: flex;
-  }
-  .proc-inner {
-    display: flex;
-    flex-direction: column;
-  }
-  .proc-area {
-    margin-top: 24px;
-    flex: 1;
-    min-height: 460px;
-  }
-  .proc-steps {
-    height: 100%;
-    padding: 0;
-    gap: 0;
-    grid-template-columns: 1fr clamp(120px, 14vw, 200px) 1fr;
-    grid-auto-rows: 1fr;
-  }
-  .proc-step {
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    column-gap: 18px;
-  }
-  .proc-left {
-    grid-column: 1;
-  }
-  .proc-right {
-    grid-column: 3;
-  }
-  .proc-left:nth-child(1) {
-    grid-row: 1;
-  }
-  .proc-right:nth-child(2) {
-    grid-row: 2;
-  }
-  .proc-left:nth-child(3) {
-    grid-row: 3;
-  }
-  .proc-right:nth-child(4) {
-    grid-row: 4;
-  }
-  .proc-mini {
-    grid-column: 3;
-  }
-}
-/* Pinned on market homes only, and only on large screens with motion allowed */
-@media (min-width: 1024px) and (prefers-reduced-motion: no-preference) {
-  .proc-pin {
-    /* One screen, plus 120vh of drawing */
-    height: 220svh;
-  }
-  .proc-pin .proc-frame {
-    position: sticky;
-    top: 0;
-    height: 100svh;
-    padding: 92px 0 28px;
-  }
-  .proc-pin .proc-inner {
-    height: 100%;
-  }
-  .proc-pin .proc-area {
-    min-height: 0;
-  }
-  .proc-pin .h2 {
-    margin-top: 8px;
-  }
-}
-@media (max-width: 1023.98px), (prefers-reduced-motion: reduce) {
-  .proc-pin {
-    padding-block: 80px;
+  .steps {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
   }
 }
 
@@ -1572,56 +1104,6 @@ html[data-intro="on"] .ae-pile {
   border-color: #d8bc86;
   color: var(--color-navy);
 }
-.price-toggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 44px;
-  cursor: pointer;
-  font-family: var(--font-head);
-  font-weight: 500;
-  text-decoration: underline;
-  text-underline-offset: 6px;
-  text-decoration-thickness: 1px;
-}
-.price-table-box {
-  margin-top: 24px;
-  padding: 8px 20px;
-  border-radius: 20px;
-  background: #fff;
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-}
-.price-table {
-  width: 100%;
-  min-width: 640px;
-  border-collapse: collapse;
-  font-size: 14.5px;
-}
-.price-table :is(th, td) {
-  padding: 14px 12px;
-  border-bottom: 1px solid #e6e9f0;
-  text-align: center;
-}
-.price-table thead th {
-  font-size: 13px;
-  font-weight: 600;
-  color: rgb(1 12 40 / 0.7);
-}
-.price-table thead .price-th-gold {
-  color: #7a6030;
-}
-.price-table :is(th:first-child) {
-  text-align: left;
-  font-weight: 500;
-}
-.price-yes {
-  font-weight: 600;
-  color: var(--color-vivid);
-}
-.price-no {
-  color: rgb(1 12 40 / 0.55);
-}
 .price-strip {
   display: flex;
   flex-wrap: wrap;
@@ -1634,31 +1116,6 @@ html[data-intro="on"] .ae-pile {
   background: #fff;
   font-size: 15px;
 }
-@media (min-width: 1024px) {
-  /* Shared rows across the three cards, so every price and button lines up */
-  .price-grid {
-    max-width: none;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-rows: repeat(8, auto);
-    column-gap: 28px;
-    row-gap: 0;
-  }
-  .price-grid > li {
-    display: grid;
-    grid-row: span 8;
-    grid-template-rows: subgrid;
-    row-gap: 0;
-  }
-  .price-rec {
-    order: 0;
-    transform: scale(1.04);
-    z-index: 1;
-  }
-  .price-rec.lift:hover {
-    transform: scale(1.04) translateY(-4px);
-  }
-}
-
 /* Reviews */
 .review-row {
   overflow: hidden;
@@ -1709,36 +1166,281 @@ html[data-intro="on"] .ae-pile {
   }
 }
 
-/* Final call to action */
+/* Pricing table */
+.pt-wrap {
+  position: relative;
+}
+.pt {
+  display: none;
+}
+.pt-price {
+  display: block;
+  font-family: var(--font-head);
+  font-size: 40px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.pt-price small {
+  font-size: 0.45em;
+  font-weight: 500;
+  letter-spacing: 0;
+  opacity: 0.7;
+}
+.pt-price-m {
+  margin-top: 16px;
+}
+@media (min-width: 1024px) {
+  .pt {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 15px;
+  }
+  .price-grid {
+    display: none;
+  }
+  .pt-head {
+    position: absolute;
+    z-index: 1;
+    top: 18px;
+    left: 0;
+    width: 25%;
+  }
+  .pt-head .h2 {
+    font-size: clamp(34px, 3.2vw, 48px);
+  }
+  .pt col,
+  .pt th,
+  .pt td {
+    text-align: center;
+  }
+  .pt thead > tr > td {
+    width: 27%;
+  }
+  .pt thead th {
+    position: relative;
+    padding: 26px 20px 20px;
+    vertical-align: top;
+    font-weight: 400;
+    border-radius: 20px 20px 0 0;
+  }
+  .pt thead th > span {
+    display: block;
+  }
+  .pt-name {
+    font-family: var(--font-head);
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .pt-price {
+    margin-top: 10px;
+  }
+  .pt-for {
+    min-height: 40px;
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+    opacity: 0.75;
+  }
+  .pt-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 46px;
+    margin-top: 12px;
+    padding-inline: 12px;
+    border: 1.5px solid var(--color-vivid);
+    border-radius: 999px;
+    font-family: var(--font-head);
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--color-vivid);
+    transition:
+      background-color 200ms ease,
+      color 200ms ease;
+  }
+  .pt-btn:hover {
+    color: #fff;
+    background: var(--color-vivid);
+  }
+  .pt tbody th {
+    font-weight: 500;
+    text-align: left;
+    padding-right: 16px;
+  }
+  .pt tbody th,
+  .pt tbody td {
+    height: 37px;
+    padding-block: 5px;
+    border-top: 1px solid rgb(1 12 40 / 0.08);
+  }
+  .pt-yes {
+    font-weight: 700;
+    color: var(--color-vivid);
+  }
+  .pt-no {
+    color: rgb(1 12 40 / 0.35);
+  }
+  /* Recommended: a white column with a blue outline */
+  .pt .pt-rec {
+    background: #fff;
+    border-left: 2px solid var(--color-vivid);
+    border-right: 2px solid var(--color-vivid);
+  }
+  .pt thead .pt-rec {
+    border-top: 2px solid var(--color-vivid);
+  }
+  .pt tbody tr:last-child .pt-rec {
+    border-bottom: 2px solid var(--color-vivid);
+    border-radius: 0 0 20px 20px;
+  }
+  .pt-rec .pt-btn {
+    color: #fff;
+    background: var(--color-vivid);
+  }
+  .pt-rec .pt-btn:hover {
+    background: var(--color-royal);
+  }
+  .pt-badge {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #fff;
+    background: var(--color-vivid);
+    transform: translateX(-50%);
+  }
+  /* Executive: navy with gold */
+  .pt .pt-exec {
+    color: #fff;
+    background: var(--color-navy);
+    border-top-color: rgb(255 255 255 / 0.12);
+  }
+  .pt tbody tr:last-child .pt-exec {
+    border-radius: 0 0 20px 20px;
+  }
+  .pt-exec .pt-yes {
+    color: var(--color-gold);
+  }
+  .pt-exec .pt-no {
+    color: rgb(255 255 255 / 0.35);
+  }
+  .pt-exec .pt-btn {
+    border-color: var(--color-gold);
+    color: var(--color-navy);
+    background: var(--color-gold);
+  }
+  .pt-exec .pt-btn:hover {
+    border-color: #d8bc86;
+    color: var(--color-navy);
+    background: #d8bc86;
+  }
+}
+
+/* Formats: one row with small arrows at its ends */
+.fm {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 36px;
+}
+.fm-track {
+  flex: 1;
+  min-width: 0;
+  list-style: none;
+  margin: 0;
+  padding: 8px 4px 28px;
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.fm-track::-webkit-scrollbar {
+  display: none;
+}
+.fm-card {
+  flex: none;
+  width: min(70vw, 300px);
+  overflow: hidden;
+  scroll-snap-align: start;
+  border: 1px solid #e6e9f0;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 16px 32px -20px rgb(1 12 40 / 0.35);
+  transition: transform 300ms var(--ease-out-soft);
+}
+.fm-card:hover {
+  transform: translateY(-4px);
+}
+.fm-arrow {
+  flex: none;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  border: 1px solid #d8dce6;
+  border-radius: 50%;
+  color: var(--color-navy);
+  background: #fff;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease,
+    opacity 200ms ease;
+}
+.fm-arrow:hover:not(:disabled) {
+  color: #fff;
+  background: var(--color-vivid);
+  border-color: var(--color-vivid);
+}
+.fm-arrow:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+@media (min-width: 640px) {
+  .fm-arrow {
+    display: flex;
+  }
+}
+
+/* Final call to action: the message, and the CV rising from the bottom edge */
 .final-cta {
-  padding-block: 64px;
+  overflow: hidden;
 }
 .final-grid {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 36px;
+  gap: 40px;
+  padding-top: 72px;
   text-align: center;
 }
 .final-cv {
-  width: 180px;
-}
-@media (prefers-reduced-motion: no-preference) {
-  .final-cv > div {
-    animation: final-float 6s ease-in-out infinite alternate;
-  }
-}
-@keyframes final-float {
-  to {
-    translate: 0 -10px;
-  }
+  width: min(72vw, 300px);
+  height: 240px;
+  overflow: hidden;
+  rotate: -3deg;
+  margin-bottom: -16px;
+  border-radius: 4px 4px 0 0;
+  box-shadow: 0 30px 70px -10px rgb(1 12 40 / 0.6);
 }
 .final-actions {
   margin-top: 28px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 @media (min-width: 640px) {
   .final-actions {
@@ -1748,27 +1450,28 @@ html[data-intro="on"] .ae-pile {
   }
 }
 @media (min-width: 1024px) {
-  .final-cta {
-    padding-block: 72px;
-    max-height: 560px;
-  }
   .final-grid {
     flex-direction: row;
-    justify-content: center;
-    gap: clamp(48px, 7vw, 112px);
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 64px;
+    padding-top: 0;
+    min-height: 520px;
     text-align: left;
   }
-  .final-cv {
-    flex: none;
-    width: 260px;
-    height: 380px;
-    margin-block: -8px;
-  }
   .final-copy {
-    max-width: 640px;
+    align-self: center;
+    flex: 1;
+    max-width: 720px;
   }
   .final-actions {
     justify-content: flex-start;
+  }
+  .final-cv {
+    flex: none;
+    width: 400px;
+    height: 460px;
+    margin: 0 4% -24px 0;
   }
 }
 

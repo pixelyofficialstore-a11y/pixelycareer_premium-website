@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import { getHomeFaq, type Market } from "@/config/markets";
-import CvStory from "@/components/hero/CvStory";
 import Hero from "@/components/hero/Hero";
 import HeroRise from "@/components/hero/HeroRise";
 import Faq from "@/components/sections/Faq";
@@ -14,7 +13,7 @@ import Services from "@/components/sections/Services";
 import MarketSync from "@/components/ui/MarketSync";
 import Reveal from "@/components/ui/Reveal";
 import StickyBar from "@/components/ui/StickyBar";
-import { getReviews, getSamples } from "@/lib/home-content";
+import { getReviews } from "@/lib/home-content";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd, homeJsonLd } from "@/lib/seo";
 
 /** One template for every market. Each boundary hydrates in its own task, so nothing visibly loads in. */
@@ -26,29 +25,20 @@ export default function HomePage({ market }: { market: Market }) {
       <JsonLd data={homeJsonLd(market)} />
       {market.path !== "/" && <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: market.areaServed, path: market.path }])} />}
       <MarketSync market={market.key} />
-      {market.key === "ae" ? (
-        <>
-          <HeroRise>
-            <Hero market={market} />
-          </HeroRise>
-          <Problem market={market} plain />
-        </>
-      ) : (
-        <CvStory>
-          <Hero market={market} />
-          <Problem market={market} />
-        </CvStory>
-      )}
+      <HeroRise>
+        <Hero market={market} />
+      </HeroRise>
+      <Problem market={market} />
       <ProblemNext market={market} />
       <Suspense>
         <Services market={market.key} />
       </Suspense>
       <Suspense>
-        <Formats market={market.key} samples={getSamples()} />
+        <Formats market={market.key} />
       </Suspense>
       <Reviews market={market} reviews={getReviews(market.key)} />
       <Suspense>
-        <Process market={market.key} pin />
+        <Process market={market.key} />
       </Suspense>
       <Suspense>
         <Pricing market={market.key} />

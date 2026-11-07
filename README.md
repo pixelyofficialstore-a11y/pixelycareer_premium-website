@@ -12,9 +12,10 @@ Production check: `npm run build`, then `npm start`.
 ## Before launch
 
 - **Brand fonts.** Virtual and Aloevera Display are not in this repo, so the site uses Poppins. Add licensed files to `public/fonts/` and uncomment the block at the top of `src/app/globals.css`.
+- **Hero and CV mockups.** Each market's headline, chips and CV images are set in `src/config/heroPersonas.ts`. Images are in `public/cv/{market}/`. Add a `heroFlip` image to make that market's hero CV flip.
 - **Announcement bar.** Edit the messages and rules in `src/config/announcements.ts`.
 - **Client stories.** Add real, approved reviews to `content/reviews/{market}.json` (or `global.json`). The section stays hidden while they are empty. Blur phone numbers and get permission first.
-- **Sample CVs.** Add `.webp` files and entries to `content/samples/{tab}/samples.json`. Remove personal details first.
+- **Sample formats.** Add images to `public/formats/{market}/` and list them in `src/config/formats.ts`.
 - **Facebook.** Once the page URL is confirmed, add it to `sameAs` in `src/app/layout.tsx`.
 - **Orders.** There is no backend yet: `/order` and `/free-cv-review` hand off to WhatsApp. The number is `WHATSAPP_NUMBER` in `src/lib/site.ts`.
 

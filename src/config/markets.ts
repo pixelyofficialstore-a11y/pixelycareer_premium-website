@@ -6,7 +6,6 @@
 export const MARKET_KEYS = ["us", "pk", "ae", "sa", "uk"] as const;
 export type MarketKey = (typeof MARKET_KEYS)[number];
 export type PackageId = "ats-career" | "international-pro" | "executive";
-export type SampleTab = "pakistan" | "gulf" | "uk" | "europe" | "usa";
 
 const PAY_CONFIRM = { q: "How do I pay?", a: "After you place your order request, we confirm the details on WhatsApp and share payment options: [CONFIRM payment methods]." };
 const WHICH_FORMAT = { q: "Which CV format do I need?", a: "It depends on where you’re applying. Tell us your country and role, and we’ll use the right format." };
@@ -28,16 +27,13 @@ export type Market = {
   internationalFor: string;
   indeedItem: string;
   indeedRow: string;
-  hero: { eyebrow: string; line: string; proof: string[] };
   formatsIntro: string;
-  defaultTab: SampleTab;
   reviewsUrl?: string;
   /** The market-specific questions, shown first. */
   faq: { q: string; a: string }[];
   meta: { title: string; description: string; ogDescription?: string };
 };
 
-const PROOF: [string, string] = ["1,800+ clients served", "3+ years"];
 const NAUKRI = { indeedItem: "Indeed & Naukrigulf profiles", indeedRow: "Indeed & Naukrigulf" };
 const INDEED = { indeedItem: "Indeed profile", indeedRow: "Indeed profile" };
 
@@ -58,9 +54,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     sameDay: { "ats-career": 20, "international-pro": 20, executive: 30 },
     internationalFor: "For professionals moving up or changing roles.",
     ...INDEED,
-    hero: { eyebrow: "ATS resumes · LinkedIn profiles · Portfolio websites", line: "Recruiters skim hundreds of resumes. We build the one they stop at.", proof: PROOF },
     formatsIntro: "Formats for US employers and applications.",
-    defaultTab: "usa",
     faq: [
       { q: "Do you write US-style resumes?", a: "Yes. We use US resume conventions and keywords from US job postings." },
       { q: "Which resume format do I need?", a: "It depends on where you’re applying. Tell us your country and role, and we’ll use the right format." },
@@ -86,9 +80,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     sameDay: { "ats-career": 500, "international-pro": 500, executive: 700 },
     internationalFor: "For professionals applying abroad.",
     ...NAUKRI,
-    hero: { eyebrow: "ATS CVs · LinkedIn profiles · Portfolio websites", line: "Applying in Pakistan or abroad? We build the CV recruiters stop at.", proof: [...PROOF, "Pakistan, Gulf, UK & Europe formats"] },
     formatsIntro: "Formats for Pakistani employers and overseas applications.",
-    defaultTab: "pakistan",
     faq: [
       { q: "Can you make my CV for Gulf or overseas jobs?", a: "Yes. We build CVs for the UAE, Saudi Arabia, Qatar, the UK and Europe, as well as for Pakistani employers." },
       { q: "How do I pay?", a: "After you place your order request, we confirm the details on WhatsApp and share payment options: [CONFIRM: JazzCash, Easypaisa, bank transfer]." },
@@ -115,9 +107,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     sameDay: { "ats-career": 75, "international-pro": 75, executive: 100 },
     internationalFor: "For professionals targeting Gulf roles.",
     ...NAUKRI,
-    hero: { eyebrow: "CVs for UAE roles · LinkedIn · Portfolio websites", line: "Applying in the UAE? We build the CV recruiters stop at.", proof: PROOF },
     formatsIntro: "Formats for UAE employers and Gulf applications.",
-    defaultTab: "gulf",
     faq: [
       { q: "Do you know the UAE job market?", a: "Yes. We format for what UAE recruiters expect and optimize your Indeed and Naukrigulf profiles." },
       WHICH_FORMAT,
@@ -143,9 +133,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     sameDay: { "ats-career": 75, "international-pro": 75, executive: 100 },
     internationalFor: "For professionals targeting Gulf roles.",
     ...NAUKRI,
-    hero: { eyebrow: "CVs for Saudi roles · LinkedIn · Portfolio websites", line: "Applying in Saudi Arabia? We build the CV recruiters stop at.", proof: PROOF },
     formatsIntro: "Formats for Saudi employers and Gulf applications.",
-    defaultTab: "gulf",
     faq: [
       { q: "Do you know the Saudi job market?", a: "Yes. We format for what Saudi recruiters expect and optimize your Indeed and Naukrigulf profiles." },
       WHICH_FORMAT,
@@ -172,9 +160,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     sameDay: { "ats-career": 15, "international-pro": 15, executive: 20 },
     internationalFor: "For professionals targeting UK and European roles.",
     ...INDEED,
-    hero: { eyebrow: "UK CVs · LinkedIn profiles · Portfolio websites", line: "Applying in the UK? We build the CV recruiters stop at.", proof: PROOF },
     formatsIntro: "Formats for UK employers and European applications.",
-    defaultTab: "uk",
     faq: [
       { q: "Do you write UK-style CVs?", a: "Yes. UK structure, UK spelling, and Europass if you’re applying in the EU." },
       WHICH_FORMAT,
