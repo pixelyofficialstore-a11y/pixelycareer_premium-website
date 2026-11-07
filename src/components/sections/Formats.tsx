@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { FORMATS, FORMAT_LABELS } from "@/config/formats";
 import type { MarketKey } from "@/config/markets";
 import styles from "./Formats.module.css";
+import heroStyles from "@/components/hero/Hero.module.css";
 
 const Chevron = ({ back = false }: { back?: boolean }) => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -102,10 +102,9 @@ export default function Formats({ market }: { market: MarketKey }) {
     >
       <div className={`wrap ${styles.container}`}>
         <header className={styles.heading}>
-          <h2 id="formats-title" className={styles.title}>
+          <h2 id="formats-title" className={`h1 ${heroStyles.centerMobileHeadline} ${styles.title}`}>
             Formats for <em>every market.</em>
           </h2>
-          <p>Real samples. Built for the country you&apos;re applying to.</p>
         </header>
 
         <div
@@ -164,11 +163,6 @@ export default function Formats({ market }: { market: MarketKey }) {
             </button>
           </div>
 
-          <div className={styles.caption} key={active} aria-live={stopped ? "polite" : "off"}>
-            <span>{labels[active].name}</span>
-            <span className={styles.chip}>{labels[active].chip}</span>
-          </div>
-
           <div className={styles.dots} aria-label="Choose a format">
             {items.map((item, index) => (
               <button
@@ -183,13 +177,6 @@ export default function Formats({ market }: { market: MarketKey }) {
             ))}
           </div>
 
-          <nav className={styles.links} aria-label="Related services">
-            <Link href="/services/ats-cv">ATS CVs <span aria-hidden="true">→</span></Link>
-            <span aria-hidden="true">·</span>
-            <Link href="/services/cover-letter">Cover letters <span aria-hidden="true">→</span></Link>
-            <span aria-hidden="true">·</span>
-            <Link href="/services/linkedin">LinkedIn <span aria-hidden="true">→</span></Link>
-          </nav>
         </div>
       </div>
     </section>

@@ -32,3 +32,9 @@ Keep the formats-section redesign on the main homepage only until the user final
 **Why:** The user repeated: “For Now Only Fix for main page once we finalzie it we will replicate to all pages.”
 
 **How to apply:** Preserve the existing formats design on localized market homepages. Do not replicate the trial without approval.
+
+For the formats trial, match the hero headline typography on both desktop and mobile, and keep the visible copy to the headline only.
+
+**Why:** The user rejected the smaller, lighter heading and extra subtitle, captions and service links.
+
+**How to apply:** Reuse the hero typography instead of approximating it with separate size and weight values. Retain accessible sample labels without adding visible text.
