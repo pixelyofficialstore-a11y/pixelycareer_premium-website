@@ -344,6 +344,9 @@
 .agency-page .agency-final .agency-title em { color: var(--agency-cyan); }
 .agency-page .agency-final-copy > p:last-child { max-width: 40ch; margin: 18px 0 0; color: rgb(255 255 255 / .72); font-size: 15px; line-height: 1.55; }
 .agency-page .agency-final .agency-kicker { color: #9bb9f7; }
+@media (min-width: 768px) {
+  .agency-page .agency-final-copy { position: sticky; top: 110px; align-self: start; }
+}
 
 /* Existing enquiry form surface: form fields and behavior are owned separately. */
 .agency-page .agency-enquiry { min-width: 0; }
