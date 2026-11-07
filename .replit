@@ -1,0 +1,29 @@
+modules = ["nodejs-24"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Pixely Careers Preview"
+
+[[workflows.workflow]]
+name = "Pixely Careers Preview"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev -- --webpack --hostname 0.0.0.0 --port 3000"
+waitForPort = 3000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[ports]]
+localPort = 3000
+externalPort = 80
