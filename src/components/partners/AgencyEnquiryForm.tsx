@@ -80,13 +80,11 @@ export default function AgencyEnquiryForm() {
             </select>
           </div>
         </div>
-        <button className="agency-form-submit" type="submit" data-cta="partners-form-submit">Request a call →</button>
+        <button className="agency-form-submit" type="submit" data-cta="partners-form-submit">Send enquiry</button>
         <p className="agency-form-message" role="status" aria-live="polite">{message}</p>
       </form>
       <div className="agency-contact-lines">
-        <a href={whatsappMessage("Hi, I'm from [agency name]. I'd like to discuss a CV partnership.")} target="_blank" rel="noopener noreferrer">WhatsApp +92 370 6404900</a>
-        <a href="https://www.instagram.com/pixelycareers.pk/" target="_blank" rel="noopener noreferrer">Instagram @pixelycareers.pk</a>
-        <span>Facebook: Pixely Careers PK</span>
+        <span>WhatsApp: +92 370 6404900</span>
       </div>
     </div>
   );

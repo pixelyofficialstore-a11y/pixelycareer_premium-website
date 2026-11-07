@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import PartnersPage from "@/components/partners/PartnersPage";
 import type { AgencySample } from "@/components/partners/types";
+import { QUESTIONS } from "@/components/partners/faq-data";
 import { JsonLd, SITE, breadcrumbJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
 import sampleDefinitions from "../../../public/partners/samples/samples.json";
 
@@ -18,14 +19,7 @@ export const metadata = {
   },
 };
 
-const faqs = [
-  { q: "What are your partner rates?", a: "They depend on document types and monthly volume. We agree exact rates on a 15-minute call." },
-  { q: "Is there a minimum volume?", a: "No. Start with one candidate." },
-  { q: "Can you use our CV template?", a: "Yes. Send it and we'll work in your format." },
-  { q: "How fast is delivery?", a: "First drafts within 24 hours for standard documents. We confirm timelines for bulk orders." },
-  { q: "Will you contact our candidates?", a: "Not in the white label model. You keep the relationship and we stay behind the scenes." },
-  { q: "Do you offer jobs or visas?", a: "No. We provide career documentation only." },
-];
+const faqs = QUESTIONS.map(([q, a]) => ({ q, a }));
 
 export default function Page() {
   const sampleDirectory = path.join(process.cwd(), "public", "partners", "samples");
@@ -34,9 +28,6 @@ export default function Page() {
     image: `/partners/samples/${sample.image}`,
     available: fs.existsSync(path.join(sampleDirectory, sample.image)),
   }));
-  const proposalAvailable = fs.existsSync(
-    path.join(process.cwd(), "public", "partners", "Pixely-Partnership-Proposal.pdf"),
-  );
 
   return (
     <>
@@ -52,7 +43,7 @@ export default function Page() {
         areaServed: { "@type": "Country", name: "Pakistan" },
       }} />
       <JsonLd data={faqJsonLd(faqs)} />
-      <PartnersPage samples={samples} proposalAvailable={proposalAvailable} />
+      <PartnersPage samples={samples} />
     </>
   );
 }
