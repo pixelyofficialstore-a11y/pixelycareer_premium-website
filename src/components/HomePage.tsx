@@ -48,7 +48,7 @@ export default function HomePage({ market, useHomeProblem = false }: { market: M
         <Process market={market.key} />
       </Suspense>
       <Suspense>
-        <Pricing market={market.key} compact={market.path === "/"} />
+        <Pricing market={market.key} variant={market.path === "/" ? "compact" : "default"} />
       </Suspense>
       <Suspense>
         <Faq items={faq} />

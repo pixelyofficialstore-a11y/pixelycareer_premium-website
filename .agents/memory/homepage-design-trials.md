@@ -44,3 +44,9 @@ Keep the desktop formats samples at a moderate, readable size, with compact surr
 **Why:** The user rejected both undersized samples from viewport-height subtraction and the subsequent oversized version.
 
 **How to apply:** Use bounded width-based sizing rather than large swings based on viewport height. Preserve A4 proportions and balance the samples with the headline.
+
+Keep the compact pricing trial on the main homepage only, with country homepages and the detailed pricing page unchanged for now.
+
+**Why:** The user appended “Only On Main Page For Now” to a brief containing broader page scope.
+
+**How to apply:** Treat the latest main-page-only restriction as the approval boundary for this trial; wait for approval before expanding it.

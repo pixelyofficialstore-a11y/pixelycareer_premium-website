@@ -83,14 +83,15 @@ function CellValue({ value }: { value: string }) {
 export default function Pricing({
   market,
   standalone = false,
-  compact = false,
+  variant = "default",
   faqItems = [],
 }: {
   market: MarketKey;
   standalone?: boolean;
-  compact?: boolean;
+  variant?: "default" | "compact";
   faqItems?: { q: string; a: string }[];
 }) {
+  const compact = variant === "compact";
   const m = MARKETS[market];
   const packages = getPackages(m);
   const comparison = getComparison(m);
@@ -102,6 +103,7 @@ export default function Pricing({
 
   return (
     <div
+      id={compact ? "pricing" : undefined}
       className={`${styles.page} ${standalone ? styles.standalone : ""} ${compact ? styles.compact : ""}`}
       data-pricing-surface
       data-pricing-variant={compact ? "compact" : undefined}
@@ -126,7 +128,7 @@ export default function Pricing({
         </div>
       </header>
 
-      <section id="pricing" className={`${styles.packages} ${compact ? styles.compactPackages : ""}`} aria-label="Pricing packages">
+      <section id={compact ? undefined : "pricing"} className={`${styles.packages} ${compact ? styles.compactPackages : ""}`} aria-label="Pricing packages">
         <div className={styles.sectionInner}>
           <ul className={`${styles.priceGrid} ${compact ? styles.compactPriceGrid : ""}`}>
             {packages.map((p) => {
@@ -134,7 +136,7 @@ export default function Pricing({
               const content = CARD_CONTENT[p.id];
               return (
                 <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`}>
-                  <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""} ${compact ? styles.compactCard : ""}`} aria-label={`${content.name} package`}>
+                  <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
                     {recommended && <span className={styles.badge}>Recommended</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>

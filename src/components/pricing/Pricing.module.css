@@ -841,7 +841,7 @@
 }
 
 .compact .pricePair > .price {
-  align-items: flex-start;
+  align-items: baseline;
   gap: 4px;
   font-size: 44px;
   font-weight: 600;
@@ -849,13 +849,13 @@
 }
 
 .compact .pricePair > .price .priceUnit {
+  align-self: flex-start;
   padding-top: 4px;
   font-size: 18px;
   line-height: 1.1;
 }
 
 .compact .pricePair .compareAt {
-  align-self: center;
   color: #8994a5;
   text-decoration: none;
 }
@@ -884,7 +884,7 @@
 }
 
 .compact .resultLine {
-  min-height: 68px;
+  min-height: 45px;
   margin: 12px 0 24px;
   font-size: 15px;
   line-height: 1.5;
