@@ -166,7 +166,7 @@ export default function HomeProblem() {
               const open = visible && (hoveredMarker === marker.id || pinnedMarker === marker.id);
               if (!visible) return null;
               return (
-                <div key={marker.id} className={styles.markerGroup} style={{ "--x": `${marker.x}%`, "--y": `${marker.y}%` } as CSSProperties}>
+                <div key={marker.id} className={styles.markerGroup} style={{ "--x": `${marker.x}%`, "--crop-y": `${marker.y}%`, "--full-y": `${marker.y * 0.53}%` } as CSSProperties}>
                   <button
                     type="button"
                     data-marker={marker.id}
@@ -246,7 +246,7 @@ export default function HomeProblem() {
         </div>
 
         <Link href="/free-cv-review" className={styles.review} data-cta="problem-free-review">
-          Get a free resume review <ArrowRight size={17} />
+          Get a free CV review <ArrowRight size={17} />
         </Link>
       </div>
     </section>
