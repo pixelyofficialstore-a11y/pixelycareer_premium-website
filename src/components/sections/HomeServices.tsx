@@ -1,78 +1,140 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { HERO_PERSONAS } from "@/config/heroPersonas";
+import type { MarketKey } from "@/config/markets";
 import { ArrowRight } from "@/components/ui/Icons";
-import { BrowserVisual, ProfileVisual } from "./ServiceVisuals";
 import styles from "./HomeServices.module.css";
 
-/** An open gallery of the three places a professional identity takes shape. */
-export default function HomeServices() {
-  const cv = HERO_PERSONAS.us.images.good;
-  const services = [
-    {
-      title: "Career Documents",
-      line: "ATS resumes, Europass CVs and cover letters.",
-      href: "/services/ats-cv",
-      link: "Explore resume writing",
-      visual: (
-        <div className={`${styles.artifact} ${styles.resume}`}>
-          <Image
-            src={cv.src}
-            width={cv.width}
-            height={cv.height}
-            alt=""
-            sizes="(min-width: 1024px) 204px, (min-width: 768px) 165px, 177px"
-          />
-        </div>
-      ),
-    },
-    {
-      title: "Professional Visibility",
-      line: "A LinkedIn profile recruiters can find.",
-      href: "/services/linkedin",
-      link: "Explore LinkedIn optimization",
-      visual: (
-        <div className={`${styles.artifact} ${styles.profile}`}>
-          <ProfileVisual />
-        </div>
-      ),
-    },
-    {
-      title: "Digital Presence",
-      line: "A portfolio website with your name on it.",
-      href: "/services/portfolio-website",
-      link: "Explore portfolio websites",
-      visual: (
-        <div className={`${styles.artifact} ${styles.browser}`}>
-          <BrowserVisual />
-        </div>
-      ),
-    },
-  ];
+const SERVICES = [
+  {
+    number: "01",
+    title: "Career documents",
+    description: "ATS CVs, Europass and cover letters.",
+    href: "/services/ats-cv",
+    link: "Explore CV writing",
+  },
+  {
+    number: "02",
+    title: "Professional visibility",
+    description: "A LinkedIn profile recruiters can find.",
+    href: "/services/linkedin",
+    link: "Explore LinkedIn",
+  },
+  {
+    number: "03",
+    title: "Digital presence",
+    description: "A personal website with your name on it.",
+    href: "/services/portfolio-website",
+    link: "Explore portfolio websites",
+  },
+];
+
+export default function HomeServices({ marketKey }: { marketKey: MarketKey }) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const persona = HERO_PERSONAS[marketKey].sample;
+  const cv = HERO_PERSONAS[marketKey].images.good;
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    section.dataset.animate = "true";
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        section.dataset.entered = "true";
+        observer.disconnect();
+      },
+      { threshold: 0.12 },
+    );
+    observer.observe(section);
+
+    return () => {
+      observer.disconnect();
+      delete section.dataset.animate;
+      delete section.dataset.entered;
+    };
+  }, []);
 
   return (
-    <section id="services" aria-labelledby="services-title" className={styles.section}>
-      <div className="wrap">
-        <h2 id="services-title" className={styles.title}>
-          Three layers. <em>One brand.</em>
-        </h2>
+    <section ref={sectionRef} id="services" aria-labelledby="services-title" className={styles.section}>
+      <div className={`wrap ${styles.container}`}>
+        <header className={styles.heading}>
+          <h2 id="services-title" className={styles.title}>
+            Three layers. <em>One brand.</em>
+          </h2>
+          <p>Your CV, LinkedIn and website, telling the same story.</p>
+        </header>
+
         <ul className={styles.gallery}>
-          {services.map((service) => (
-            <li key={service.href}>
-              <Link href={service.href} className={styles.service}>
-                <div className={styles.visual} aria-hidden="true">
-                  {service.visual}
+          <li className={styles.card}>
+            <Link href={SERVICES[0].href} className={styles.service}>
+              <div className={styles.frame} aria-hidden="true">
+                <div className={`${styles.mockup} ${styles.resume}`}>
+                  <Image
+                    src={cv.src}
+                    width={cv.width}
+                    height={cv.height}
+                    alt=""
+                    priority
+                    sizes="200px"
+                  />
                 </div>
-                <div className={styles.copy}>
-                  <h3 className={styles.name}>{service.title}</h3>
-                  <p className={styles.description}>{service.line}</p>
-                  <span className={styles.link}>
-                    {service.link}<ArrowRight />
-                  </span>
+              </div>
+              <div className={styles.copy}>
+                <span className={styles.number}>{SERVICES[0].number}</span>
+                <h3>{SERVICES[0].title}</h3>
+                <p>{SERVICES[0].description}</p>
+                <span className={styles.link}>{SERVICES[0].link}<ArrowRight size={16} /></span>
+              </div>
+            </Link>
+          </li>
+
+          <li className={styles.card}>
+            <Link href={SERVICES[1].href} className={styles.service}>
+              <div className={styles.frame} aria-hidden="true">
+                <div className={`${styles.mockup} ${styles.profile}`}>
+                  <div className={styles.profileBanner} />
+                  <div className={styles.profileContent}>
+                    <span className={styles.avatar}>{persona.initials}</span>
+                    <strong>{persona.name}</strong>
+                    <span className={styles.role}>{persona.role}</span>
+                    <span className={styles.openToWork}>Open to work</span>
+                  </div>
                 </div>
-              </Link>
-            </li>
-          ))}
+              </div>
+              <div className={styles.copy}>
+                <span className={styles.number}>{SERVICES[1].number}</span>
+                <h3>{SERVICES[1].title}</h3>
+                <p>{SERVICES[1].description}</p>
+                <span className={styles.link}>{SERVICES[1].link}<ArrowRight size={16} /></span>
+              </div>
+            </Link>
+          </li>
+
+          <li className={styles.card}>
+            <Link href={SERVICES[2].href} className={styles.service}>
+              <div className={styles.frame} aria-hidden="true">
+                <div className={`${styles.mockup} ${styles.website}`}>
+                  <div className={styles.browserBar}>{persona.domain}</div>
+                  <div className={styles.websiteHero}>
+                    <strong>{persona.name}</strong>
+                    <span>{persona.role}</span>
+                    <span className={styles.viewWork}>View my work</span>
+                  </div>
+                </div>
+              </div>
+              <div className={styles.copy}>
+                <span className={styles.number}>{SERVICES[2].number}</span>
+                <h3>{SERVICES[2].title}</h3>
+                <p>{SERVICES[2].description}</p>
+                <span className={styles.link}>{SERVICES[2].link}<ArrowRight size={16} /></span>
+              </div>
+            </Link>
+          </li>
         </ul>
       </div>
     </section>

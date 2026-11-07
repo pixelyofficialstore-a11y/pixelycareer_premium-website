@@ -37,7 +37,7 @@ export default function HomePage({ market, useHomeProblem = false }: { market: M
         </>
       )}
       <Suspense>
-        {market.path === "/" ? <HomeServices /> : <Services market={market.key} />}
+        {market.path === "/" ? <HomeServices marketKey={market.key} /> : <Services market={market.key} />}
       </Suspense>
       <Suspense>
         <Formats market={market.key} />

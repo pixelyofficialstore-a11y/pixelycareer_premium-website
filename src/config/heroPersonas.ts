@@ -3,6 +3,12 @@ import type { MarketKey } from "@/config/markets";
 export type CvPicture = { src: string; width: number; height: number };
 
 export type HeroPersona = {
+  sample: {
+    name: string;
+    initials: string;
+    role: string;
+    domain: string;
+  };
   heroCopy: { line1: string; line2: string; sub: [string, string] };
   chips: [string, string, string];
   images: {
@@ -21,6 +27,7 @@ const pic = (market: MarketKey, name: string): CvPicture => ({ src: `/cv/${marke
 
 export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
   us: {
+    sample: { name: "James Carter", initials: "JC", role: "Project Manager | Logistics | Agile", domain: "jamescarter.com" },
     heroCopy: { line1: "Stand out", line2: "from the stack.", sub: ["Recruiters skim hundreds of resumes.", "We build the one they stop at."] },
     chips: ["ATS Friendly", "US Resume Format", "Keyword Matched"],
     images: {
@@ -31,6 +38,7 @@ export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
     },
   },
   pk: {
+    sample: { name: "Usman Khan", initials: "UK", role: "Project Manager | Logistics | Agile", domain: "usmankhan.com" },
     heroCopy: { line1: "Stand out", line2: "from the stack.", sub: ["Applying in Pakistan or abroad?", "We build the CV recruiters stop at."] },
     chips: ["ATS Optimized", "Gulf & UK Formats", "PDF + Word"],
     images: {
@@ -41,6 +49,7 @@ export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
     },
   },
   ae: {
+    sample: { name: "Hamza Al Sayed", initials: "HS", role: "Project Manager | Logistics | Agile", domain: "hamzaalsayed.com" },
     heroCopy: { line1: "Stand out", line2: "in the UAE.", sub: ["Dubai recruiters see hundreds of CVs.", "We build the one they stop at."] },
     chips: ["ATS Optimized", "Visa Status Included", "UAE Recruiter Format"],
     images: {
@@ -51,6 +60,7 @@ export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
     },
   },
   sa: {
+    sample: { name: "Faisal Al Harbi", initials: "FH", role: "Project Manager | Logistics | Agile", domain: "faisalalharbi.com" },
     heroCopy: { line1: "Stand out", line2: "in Saudi Arabia.", sub: ["Riyadh, Jeddah, Dammam.", "We build the CV recruiters stop at."] },
     chips: ["ATS Optimized", "Saudi Market Format", "Naukrigulf Ready"],
     images: {
@@ -61,6 +71,7 @@ export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
     },
   },
   uk: {
+    sample: { name: "Oliver Bennett", initials: "OB", role: "Project Manager | Logistics | Agile", domain: "oliverbennett.com" },
     heroCopy: { line1: "Stand out", line2: "from the stack.", sub: ["UK recruiters skim fast.", "We build the CV they stop at."] },
     chips: ["ATS Friendly", "UK Spelling & Format", "Europass Available"],
     images: {
