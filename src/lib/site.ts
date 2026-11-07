@@ -1,5 +1,6 @@
 export const WHATSAPP_NUMBER = "923706404900";
 export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
+export const FACEBOOK_REVIEWS_URL = "https://www.facebook.com/pixelycareers.pk/reviews/";
 export const whatsappMessage = (text: string) => `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
 
 export const NAV = [

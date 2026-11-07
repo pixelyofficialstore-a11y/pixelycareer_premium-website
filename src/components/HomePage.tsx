@@ -13,10 +13,12 @@ import Process from "@/components/sections/Process";
 import Reviews from "@/components/sections/Reviews";
 import Services from "@/components/sections/Services";
 import HomeServices from "@/components/sections/HomeServices";
+import HomeTrustStrip from "@/components/sections/HomeTrustStrip";
 import MarketSync from "@/components/ui/MarketSync";
 import Reveal from "@/components/ui/Reveal";
 import StickyBar from "@/components/ui/StickyBar";
 import { getReviews } from "@/lib/home-content";
+import { FACEBOOK_REVIEWS_URL } from "@/lib/site";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd, homeJsonLd } from "@/lib/seo";
 
 /** One template for every market. Each boundary hydrates in its own task, so nothing visibly loads in. */
@@ -31,6 +33,7 @@ export default function HomePage({ market, useHomeProblem = false }: { market: M
       <HeroRise>
         <Hero market={market} centerMobileHeadline={market.path === "/"} />
       </HeroRise>
+      {market.path === "/" && <HomeTrustStrip reviewsUrl={FACEBOOK_REVIEWS_URL} />}
       {useHomeProblem ? <HomeProblem /> : (
         <>
           <Problem market={market} />

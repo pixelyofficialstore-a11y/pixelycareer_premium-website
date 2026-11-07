@@ -50,3 +50,9 @@ Keep the compact pricing trial on the main homepage only, with country homepages
 **Why:** The user appended “Only On Main Page For Now” to a brief containing broader page scope.
 
 **How to apply:** Treat the latest main-page-only restriction as the approval boundary for this trial; wait for approval before expanding it.
+
+The new trust strip is main homepage only, not country homepages.
+
+**Why:** The user narrowed the original all-homepages trust-strip request to “Only on Main page.”
+
+**How to apply:** Keep this strip off localized homepages unless the user requests expansion. Existing hero and other sections must remain unchanged.
