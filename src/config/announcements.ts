@@ -47,6 +47,9 @@ function fill(m: Market, message: Announcement, path: string): Announcement {
 
 /** Priority: campaign, then page rule, then fallback. */
 export function getAnnouncement(m: Market, path: string, campaign?: string | null): Announcement {
+  if (path === "/pricing") {
+    return { key: "pricing", text: "Not sure which package? Ask us on WhatsApp →", href: WHATSAPP_URL };
+  }
   const name = campaign?.toLowerCase();
   const match =
     (name && CAMPAIGNS.find((c) => c.keywords.some((k) => name.includes(k)))?.message) || PAGES.find((p) => p.match(path))?.message || FALLBACK;

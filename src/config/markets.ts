@@ -1,7 +1,7 @@
 /**
  * Single source of truth for every market: prices, currency, phone format and local copy.
- * PKR is approved. Set approved: true on a market to remove its [CONFIRM pricing] marker
- * and publish its Offer structured data.
+ * PKR is approved. Approval flags remain available to consumers.
+ * CONFIRM: USD, GBP, AED, SAR prices and same day fees with the owner.
  */
 export const MARKET_KEYS = ["us", "pk", "ae", "sa", "uk"] as const;
 export type MarketKey = (typeof MARKET_KEYS)[number];
@@ -51,7 +51,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     phoneCode: "+1",
     approved: false,
     prices: { "ats-career": 99, "international-pro": 169, executive: 279 },
-    sameDay: { "ats-career": 20, "international-pro": 20, executive: 30 },
+    sameDay: { "ats-career": 20, "international-pro": 20, executive: 25 },
     internationalFor: "For professionals moving up or changing roles.",
     ...INDEED,
     formatsIntro: "Formats for US employers and applications.",
@@ -104,7 +104,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     phoneCode: "+971",
     approved: false,
     prices: { "ats-career": 299, "international-pro": 499, executive: 849 },
-    sameDay: { "ats-career": 75, "international-pro": 75, executive: 100 },
+    sameDay: { "ats-career": 60, "international-pro": 60, executive: 80 },
     internationalFor: "For professionals targeting Gulf roles.",
     ...NAUKRI,
     formatsIntro: "Formats for UAE employers and Gulf applications.",
@@ -130,7 +130,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     phoneCode: "+966",
     approved: false,
     prices: { "ats-career": 299, "international-pro": 499, executive: 849 },
-    sameDay: { "ats-career": 75, "international-pro": 75, executive: 100 },
+    sameDay: { "ats-career": 60, "international-pro": 60, executive: 80 },
     internationalFor: "For professionals targeting Gulf roles.",
     ...NAUKRI,
     formatsIntro: "Formats for Saudi employers and Gulf applications.",
@@ -181,6 +181,11 @@ export function formatPrice(m: Market, n: number) {
   return m.symbol ? `${m.symbol}${value}` : `${m.currency} ${value}`;
 }
 
+/** Pricing uses the customer-facing rupee label; other market copy is unchanged. */
+export function formatPricingPrice(m: Market, n: number) {
+  return m.key === "pk" ? `Rs ${n.toLocaleString("en-US")}` : formatPrice(m, n);
+}
+
 /** US pages say resume. Europass CV is a format name, so it stays. */
 export function localize(m: Market, text: string) {
   if (m.word !== "resume") return text;
@@ -199,8 +204,8 @@ const BASE_PACKAGES = [
   {
     id: "ats-career" as const,
     tier: "Starter",
-    name: "ATS Career Package",
-    forLine: "For a strong, ATS-ready application.",
+    name: "ATS Career",
+    forLine: "Your first strong application, locally or abroad.",
     deliveryDays: "2 days",
     value: [
       { n: "30", label: "days support" },
@@ -208,14 +213,14 @@ const BASE_PACKAGES = [
       { n: "2", label: "days delivery" },
     ],
     lead: "",
-    items: ["ATS-optimized CV (1–2 pages)", "Tailored cover letter", "Keyword optimization", "LinkedIn content optimization"],
+    items: ["ATS CV written for your target role", "Tailored cover letter", "LinkedIn content rewrite", "Keywords matched to your job ads", "PDF and editable Word files"],
     button: "Choose ATS Career",
   },
   {
     id: "international-pro" as const,
     tier: "International",
     name: "International Career Pro",
-    forLine: "",
+    forLine: "For professionals applying abroad or to competitive roles.",
     deliveryDays: "2 days",
     value: [
       { n: "3", label: "months support" },
@@ -223,7 +228,7 @@ const BASE_PACKAGES = [
       { n: "2", label: "days delivery" },
     ],
     lead: "Everything in ATS Career, plus:",
-    items: ["International-standard CV", "Country-specific cover letter", "LinkedIn makeover", "@indeed", "Bio + digital contact card"],
+    items: ["International ATS CV for your target country", "Country specific cover letter", "Full LinkedIn makeover", "Indeed profile setup", "Professional bio statement", "Digital contact card"],
     button: "Choose International Pro",
   },
   {
@@ -238,7 +243,7 @@ const BASE_PACKAGES = [
       { n: "3", label: "days priority" },
     ],
     lead: "Everything in International Pro, plus:",
-    items: ["Premium CV + 1-page visual CV", "Executive cover letter & bio", "10-post LinkedIn content pack", "Interview preparation guide"],
+    items: ["Premium executive CV", "One page visual CV", "Executive cover letter and bio", "LinkedIn makeover with 10 ready posts", "Interview preparation guide", "Priority handling"],
     button: "Choose Executive",
   },
 ];
@@ -247,36 +252,34 @@ const BASE_PACKAGES = [
 export function getPackages(m: Market) {
   return BASE_PACKAGES.map((p) => ({
     ...p,
-    forLine: p.id === "international-pro" ? m.internationalFor : p.forLine,
-    items: p.items.map((i) => (i === "@indeed" ? m.indeedItem : localize(m, i))),
+    forLine: p.forLine,
+    items: [...p.items],
     price: m.prices[p.id],
     sameDay: m.sameDay[p.id],
-    priceLabel: formatPrice(m, m.prices[p.id]),
-    sameDayLabel: `+${formatPrice(m, m.sameDay[p.id])}`,
+    priceLabel: formatPricingPrice(m, m.prices[p.id]),
+    sameDayLabel: `+${formatPricingPrice(m, m.sameDay[p.id])}`,
   }));
 }
 
 const Y = "✓";
-const N = "—";
+const N = "·";
 /** Comparison table. Values are from the approved pricing preview. */
 export function getComparison(m: Market): [string, string, string, string][] {
   const rows: [string, string, string, string][] = [
-    ["ATS CV", Y, "International", "Premium"],
-    ["1-page visual CV", N, N, Y],
-    ["Cover letter", "Tailored", "Country-specific", "Executive"],
-    ["Keyword optimization", Y, Y, Y],
-    ["LinkedIn", "Content", "Makeover + content", "Makeover + 10 posts"],
-    [m.indeedRow, N, Y, Y],
+    ["ATS CV", "Standard", "International", "Premium executive"],
+    ["One page visual CV", N, N, Y],
+    ["Cover letter", "Tailored", "Country specific", "Executive"],
+    ["LinkedIn", "Content rewrite", "Full makeover", "Makeover and 10 posts"],
+    ["Indeed profile", N, Y, Y],
     ["Bio statement", N, Y, "Executive"],
-    ["Contact card", N, Y, "Premium"],
+    ["Digital contact card", N, Y, "Premium"],
     ["Interview guide", N, N, Y],
-    ["File formats", "PDF + Word", "PDF + Word", "PDF + Word"],
     ["Revisions", "3", "3", "4"],
     ["WhatsApp support", "30 days", "3 months", "6 months"],
-    ["Delivery", "2 days", "2 days", "3 days (priority)"],
-    ["Same-day delivery", `+${formatPrice(m, m.sameDay["ats-career"])}`, `+${formatPrice(m, m.sameDay["international-pro"])}`, `+${formatPrice(m, m.sameDay.executive)}`],
+    ["Delivery", "2 days", "2 days", "3 days, priority"],
+    ["Same day delivery", `+${formatPricingPrice(m, m.sameDay["ats-career"])}`, `+${formatPricingPrice(m, m.sameDay["international-pro"])}`, `+${formatPricingPrice(m, m.sameDay.executive)}`],
   ];
-  return rows.map(([row, ...rest]) => [localize(m, row), ...rest] as [string, string, string, string]);
+  return rows;
 }
 
 const SHARED_FAQ = [
@@ -292,7 +295,16 @@ const PAY = { q: "How do I pay?", a: "Place your order request here. We confirm 
 
 /** Market questions first, then the shared ones. Seven at most. */
 export const getHomeFaq = (m: Market) => [...m.faq, ...SHARED_FAQ.map((i) => ({ q: localize(m, i.q), a: localize(m, i.a) }))].slice(0, 7);
-export const getPricingFaq = (m: Market) => [SHARED_FAQ[0], SHARED_FAQ[1], SHARED_FAQ[2], PAY].map((i) => ({ q: localize(m, i.q), a: localize(m, i.a) }));
+// CONFIRM payment methods per market with the owner. Do not expose confirmation notes.
+export const getPricingFaq = (_m: Market) => [
+  { q: "What exactly do I get?", a: "Your documents as PDF and editable Word files, written for your target role and country. Each package lists exactly what's included above." },
+  { q: "How long does it take?", a: "Your first draft arrives in 2 days (3 days for Executive). Same day delivery is available for a small fee." },
+  { q: "Are revisions included?", a: "Yes. ATS Career and International Pro include 3 rounds, and Executive includes 4. We adjust until it reflects you properly." },
+  { q: "How do I pay?", a: "Place your order online. We confirm your details on WhatsApp and share payment options there." },
+  { q: "Which package should I choose?", a: "Applying locally for the first time: ATS Career. Applying abroad or for competitive roles: International Pro. Senior or leadership roles: Executive." },
+  { q: "Do you guarantee a job or interview?", a: "No one honestly can. We guarantee a clear, ATS ready CV written for your target role. Interviews depend on the market and your applications." },
+  { q: "Can I upgrade later?", a: "Yes. Pay the difference and we'll add the extra items to your order." },
+];
 
 /** The label on a market's share image. Prices only once they are approved. */
 export const ogLabel = (m: Market) => (m.approved ? `From ${formatPrice(m, m.prices["ats-career"])}` : m.region);

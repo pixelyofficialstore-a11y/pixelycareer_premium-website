@@ -77,7 +77,7 @@ export default async function Page() {
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "About", path: "/about" }])} />
 
       <section className="about-hero">
-        <div className="wrap about-hero-grid">
+        <div className="wrap about-container about-hero-grid">
           <div className="about-hero-copy">
             <p className="label">About Pixely</p>
             <h1>Anyone can write a CV. <span>Few build a brand.</span></h1>
@@ -95,12 +95,12 @@ export default async function Page() {
         </div>
       </section>
 
-      <section className="wrap about-proof" aria-label="Pixely Careers in numbers">
+      <section className="wrap about-container about-proof" aria-label="Pixely Careers in numbers">
         <ProofStrip />
       </section>
 
       <section className="about-story">
-        <div className="wrap">
+        <div className={`wrap about-container story-grid${aboutContent.founder.name ? " story-grid-with-founder" : ""}`}>
           <div className="story-copy" data-reveal>
             <p className="label">Our story</p>
             <h2>Why we <em>started.</em></h2>
@@ -108,11 +108,31 @@ export default async function Page() {
               {aboutContent.story.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
             </div>
           </div>
+          {aboutContent.founder.name && (
+            <aside className="founder-card" data-reveal aria-label="About the founder">
+              {aboutContent.founder.photo ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img className="founder-avatar" src={aboutContent.founder.photo} alt={aboutContent.founder.name} width="120" height="120" />
+              ) : (
+                <span className="founder-avatar founder-initials" aria-hidden="true">
+                  {aboutContent.founder.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("")}
+                </span>
+              )}
+              <h3>{aboutContent.founder.name}</h3>
+              <p className="founder-role">{aboutContent.founder.role}</p>
+              {aboutContent.founder.quote && <p className="founder-quote">{aboutContent.founder.quote}</p>}
+              {aboutContent.founder.linkedIn && (
+                <a className="founder-link" href={aboutContent.founder.linkedIn} target="_blank" rel="noopener noreferrer" aria-label={`${aboutContent.founder.name} on LinkedIn`}>
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5.4 7.8a2.2 2.2 0 1 0 0-4.4 2.2 2.2 0 0 0 0 4.4ZM3.6 9.5h3.6v11H3.6ZM9.4 9.5h3.4V11h.1a3.7 3.7 0 0 1 3.3-1.8c3.5 0 4.2 2.3 4.2 5.3v6h-3.6v-5.3c0-1.3 0-3-1.8-3s-2.1 1.4-2.1 2.9v5.4H9.4Z" /></svg>
+                </a>
+              )}
+            </aside>
+          )}
         </div>
       </section>
 
       <section className="about-beliefs">
-        <div className="wrap">
+        <div className="wrap about-container">
           <div className="section-heading" data-reveal>
             <p className="label">What guides us</p>
             <h2>What we <em>believe.</em></h2>
@@ -137,7 +157,7 @@ export default async function Page() {
       </section>
 
       <section className="about-services">
-        <div className="wrap">
+        <div className="wrap about-container">
           <div className="section-heading" data-reveal>
             <p className="label">A clear line</p>
             <h2>Clear about <em>what we do.</em></h2>
@@ -171,7 +191,7 @@ export default async function Page() {
       </section>
 
       <section className="about-markets">
-        <div className="wrap">
+        <div className="wrap about-container">
           <div className="market-heading" data-reveal>
             <p className="label">Local understanding</p>
             <h2>Built for <em>five markets.</em></h2>
@@ -191,7 +211,7 @@ export default async function Page() {
       </section>
 
       <section className="about-process">
-        <div className="wrap">
+        <div className="wrap about-container">
           <div className="section-heading" data-reveal>
             <p className="label">A simple process</p>
             <h2>How we <em>work.</em></h2>
@@ -201,13 +221,19 @@ export default async function Page() {
         </div>
       </section>
 
-      {hasMixedMarketReviews && <Reviews market={market} reviews={reviews} />}
+      {hasMixedMarketReviews && (
+        <div className="about-reviews">
+          <div className="wrap about-container section-heading" data-reveal><h2>What clients <em>say.</em></h2></div>
+          <Reviews market={market} reviews={reviews} />
+        </div>
+      )}
       <FinalCta market={market} />
       <Reveal />
 
       <style>{`
         @scope (.about-page) {
-        .about-hero { padding: 67px 0 52px; background: #fff; }
+        .about-container { width: calc(100% - 80px); max-width: 1200px; padding-inline: 0; margin-inline: auto; }
+        .about-hero { padding: 112px 0 52px; background: #fff; }
         .about-hero-grid {
           display: grid;
           grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr);
@@ -220,12 +246,12 @@ export default async function Page() {
           max-width: 660px;
           margin: 21px 0 0;
           color: #010c28;
-          font-size: clamp(40px, 5.2vw, 68px);
+           font-size: clamp(40px, 4.3vw, 60px);
           line-height: 1.04;
           letter-spacing: -.062em;
           font-weight: 750;
         }
-        .about-hero-copy h1 span { color: #0048ff; }
+        .about-hero-copy h1 span { display: block; color: #0048ff; }
         .about-lead {
           max-width: 570px;
           margin: 22px 0 0;
@@ -241,8 +267,17 @@ export default async function Page() {
         .about-whatsapp span { color: #0048ff; transition: transform .2s ease; }
         .about-whatsapp:hover span { transform: translate(2px,-2px); }
         .about-proof { padding-top: 17px; padding-bottom: 74px; }
-        .about-story { padding: 96px 0 104px; background: #f6f8fc; }
-        .story-copy { max-width: 760px; }
+        .about-story { padding: 112px 0; background: #f6f8fc; }
+        .story-copy { max-width: 720px; }
+        .story-grid-with-founder { display: grid; grid-template-columns: 1.5fr 1fr; align-items: center; gap: 56px; }
+        .founder-card { padding: 40px 30px; text-align: center; border: 1px solid #e3eaf6; border-radius: 24px; background: #fff; }
+        .founder-avatar { display: block; width: 120px; height: 120px; margin: 0 auto 22px; border-radius: 50%; object-fit: cover; }
+        .founder-initials { display: grid; place-items: center; background: #eef3ff; color: #0048ff; font-size: 34px; font-weight: 700; }
+        .founder-card h3 { margin: 0; font-size: 24px; color: #010c28; }
+        .founder-role { margin: 8px 0 0; color: #59677d; font-size: 14px; }
+        .founder-quote { margin: 24px 0 0; color: #4a5568; font-size: 16px; line-height: 1.6; }
+        .founder-link { display: inline-flex; margin-top: 22px; color: #0048ff; }
+        .founder-link svg { width: 24px; height: 24px; }
         .story-copy h2, .section-heading h2, .market-heading h2 {
           margin: 12px 0 0;
           color: #010c28;
@@ -255,7 +290,7 @@ export default async function Page() {
         .story-body { margin-top: 26px; color: #4a5568; font-size: 18px; line-height: 1.72; }
         .story-body p { margin: 0 0 17px; }
         .story-body p:last-child { margin-bottom: 0; }
-        .about-beliefs { padding: 100px 0 106px; background: #fff; }
+        .about-beliefs { padding: 112px 0; background: #fff; }
         .section-heading .label, .market-heading .label { margin: 0; }
         .belief-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 40px; }
         .belief-card {
@@ -272,7 +307,7 @@ export default async function Page() {
         .belief-mark svg { width: 20px; height: 20px; }
         .belief-card h3 { margin: 22px 0 8px; color: #010c28; font-size: 17px; line-height: 1.28; letter-spacing: -.02em; font-weight: 720; }
         .belief-card p { margin: 0; color: #59677d; font-size: 14px; line-height: 1.6; }
-        .about-services { padding: 96px 0 103px; background: #eef3ff; }
+        .about-services { padding: 112px 0; background: #eef3ff; }
         .service-grid { display: grid; grid-template-columns: 1.08fr .92fr; gap: 20px; margin-top: 38px; }
         .service-card { min-height: 322px; padding: 27px 30px; border-radius: 20px; background: #fff; }
         .service-card-main { border: 1px solid #0048ff; }
@@ -298,7 +333,7 @@ export default async function Page() {
         .service-card-boundary li { display: flex; align-items: center; gap: 12px; border: 0; color: #758094; font-size: 15px; }
         .boundary-cross { color: #a1aaba; font-size: 21px; line-height: 1; }
         .service-note { margin: 17px 0 0; color: #6d788b; font-size: 13px; line-height: 1.5; }
-        .about-markets { padding: 100px 0 104px; background: #010c28; color: #fff; }
+        .about-markets { padding: 112px 0; background: #010c28; color: #fff; }
         .market-heading { max-width: 650px; }
         .market-heading .label { color: rgba(255,255,255,.58); }
         .market-heading h2 { color: #fff; }
@@ -324,28 +359,34 @@ export default async function Page() {
         .market-line { margin-top: 8px; color: rgba(222,230,246,.68); font-size: 12px; line-height: 1.55; }
         .market-visit { position: absolute; top: 21px; right: 19px; color: #4576ff; font-size: 16px; opacity: 0; transition: opacity .2s ease; }
         .market-tile:hover .market-visit, .market-tile:focus-visible .market-visit { opacity: 1; }
-        .about-process { padding: 100px 0 98px; background: #fff; }
+        .about-process { padding: 112px 0; background: #fff; }
+        .about-reviews { padding: 112px 0; background: #f6f8fc; }
+        .about-reviews #reviews { padding: 38px 0 0; }
+        .about-reviews #reviews > .wrap:first-child, .about-reviews #reviews > p:last-child { display: none; }
         .process-link { display: inline-flex; align-items: center; gap: 12px; margin-top: 36px; color: #0048ff; font-size: 15px; font-weight: 650; text-decoration: none; }
         .process-link span { transition: transform .2s ease; }
         .process-link:hover span { transform: translateX(4px); }
         @media (max-width: 1023px) {
           .about-hero-grid { grid-template-columns: minmax(0, 1fr) minmax(0, .9fr); gap: 8px; }
           .about-hero-copy h1 { font-size: clamp(40px, 5vw, 58px); }
+          .story-grid-with-founder { gap: 28px; }
           .belief-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-          .market-grid { grid-template-columns: repeat(5, minmax(145px, 1fr)); }
-          .market-tile { padding: 20px 15px; }
+          .market-grid { grid-template-columns: repeat(5, minmax(145px, 1fr)); overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory; }
+          .market-tile { padding: 20px 15px; scroll-snap-align: start; }
         }
         @media (max-width: 767px) {
-          .about-hero { padding: 44px 0 26px; }
+          .about-container { width: calc(100% - 40px); }
+          .about-hero { padding: 128px 0 26px; }
           .about-hero-grid { grid-template-columns: minmax(0, 1fr); gap: 0; min-height: 0; }
           .about-hero-copy { padding: 0; }
-          .about-hero-copy h1 { max-width: 600px; margin-top: 17px; font-size: clamp(42px, 10vw, 58px); line-height: 1.02; }
+          .about-hero-copy h1 { max-width: 600px; margin-top: 17px; font-size: clamp(40px, 10vw, 58px); line-height: 1.02; }
           .about-lead { margin-top: 17px; font-size: 16px; line-height: 1.65; }
           .about-hero-actions { gap: 18px; margin-top: 23px; }
           .about-packages { min-height: 50px; padding: 0 17px; font-size: 14px; }
           .about-whatsapp { font-size: 13px; }
           .about-proof { padding-top: 10px; padding-bottom: 64px; }
-          .about-story, .about-beliefs, .about-services, .about-markets, .about-process { padding-top: 72px; padding-bottom: 74px; }
+          .about-story, .about-beliefs, .about-services, .about-markets, .about-process, .about-reviews { padding-top: 72px; padding-bottom: 72px; }
+          .story-grid-with-founder { grid-template-columns: 1fr; gap: 32px; }
           .story-body { margin-top: 20px; font-size: 16px; line-height: 1.7; }
           .belief-grid { gap: 12px; margin-top: 29px; }
           .belief-card { min-height: 190px; padding: 18px 16px; border-radius: 15px; }

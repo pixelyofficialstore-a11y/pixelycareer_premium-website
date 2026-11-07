@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { scheduleMotion } from "@/lib/motion";
 
 export default function HeroBrandStack() {
   const stackRef = useRef<HTMLDivElement>(null);
@@ -8,27 +9,76 @@ export default function HeroBrandStack() {
   useEffect(() => {
     const stack = stackRef.current;
     if (!stack) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const start = window.requestAnimationFrame(() => stack.classList.add("is-ready"));
-    if (reduced) return () => window.cancelAnimationFrame(start);
-
-    const move = (event: PointerEvent) => {
-      const bounds = stack.getBoundingClientRect();
-      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
-      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
-      stack.style.setProperty("--pointer-x", `${Math.max(-8, Math.min(8, x * 16))}px`);
-      stack.style.setProperty("--pointer-y", `${Math.max(-8, Math.min(8, y * 16))}px`);
+    const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (motionQuery.matches) {
+      stack.classList.add("is-ready");
+      return;
+    }
+    let cancelled = false;
+    let teardown = () => {};
+    scheduleMotion(({ gsap }) => {
+      if (cancelled || motionQuery.matches) return;
+      const cards = Array.from(stack.querySelectorAll<HTMLElement>(".brand-layer"));
+      let ready = false;
+      let move: (event: PointerEvent) => void = () => {};
+      let reset = () => {};
+      const context = gsap.context(() => {
+        const xTo = cards.map((card) => gsap.quickTo(card, "x", { duration: 0.4, ease: "power2.out" }));
+        const yTo = cards.map((card) => gsap.quickTo(card, "y", { duration: 0.4, ease: "power2.out" }));
+        move = (event) => {
+          if (!ready) return;
+          const bounds = stack.getBoundingClientRect();
+          const x = Math.max(-8, Math.min(8, ((event.clientX - bounds.left) / bounds.width - 0.5) * 16));
+          const y = Math.max(-8, Math.min(8, ((event.clientY - bounds.top) / bounds.height - 0.5) * 16));
+          cards.forEach((_, index) => {
+            const depth = [0.6, 0.85, 1][index];
+            xTo[index](x * depth);
+            yTo[index](y * depth);
+          });
+        };
+        reset = () => {
+          xTo.forEach((set) => set(0));
+          yTo.forEach((set) => set(0));
+        };
+        gsap.fromTo(cards, {
+          opacity: 0.6,
+          x: (index) => [68, -20, 0][index],
+          y: (index) => [42, 28, 0][index],
+          rotation: 0,
+          scale: 0.76,
+        }, {
+          opacity: 1,
+          x: 0,
+          y: 0,
+          rotation: (index) => [-9, 7, 1.5][index],
+          scale: (index) => [0.94, 0.96, 0.98][index],
+          duration: 0.9,
+          ease: "power3.out",
+          onComplete: () => {
+            ready = true;
+            stack.classList.add("is-ready");
+          },
+        });
+      }, stack);
+      stack.addEventListener("pointermove", move);
+      stack.addEventListener("pointerleave", reset);
+      teardown = () => {
+        stack.removeEventListener("pointermove", move);
+        stack.removeEventListener("pointerleave", reset);
+        context.revert();
+      };
+    });
+    const changeMotion = () => {
+      if (motionQuery.matches) {
+        teardown();
+        stack.classList.add("is-ready");
+      }
     };
-    const reset = () => {
-      stack.style.setProperty("--pointer-x", "0px");
-      stack.style.setProperty("--pointer-y", "0px");
-    };
-    stack.addEventListener("pointermove", move);
-    stack.addEventListener("pointerleave", reset);
+    motionQuery.addEventListener("change", changeMotion);
     return () => {
-      window.cancelAnimationFrame(start);
-      stack.removeEventListener("pointermove", move);
-      stack.removeEventListener("pointerleave", reset);
+      cancelled = true;
+      teardown();
+      motionQuery.removeEventListener("change", changeMotion);
     };
   }, []);
 
@@ -84,8 +134,6 @@ export default function HeroBrandStack() {
         .brand-stack {
           position: absolute;
           inset: 0;
-          --pointer-x: 0px;
-          --pointer-y: 0px;
         }
         .brand-layer {
           position: absolute;
@@ -217,22 +265,9 @@ export default function HeroBrandStack() {
           font-weight: 700;
           box-shadow: 0 10px 32px rgba(22,47,102,.1);
         }
-        .is-ready .portfolio-card { animation: fan-portfolio 900ms cubic-bezier(.2,.8,.2,1) both, idle-left 7s 1s ease-in-out infinite; }
-        .is-ready .linkedin-card { animation: fan-linkedin 900ms cubic-bezier(.2,.8,.2,1) both, idle-right 8s 1.1s ease-in-out infinite; }
-        .is-ready .cv-card { animation: fan-cv 900ms cubic-bezier(.2,.8,.2,1) both, idle-front 7.5s 1s ease-in-out infinite; }
-        .is-ready .brand-layer { --px: var(--pointer-x); --py: var(--pointer-y); }
-        @keyframes fan-portfolio {
-          from { opacity: .6; transform: translate3d(68px,42px,0) rotate(0) scale(.76); }
-          to { opacity: 1; transform: translate3d(var(--px, 0),var(--py, 0),0) rotate(-9deg) scale(.94); }
-        }
-        @keyframes fan-linkedin {
-          from { opacity: .6; transform: translate3d(-20px,28px,0) rotate(0) scale(.76); }
-          to { opacity: 1; transform: translate3d(var(--px, 0),var(--py, 0),0) rotate(7deg) scale(.96); }
-        }
-        @keyframes fan-cv {
-          from { opacity: .65; transform: translate3d(0,0,0) rotate(0) scale(.82); }
-          to { opacity: 1; transform: translate3d(var(--px, 0),var(--py, 0),0) rotate(1.5deg) scale(.98); }
-        }
+        .is-ready .portfolio-card { animation: idle-left 7s ease-in-out infinite; }
+        .is-ready .linkedin-card { animation: idle-right 8s ease-in-out infinite; }
+        .is-ready .cv-card { animation: idle-front 7.5s ease-in-out infinite; }
         @keyframes idle-left { 0%,100% { translate: 0 0; } 50% { translate: 0 -5px; } }
         @keyframes idle-right { 0%,100% { translate: 0 0; } 50% { translate: 0 -6px; } }
         @keyframes idle-front { 0%,100% { translate: 0 0; } 50% { translate: 0 -4px; } }

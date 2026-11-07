@@ -58,7 +58,7 @@ export default function ProcessTimeline() {
           z-index: 0;
           top: 13px;
           left: 13px;
-          right: 12.5%;
+          right: calc(25% - 35px);
           height: 2px;
           background: #dbe5ff;
           transform: scaleX(0);
@@ -99,7 +99,7 @@ export default function ProcessTimeline() {
             left: 13px;
             right: auto;
             width: 2px;
-            height: calc(100% - 28px);
+            height: calc(100% - 130px);
             transform: scaleY(0);
             transform-origin: top center;
           }
