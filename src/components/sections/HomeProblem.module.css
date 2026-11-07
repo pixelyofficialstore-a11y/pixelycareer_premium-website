@@ -1,94 +1,219 @@
 .section {
   --ink: var(--color-navy);
   --accent: var(--color-vivid);
-  padding-block: clamp(52px, 5vw, 64px);
+  --bad: #d14343;
+  --good: #0048ff;
+  padding-block: 96px;
   color: var(--ink);
   background: var(--color-mist);
 }
 
 .inner {
-  width: min(1248px, 100%);
-  margin-inline: auto;
-  padding-inline: clamp(22px, 5vw, 72px);
-}
-
-.layout {
-  display: grid;
-  grid-template-columns: minmax(220px, .78fr) minmax(0, 1.22fr);
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: clamp(40px, 8vw, 112px);
-}
-
-.copy {
-  padding-block: 12px;
+  padding-inline: 24px;
+  text-align: center;
 }
 
 .title {
-  max-width: 450px;
+  max-width: 1120px;
+  margin: 0;
   font-family: var(--font-head);
-  font-size: clamp(36px, 4.3vw, 58px);
+  font-size: clamp(32px, 4vw, 52px);
   font-weight: 500;
-  line-height: 1.06;
-  letter-spacing: -.04em;
+  line-height: 1.08;
+  letter-spacing: -.035em;
   text-wrap: balance;
 }
 
 .title span {
-  display: block;
   color: var(--accent);
 }
 
-.intro {
-  max-width: 350px;
-  margin-top: 22px;
+.subtitle {
+  margin: 16px 0 0;
   color: #566078;
-  font-size: clamp(15px, 1.25vw, 17px);
-  line-height: 1.65;
+  font-size: 17px;
+  line-height: 26px;
 }
 
-.labels {
-  display: flex;
-  justify-content: space-between;
-  max-width: 270px;
-  margin-top: 34px;
+.comparison {
+  position: relative;
+  flex: 0 0 auto;
+  /* Reserve both heading lines, all gaps, the link, and the 96px section padding.
+     The cap grows on taller screens rather than forcing an 880px wide image. */
+  width: min(880px, 100%, max(240px, calc((100svh - 552px) * 1.333333)));
+  aspect-ratio: 4 / 3;
+  margin-top: 40px;
+  border: 1px solid #e6ecf5;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 12px 34px -12px rgb(18 37 77 / .2);
+  cursor: ew-resize;
+  touch-action: pan-y;
+  user-select: none;
+  isolation: isolate;
+}
+
+.images {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.resumeImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.beforeLayer {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(0 calc(100% - var(--position)) 0 0);
+}
+
+.chip {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  padding: 7px 11px;
+  border-radius: 7px;
+  color: #fff;
   font-size: 12px;
   font-weight: 650;
-  letter-spacing: .04em;
+  line-height: 18px;
+  pointer-events: none;
 }
 
-.beforeLabel {
-  color: #6c7483;
+.beforeChip {
+  left: 14px;
+  background: rgb(209 67 67 / .9);
 }
 
-.afterLabel {
-  color: var(--accent);
+.afterChip {
+  right: 14px;
+  background: var(--good);
 }
 
-.instruction {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 9px;
-  color: #697286;
-  font-size: 13px;
+.divider {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  bottom: 0;
+  left: var(--position);
+  width: 2px;
+  background: #fff;
+  box-shadow: 0 0 6px rgb(18 37 77 / .4);
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
-.arrows {
-  color: var(--accent);
-  font-size: 16px;
-  letter-spacing: .14em;
+.handle {
+  position: absolute;
+  z-index: 5;
+  top: 50%;
+  /* Only the handle is clamped. The actual image boundary still reaches 0/100. */
+  left: clamp(26px, var(--position), calc(100% - 26px));
+  display: grid;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 3px 14px rgb(18 37 77 / .22);
+  color: var(--good);
+  place-items: center;
+  transform: translate(-50%, -50%);
+  cursor: ew-resize;
+  touch-action: pan-y;
+}
+
+.markers {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  pointer-events: none;
+}
+
+.markerGroup {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.marker {
+  position: absolute;
+  top: var(--y);
+  left: var(--x);
+  display: grid;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / .85);
+  border-radius: 50%;
+  color: #fff;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgb(18 37 77 / .2);
+  place-items: center;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.badMarker {
+  background: var(--bad);
+}
+
+.goodMarker {
+  background: var(--good);
+}
+
+.tag {
+  position: absolute;
+  z-index: 6;
+  top: calc(var(--y) - 17px);
+  left: clamp(10px, calc(var(--x) - 90px), calc(100% - 190px));
+  width: 180px;
+  padding: 8px 10px;
+  border: 1px solid #e6ecf5;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(18 37 77 / .15);
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: center;
+  transform: translateY(-100%);
+  pointer-events: none;
+}
+
+.tag[hidden] {
+  display: none;
+}
+
+.mobileSummary {
+  display: none;
 }
 
 .review {
   display: inline-flex;
   align-items: center;
-  gap: 11px;
-  margin-top: 30px;
-  padding-block: 9px;
+  gap: 10px;
+  margin-top: 28px;
+  padding-block: 8px;
   border-bottom: 1px solid var(--accent);
   color: var(--accent);
   font-size: 14px;
-  font-weight: 650;
+  font-weight: 600;
+  line-height: 20px;
   text-decoration: none;
 }
 
@@ -100,170 +225,80 @@
   transform: translateX(4px);
 }
 
-.comparison {
-  position: relative;
-  width: min(100%, 420px);
-  justify-self: center;
-  margin: 0;
-  overflow: visible;
-  filter: drop-shadow(0 19px 28px rgb(18 37 77 / .13));
-}
-
-.document {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 1131 / 1600;
-  overflow: hidden;
-  background: #fff;
-}
-
-.resumeImage {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
-}
-
-.beforeLayer {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  clip-path: inset(0 calc(100% - var(--position)) 0 0);
-}
-
-.divider {
-  position: absolute;
-  inset-block: 0;
-  left: var(--position);
-  z-index: 2;
-  width: 2px;
-  background: var(--accent);
-  transform: translateX(-50%);
-  pointer-events: none;
-}
-
-.divider::after {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  display: grid;
-  width: 42px;
-  height: 42px;
-  border: 3px solid var(--color-mist);
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 3px 12px rgb(9 27 67 / .24);
-  color: var(--color-mist);
-  content: "↔";
-  font-size: 19px;
-  line-height: 1;
-  place-items: center;
-  transform: translate(-50%, -50%);
-}
-
-.range {
-  position: absolute;
-  inset: 0;
-  z-index: 3;
-  width: 100%;
-  height: 100%;
-  margin: 0;
-  appearance: none;
-  background: transparent;
-  cursor: ew-resize;
-  touch-action: pan-y;
-}
-
-.range::-webkit-slider-runnable-track {
-  height: 100%;
-  background: transparent;
-}
-
-.range::-moz-range-track {
-  height: 100%;
-  background: transparent;
-}
-
-.range::-webkit-slider-thumb {
-  width: 44px;
-  height: 44px;
-  appearance: none;
-  border: 0;
-  background: transparent;
-}
-
-.range::-moz-range-thumb {
-  width: 44px;
-  height: 44px;
-  border: 0;
-  background: transparent;
-}
-
-.range:focus-visible {
+.section :is(a, button, [role="slider"]):focus-visible {
   outline: 3px solid var(--accent);
-  outline-offset: 6px;
+  outline-offset: 4px;
 }
 
-.visuallyHidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  clip-path: inset(50%);
-}
+@media (min-width: 1200px) {
+  .title {
+    white-space: nowrap;
+  }
 
-.section :is(a, input):focus-visible {
-  outline: 3px solid var(--accent);
-  outline-offset: 5px;
+  .comparison {
+    /* Keep the heading, subtitle and entire comparison below the sticky header. */
+    width: min(880px, 100%, max(240px, calc((100svh - 422px) * 1.333333)));
+  }
 }
 
 @media (max-width: 767px) {
   .section {
-    padding-block: 52px 60px;
+    padding-block: 64px;
   }
 
   .inner {
-    padding-inline: clamp(20px, 6vw, 32px);
-  }
-
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 32px;
-  }
-
-  .copy {
-    padding: 0;
+    padding-inline: 16px;
   }
 
   .title {
-    max-width: 500px;
-    font-size: clamp(36px, 10vw, 48px);
+    max-width: 520px;
   }
 
-  .intro {
-    max-width: 390px;
-    margin-top: 14px;
-    font-size: 15px;
+  .title span {
+    display: block;
   }
 
-  .labels {
-    max-width: none;
-    margin-top: 22px;
-  }
-
-  .instruction {
-    margin-top: 6px;
-  }
-
-  .review {
-    margin-top: 21px;
+  .subtitle {
+    white-space: nowrap;
   }
 
   .comparison {
-    width: min(100%, 430px);
+    width: 100%;
+    aspect-ratio: 3 / 4;
+  }
+
+  .markers {
+    display: none;
+  }
+
+  .mobileSummary {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+    width: 100%;
+    margin-top: 18px;
+    color: #566078;
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: left;
+  }
+
+  .mobileSummary h3 {
+    margin: 0 0 5px;
+    font-size: 13px;
+    font-weight: 650;
+  }
+
+  .mobileSummary p {
+    margin: 0;
+  }
+
+  .badText {
+    color: var(--bad);
+  }
+
+  .goodText {
+    color: var(--good);
   }
 }
 
