@@ -13,6 +13,42 @@ const GROUPS = [
   { name: "Service", start: 8, end: 12 },
 ];
 
+const CARD_CONTENT = {
+  "ats-career": {
+    audience: "For beginners",
+    name: "ATS Career",
+    result: "A CV that passes ATS and gets you your first interviews.",
+    button: "Choose ATS Career",
+    lead: "",
+    items: ["ATS CV, 1 to 2 pages", "Tailored cover letter", "LinkedIn profile content", "Keywords for your target job"],
+    support: "30 days",
+    delivery: "2 days",
+    revisions: "3 revisions included",
+  },
+  "international-pro": {
+    audience: "For professionals",
+    name: "International Career Pro",
+    result: "Get shortlisted for Gulf and international roles.",
+    button: "Choose International Pro",
+    lead: "Everything in ATS Career, plus:",
+    items: ["International standard CV", "Country specific cover letter", "Full LinkedIn makeover", "Indeed and Naukrigulf profiles", "Bio statement and digital contact card"],
+    support: "3 months",
+    delivery: "2 days",
+    revisions: "3 revisions included",
+  },
+  executive: {
+    audience: "For executives",
+    name: "Executive Career Branding",
+    result: "A leadership profile that wins senior level interviews.",
+    button: "Choose Executive",
+    lead: "Everything in International Pro, plus:",
+    items: ["Premium executive CV", "One page visual CV", "Executive cover letter and bio", "LinkedIn content pack (10 posts)", "Interview preparation guide"],
+    support: "6 months",
+    delivery: "3 days, priority",
+    revisions: "4 revisions included",
+  },
+} as const;
+
 function CheckIcon({ className = "" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden="true">
@@ -109,35 +145,46 @@ export default function Pricing({
           <ul className={styles.priceGrid}>
             {packages.map((p) => {
               const recommended = p.id === "international-pro";
-              const executive = p.id === "executive";
-              const revisions = p.value.find((value) => value.label.includes("revisions"));
-              const support = p.value.find((value) => value.label.includes("support"));
-              const footer = `${revisions?.n ?? ""} revisions · ${support?.n ?? ""} ${support?.label ?? ""} · ${p.deliveryDays.replace(" days", " day")} delivery`;
+              const content = CARD_CONTENT[p.id];
               return (
-                <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""} ${executive ? styles.executiveSlot : ""}`}>
-                  <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""} ${executive ? styles.cardExecutive : ""}`} aria-label={`${p.name} package`}>
+                <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`}>
+                  <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
                     {recommended && <span className={styles.badge}>Recommended</span>}
-                    {executive && <span className={styles.execLabel}>Executive</span>}
-                    <h3 className={`${styles.packageName} price-name`}>{p.name}</h3>
-                    <p className={styles.forLine}>{p.forLine}</p>
+                    <span className={styles.audience}>{content.audience}</span>
+                    <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <PriceAmount label={p.priceLabel} />
                     <p className={styles.oneTime}>one time</p>
+                    <div className={styles.resultBox}>
+                      <span className={styles.resultLabel}>The result</span>
+                      <strong>{content.result}</strong>
+                    </div>
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={`pricing-choose-${p.id}`}>
-                      {p.button}<ArrowIcon />
+                      {content.button}<ArrowIcon />
                     </Link>
-                    <hr className={styles.divider} />
-                    <p className={styles.listHeading}>What you get</p>
-                    <ul className={styles.itemList}>
-                      {p.lead && <li><CheckIcon />{p.lead}</li>}
-                      {p.items.map((item) => <li key={item}><CheckIcon />{item}</li>)}
-                    </ul>
-                    <p className={styles.cardFooter}>{footer}</p>
+                    <div className={styles.includedContent}>
+                      <p className={styles.listHeading}>What&apos;s included</p>
+                      <ul className={styles.itemList}>
+                        {content.lead && <li className={styles.listLead}>{content.lead}</li>}
+                        {content.items.map((item) => <li key={item}><span className={styles.textCheck} aria-hidden="true">✓</span>{item}</li>)}
+                      </ul>
+                    </div>
+                    <div className={styles.supportRow}>
+                      <div className={styles.supportBlock}>
+                        <strong>{content.support}</strong>
+                        <span>WhatsApp support</span>
+                      </div>
+                      <div className={styles.supportBlock}>
+                        <strong>{content.delivery}</strong>
+                        <span>Delivery</span>
+                      </div>
+                    </div>
+                    <p className={styles.cardFooter}>{content.revisions}</p>
                   </article>
                 </li>
               );
             })}
           </ul>
-          <p className={styles.fasterNote}>Need it faster? Same day delivery is available on every package for a small fee.</p>
+          <p className={styles.fasterNote}>PDF and Word files with every package · Same day delivery available for a small fee</p>
         </div>
       </section>
 
