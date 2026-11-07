@@ -238,6 +238,7 @@
 
 /* Sample work / real assets only */
 .agency-page .agency-samples { background: #fff; }
+.agency-page .agency-samples > .agency-wrap > .agency-title { max-width: none; margin-inline: auto; text-align: center; }
 .agency-page .agency-sample-tabs { display: flex; gap: 8px; margin-top: 29px; overflow-x: auto; padding: 2px 2px 12px; scrollbar-width: none; }
 .agency-page .agency-sample-tabs::-webkit-scrollbar { display: none; }
 .agency-page .agency-sample-tabs button { min-height: 39px; flex: 0 0 auto; padding: 0 15px; border: 1px solid #dfe6f2; border-radius: 999px; color: #4b5d7b; background: #fff; font: inherit; font-size: 11px; cursor: pointer; transition: color 180ms ease, background 180ms ease, border-color 180ms ease; }

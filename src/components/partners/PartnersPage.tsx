@@ -330,31 +330,6 @@ function WaysSection() {
   </section>;
 }
 
-function Services() {
-  const items = ["ATS CVs", "Europass CVs", "Cover letters", "LinkedIn, Indeed & Naukrigulf profiles", "SOPs & LORs", "Bio statements", "Portfolio websites", "Interview guides"];
-  const root = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-  useEffect(() => {
-    const node = root.current;
-    if (!node) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setVisible(true);
-      return;
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        setVisible(true);
-        observer.disconnect();
-      }
-    }, { threshold: 0.2 });
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-  return <div ref={root} className={`agency-services${visible ? " is-visible" : ""}`} aria-label="Documents and services">
-    {items.map((item, index) => <span key={item} style={{ "--reveal-delay": `${index * 80}ms` } as CSSProperties}><i aria-hidden="true" />{item}</span>)}
-  </div>;
-}
-
 function ProcessVisual({ number }: { number: number }) {
   if (number === 0) return <div className="agency-process-visual agency-chat-visual"><span className="agency-chat-label">NEW REQUEST</span><div className="agency-chat-bubble">New candidate: Staff Nurse, KSA <svg viewBox="0 0 24 24" fill="none" aria-label="attachment"><path d="m8 12 5.8-5.8a3 3 0 014.2 4.2l-7.4 7.4a5 5 0 01-7.1-7.1l7.1-7.1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" /></svg></div><span className="agency-chat-time">10:42 am</span></div>;
   if (number === 1) return <div className="agency-process-visual agency-draft-visual"><div className="agency-draft-paper"><span className="agency-draft-tag">Draft 1 · 24h</span><CvMock role="Staff Nurse" mini /></div></div>;
@@ -477,10 +452,8 @@ export default function PartnersPage({ samples }: { samples: AgencySample[] }) {
     <WaysSection />
     <section className="agency-section agency-samples" id="samples" aria-labelledby="agency-samples-title" data-agency-reveal>
       <div className="agency-wrap">
-        <p className="agency-kicker">Sample work</p>
         <h2 className="agency-title" id="agency-samples-title">Every format your <em>candidates need.</em></h2>
         <PartnersCarousel samples={samples} />
-        <Services />
         <div className="agency-template-strip">
           <p>Already have a format? Send us your template and we will work on it.</p>
           <a className="btn btn-primary" href="#agency-enquiry">Book a 15-minute call <ArrowIcon /></a>

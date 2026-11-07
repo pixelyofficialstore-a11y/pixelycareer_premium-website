@@ -9,11 +9,17 @@ On the agency partnership page, never show partner prices or name any partner ag
 
 **How to apply:** Preserve these constraints in future page copy, sample work, structured data, proposal links, and promotional additions. Discuss rates privately rather than adding public price tables.
 
-Keep agency page text minimal and call-booking links directed to the final enquiry form. The current direction explicitly allows audience and sample tabs, model switching, and a desktop pinned S-curve process, despite earlier requests to remove these.
+Keep agency page text minimal and call-booking links directed to the final enquiry form. The current direction allows audience tabs, model switching, and a desktop pinned S-curve process.
 
 **Why:** The user rejected dense copy and excessive CTAs, then supplied a new brief requesting richer visuals and interactions rather than additional paragraphs.
 
 **How to apply:** Preserve concise copy and the final enquiry form as the main conversion point; respect mobile and reduced-motion alternatives when adding motion.
+
+The sample-work section should have a centered headline, no eyebrow, category filters, service-pill row or numeric slide counter. All available samples loop in sequence.
+
+**Why:** The user explicitly asked to remove this clutter from the sample-work section.
+
+**How to apply:** Keep the carousel and manual navigation without adding category controls back.
 
 Use only approved agency proof figures: 20+ partner agencies, 1,800+ clients served, and 3+ years of experience.
 
