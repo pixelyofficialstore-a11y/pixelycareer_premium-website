@@ -27,7 +27,7 @@ export default function HomePage({ market, useHomeProblem = false }: { market: M
       {market.path !== "/" && <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: market.areaServed, path: market.path }])} />}
       <MarketSync market={market.key} />
       <HeroRise>
-        <Hero market={market} />
+        <Hero market={market} centerMobileHeadline={market.path === "/"} />
       </HeroRise>
       {useHomeProblem ? <HomeProblem /> : (
         <>

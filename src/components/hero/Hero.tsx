@@ -3,8 +3,9 @@ import { HERO_PERSONAS } from "@/config/heroPersonas";
 import type { Market } from "@/config/markets";
 import { ArrowDown, ArrowRight } from "@/components/ui/Icons";
 import HeroStack from "./HeroStack";
+import styles from "./Hero.module.css";
 
-export default function Hero({ market }: { market: Market }) {
+export default function Hero({ market, centerMobileHeadline = false }: { market: Market; centerMobileHeadline?: boolean }) {
   const persona = HERO_PERSONAS[market.key];
   const { line1, line2, sub } = persona.heroCopy;
   let i = 0;
@@ -22,7 +23,7 @@ export default function Hero({ market }: { market: Market }) {
         <div className="grid12 hero-grid">
           <div className="hero-copy col-span-12 lg:col-span-6">
             {/* Line breaks are fixed on large screens, so the fallback font can never change the line count and shift the page. */}
-            <h1 className="h1">
+            <h1 className={`h1${centerMobileHeadline ? ` ${styles.centerMobileHeadline}` : ""}`}>
               <span className="block">{words(line1)}</span>{" "}
               <span className="block">
                 <em>{words(line2)}</em>
