@@ -21,6 +21,12 @@
   text-wrap: balance;
 }
 
+@media (min-width: 768px) {
+  .title {
+    font-size: clamp(48px, 4.8vw, 68px);
+  }
+}
+
 .title em {
   color: #0048ff;
   font-style: normal;
@@ -31,7 +37,7 @@
 }
 
 .stage {
-  --slide-height: clamp(340px, 28vw, 420px);
+  --slide-height: clamp(360px, 31vw, 440px);
   position: relative;
   width: min(100%, 1080px);
   height: var(--slide-height);
