@@ -14,3 +14,9 @@ Blog cover photographs must be free images from Unsplash or Pexels, with accurat
 **Why:** The user restricted cover sources and requested real, licensed photographs with credits. Image-search descriptions can misidentify the photographer.
 
 **How to apply:** Verify the original photo page and free license before downloading; use that page's photographer name, not an unverified search-result attribution.
+
+Keep the blog's free review promotion outside the article grid, as a horizontal strip below the posts. Its action must open WhatsApp directly, without a form.
+
+**Why:** The user rejected a promotion taking an article's place in the grid and explicitly requested a direct WhatsApp message.
+
+**How to apply:** Preserve article-only grid rows when changing blog discovery or review promotion layouts.

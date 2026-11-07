@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ArrowRight } from "@/components/ui/Icons";
 import type { PostMeta } from "@/lib/blog";
 import { scheduleMotion } from "@/lib/motion";
+import { whatsappMessage } from "@/lib/site";
 import BlogCard, { PostCover } from "./BlogCard";
 
 const ORDER = ["CV & Resume", "LinkedIn", "Gulf jobs", "UK & Europe"];
@@ -134,22 +135,7 @@ export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
             <li key={post.slug} data-blog-reveal data-revealed="true" style={{ "--reveal-delay": `${(index % 3) * 60}ms` } as CSSProperties}>
               <BlogCard post={post} />
             </li>
-          )).flatMap((card, index) => {
-            const items = [card];
-            if (!filtering && current === 1 && index === 5) {
-              items.push(
-                <li key="grid-review-cta" className="blog-grid-cta" data-blog-reveal data-revealed="true" style={{ "--reveal-delay": "0ms" } as CSSProperties}>
-                  <p className="blog-kicker">Free review</p>
-                  <h3>Not sure your CV passes ATS?</h3>
-                  <p>Send it on WhatsApp. We'll tell you what to fix.</p>
-                  <Link href="/free-cv-review" className="btn btn-primary btn-sm" data-cta="blog-grid-review">
-                    Get a free review <ArrowRight />
-                  </Link>
-                </li>,
-              );
-            }
-            return items;
-          })}
+          ))}
         </ul>
       ) : (
         <p className="blog-empty" role="status">No posts found. Try another word.</p>
@@ -173,6 +159,20 @@ export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
             </button>
           ))}
         </nav>
+      )}
+      {shown.length > 0 && (
+        <aside className="blog-review-strip" aria-label="Free CV review">
+          <p><strong>Not sure your CV passes ATS?</strong> Send it on WhatsApp for a free review.</p>
+          <a
+            href={whatsappMessage("Hi, I'd like a free CV review. I'll send my CV here.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary"
+            data-cta="blog-grid-review"
+          >
+            Message on WhatsApp <ArrowRight />
+          </a>
+        </aside>
       )}
     </>
   );
