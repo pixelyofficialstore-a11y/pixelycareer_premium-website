@@ -210,10 +210,6 @@
   text-align: left;
 }
 
-.mobileSummary > div:nth-child(2) {
-  padding-left: 0;
-}
-
 .mobileSummary h3 {
   margin: 0 0 5px;
   font-size: 13px;
@@ -373,6 +369,10 @@
 
   .mobileSummary {
     margin-top: 12px;
+  }
+
+  .mobileSummary > div {
+    padding-left: 12px;
   }
 
   .review {
