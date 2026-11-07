@@ -1,153 +1,179 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ArrowRight } from "@/components/ui/Icons";
 import type { PostMeta } from "@/lib/blog";
+import { scheduleMotion } from "@/lib/motion";
 import BlogCard, { PostCover } from "./BlogCard";
 
 const ORDER = ["CV & Resume", "LinkedIn", "Gulf jobs", "UK & Europe"];
 const PER_PAGE = 9;
 
-/** The page is static HTML with every post in it; search and filters run in the browser. */
 export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
   const [category, setCategory] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
 
-  // Filters are shareable, so read them from the address once the page is live.
   useEffect(() => {
-    const u = new URLSearchParams(location.search);
-    const c = u.get("category");
+    const params = new URLSearchParams(location.search);
+    const selected = params.get("category");
+    // The URL is only available in the browser, so preserve server markup and hydrate filters once.
     /* eslint-disable react-hooks/set-state-in-effect */
-    if (c && ORDER.includes(c)) setCategory(c);
-    if (u.get("q")) setQuery(u.get("q") ?? "");
+    if (selected && ORDER.includes(selected)) setCategory(selected);
+    if (params.get("q")) setQuery(params.get("q") ?? "");
     /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
-  const writeUrl = (c: string | null, q: string) => {
-    const u = new URLSearchParams();
-    if (c) u.set("category", c);
-    if (q) u.set("q", q);
-    history.replaceState(history.state, "", u.size ? `/blog?${u}` : "/blog");
-  };
+  useEffect(() => {
+    const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-blog-reveal]"));
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let cancelled = false;
+    let revert: (() => void) | undefined;
+    scheduleMotion(({ gsap, ScrollTrigger }) => {
+      if (cancelled) return;
+      const context = gsap.context(() => {
+        gsap.set(nodes, { opacity: 0, y: 10 });
+        ScrollTrigger.batch(nodes, {
+          start: "top 96%",
+          once: true,
+          onEnter: (batch) => gsap.to(batch, {
+            opacity: 1, y: 0, duration: 0.34, stagger: 0.06,
+            ease: "power2.out", clearProps: "transform,opacity",
+          }),
+        });
+      });
+      revert = () => context.revert();
+    });
+    return () => { cancelled = true; revert?.(); };
+  }, [category, query, page]);
 
-  const categories = ORDER.filter((c) => posts.some((p) => p.category === c));
+  const writeUrl = (nextCategory: string | null, nextQuery: string) => {
+    const params = new URLSearchParams();
+    if (nextCategory) params.set("category", nextCategory);
+    if (nextQuery) params.set("q", nextQuery);
+    history.replaceState(history.state, "", params.size ? `/blog?${params}` : "/blog");
+  };
+  const categories = ORDER.filter((name) => posts.some((post) => post.category === name));
   const needle = query.trim().toLowerCase();
-  const filtering = !!category || !!needle;
+  const filtering = Boolean(category || needle);
   const matches = useMemo(
-    () => posts.filter((p) => (!category || p.category === category) && (!needle || `${p.title} ${p.description}`.toLowerCase().includes(needle))),
+    () => posts.filter((post) =>
+      (!category || post.category === category) &&
+      (!needle || `${post.title} ${post.description} ${post.category}`.toLowerCase().includes(needle)),
+    ),
     [posts, category, needle],
   );
   const featured = filtering ? null : posts[0];
-  const list = featured ? matches.slice(1) : matches;
+  const list = featured ? matches.filter((post) => post.slug !== featured.slug) : matches;
   const pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
   const current = Math.min(page, pages);
   const shown = list.slice((current - 1) * PER_PAGE, current * PER_PAGE);
-
-  const pick = (c: string | null) => {
-    setCategory(c);
+  const setFilter = (nextCategory: string | null) => {
+    setCategory(nextCategory);
     setPage(1);
-    writeUrl(c, query.trim());
+    writeUrl(nextCategory, query.trim());
   };
 
   return (
     <>
-      <div className="mt-8 max-w-[460px]">
-        <label htmlFor="blog-search" className="sr-only">
-          Search posts
-        </label>
+      <div className="blog-search">
+        <label htmlFor="blog-search" className="sr-only">Search posts</label>
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="10.8" cy="10.8" r="6.4" stroke="currentColor" strokeWidth="1.8" />
+          <path d="m15.5 15.5 4.2 4.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
         <input
           id="blog-search"
           type="search"
           placeholder="Search posts"
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
+          onChange={(event) => {
+            setQuery(event.target.value);
             setPage(1);
-            writeUrl(category, e.target.value.trim());
+            writeUrl(category, event.target.value.trim());
           }}
-          className="form-input"
         />
       </div>
 
       {featured && (
-        <article className="card lift group relative mt-12 grid overflow-hidden lg:grid-cols-2">
-          <PostCover post={featured} wide />
-          <div className="flex flex-col justify-center p-7 lg:p-12">
-            <p className="text-sm font-medium text-vivid">Featured · {featured.category}</p>
-            <h2 className="font-head mt-3 text-[clamp(26px,2.6vw,36px)] leading-[1.15] font-semibold tracking-[-0.02em] text-balance">
-              <Link href={`/blog/${featured.slug}`} className="after:absolute after:inset-0 after:content-['']">
-                {featured.title}
-              </Link>
-            </h2>
-            <p className="mt-4 leading-[1.55] text-navy/70">{featured.description}</p>
-            <p className="mt-5 text-sm text-navy/70">
-              {featured.dateLabel} · {featured.readingTime}
-            </p>
+        <article className="blog-feature">
+          <Link href={`/blog/${featured.slug}`} className="blog-feature-visual" aria-label={`Read ${featured.title}`}>
+            <PostCover post={featured} wide priority />
+          </Link>
+          <div className="blog-feature-copy">
+            <p className="blog-kicker">Featured · {featured.category}</p>
+            <h2 className="blog-feature-title"><Link href={`/blog/${featured.slug}`}>{featured.title}</Link></h2>
+            <p className="blog-feature-excerpt">{featured.description}</p>
+            <p className="blog-feature-meta">{featured.dateLabel} · {featured.readingTime}</p>
+            <Link href={`/blog/${featured.slug}`} className="blog-feature-link">
+              Read article <ArrowRight />
+            </Link>
           </div>
         </article>
       )}
 
-      <ul className="mt-12 flex flex-wrap gap-3" aria-label="Filter by category">
-        {[null, ...categories].map((c) => (
-          <li key={c ?? "all"}>
-            <button type="button" aria-pressed={category === c} onClick={() => pick(c)} className="chip chip-btn">
-              {c ?? "All"}
-            </button>
-          </li>
-        ))}
-      </ul>
+      <nav className="blog-filter-scroll" aria-label="Filter by category">
+        <ul className="blog-filters">
+          {[null, ...categories].map((name) => {
+            const count = name ? posts.filter((post) => post.category === name).length : posts.length;
+            return (
+              <li key={name ?? "all"}>
+                <button type="button" className="blog-filter" aria-pressed={category === name} onClick={() => setFilter(name)}>
+                  {name ?? "All"} <span className="blog-filter-count">{count}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
 
       <h2 className="sr-only">Posts</h2>
-      {shown.length > 0 ? (
-        <ul className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {shown.map((p) => (
-            <li key={p.slug}>
-              <BlogCard post={p} />
+      {shown.length ? (
+        <ul className="blog-grid">
+          {shown.map((post, index) => (
+            <li key={post.slug} data-blog-reveal data-revealed="true" style={{ "--reveal-delay": `${(index % 3) * 60}ms` } as CSSProperties}>
+              <BlogCard post={post} />
             </li>
-          ))}
+          )).flatMap((card, index) => {
+            const items = [card];
+            if (!filtering && current === 1 && index === 5) {
+              items.push(
+                <li key="grid-review-cta" className="blog-grid-cta" data-blog-reveal data-revealed="true" style={{ "--reveal-delay": "0ms" } as CSSProperties}>
+                  <p className="blog-kicker">Free review</p>
+                  <h3>Not sure your CV passes ATS?</h3>
+                  <p>Send it on WhatsApp. We'll tell you what to fix.</p>
+                  <Link href="/free-cv-review" className="btn btn-primary btn-sm" data-cta="blog-grid-review">
+                    Get a free review <ArrowRight />
+                  </Link>
+                </li>,
+              );
+            }
+            return items;
+          })}
         </ul>
       ) : (
-        <p className="mt-10 text-lg text-navy/70" role="status">
-          No posts match that search.
-        </p>
+        <p className="blog-empty" role="status">No posts found. Try another word.</p>
       )}
 
       {pages > 1 && (
-        <nav aria-label="Pagination" className="mt-12 flex flex-wrap items-center gap-2">
-          {Array.from({ length: pages }, (_, i) => i + 1).map((n) => (
+        <nav className="blog-pagination" aria-label="Pagination">
+          {Array.from({ length: pages }, (_, index) => index + 1).map((number) => (
             <button
-              key={n}
+              key={number}
               type="button"
-              aria-current={n === current ? "page" : undefined}
-              aria-pressed={n === current}
-              aria-label={`Page ${n}`}
+              className="blog-page-number"
+              aria-current={number === current ? "page" : undefined}
+              aria-label={`Page ${number}`}
               onClick={() => {
-                setPage(n);
-                window.scrollTo({ top: 0, behavior: "instant" });
+                setPage(number);
+                window.scrollTo({ top: 0, behavior: "auto" });
               }}
-              className="chip chip-btn min-w-11 justify-center"
             >
-              {n}
+              {number}
             </button>
           ))}
         </nav>
       )}
-
-      <section aria-labelledby="fix-title" className="mt-20 flex flex-wrap items-center justify-between gap-6 rounded-2xl bg-mist p-8 lg:mt-28 lg:p-12">
-        <h2 id="fix-title" className="font-head text-[clamp(26px,2.8vw,40px)] leading-[1.1] font-semibold tracking-[-0.02em]">
-          Want us to fix it for you?
-        </h2>
-        <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-8">
-          <Link href="/pricing" className="btn btn-primary" data-cta="blog-packages">
-            See packages
-            <ArrowRight />
-          </Link>
-          <Link href="/free-cv-review" className="link-u font-head font-medium" data-cta="blog-free-review">
-            Free CV review
-          </Link>
-        </div>
-      </section>
     </>
   );
 }

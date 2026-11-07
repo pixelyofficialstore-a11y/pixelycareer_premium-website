@@ -1,6 +1,9 @@
 import BlogIndex from "@/components/blog/BlogIndex";
+import MarketFinalCta from "@/components/blog/MarketFinalCta";
 import { getPosts } from "@/lib/blog";
+import Reveal from "@/components/ui/Reveal";
 import { JsonLd, SITE, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
+import "@/components/blog/blog.css";
 
 export const metadata = pageMetadata(
   "/blog",
@@ -9,6 +12,7 @@ export const metadata = pageMetadata(
 );
 
 export default function Page() {
+  const posts = getPosts();
   return (
     <>
       <JsonLd
@@ -22,12 +26,16 @@ export default function Page() {
         }}
       />
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Blog", path: "/blog" }])} />
-      <section className="page-top wrap pb-24 lg:pb-40">
+      <section className="blog-page">
+        <div className="blog-intro">
         <p className="label">Blog</p>
-        <h1 className="page-h1 mt-6">Career notes.</h1>
-        <p className="page-sub">Practical advice for your next application.</p>
-        <BlogIndex posts={getPosts()} />
+        <h1 className="blog-heading mt-5">Career <em>notes.</em></h1>
+        <p className="blog-deck">Practical advice for your next application.</p>
+        <BlogIndex posts={posts} />
+        </div>
       </section>
+      <MarketFinalCta />
+      <Reveal />
     </>
   );
 }

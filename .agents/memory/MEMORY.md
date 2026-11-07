@@ -2,3 +2,4 @@
 - [Preview hydration safety](preview-hydration.md) — injected preview scripts can collide with raw head scripts; preserve React-owned markup until hydration.
 - [Agency partnership content](agency-partnership-content.md) — partner rates and agency identities stay private; no employment or visa guarantees.
 - [Page motion isolation](page-motion-isolation.md) — custom page reveals must not compete with the shared document-wide animation controller.
+- [Blog editorial rules](blog-editorial-rules.md) — preserve article bodies during UI work; verify free Unsplash/Pexels photos and photographer credits.

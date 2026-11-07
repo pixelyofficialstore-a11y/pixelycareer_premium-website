@@ -15,6 +15,11 @@ export type PostMeta = {
   author: string;
   keywords: string[];
   relatedService: string;
+  cover?: string;
+  coverAlt?: string;
+  coverCredit?: string;
+  coverCreditUrl?: string;
+  takeaways?: string[];
   faq?: { q: string; a: string }[];
   draft?: boolean;
   dateLabel: string;
@@ -37,7 +42,7 @@ function read(file: string) {
     updated,
     dateLabel: label(date),
     updatedLabel: updated && updated !== date ? label(updated) : undefined,
-    readingTime: `${Math.max(1, Math.ceil(words / 230))} min read`,
+    readingTime: `${Math.max(3, Math.ceil(words / 220))} min read`,
   } as PostMeta;
   return { meta, content };
 }

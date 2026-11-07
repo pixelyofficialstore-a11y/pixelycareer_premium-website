@@ -1,32 +1,43 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { PostMeta } from "@/lib/blog";
+import BlogCoverFallback from "./BlogCoverFallback";
 
-/** Brand-colored type panel: no stock photos. */
-export function PostCover({ post, wide }: { post: PostMeta; wide?: boolean }) {
-  const blue = post.category === "LinkedIn" || post.category === "UK & Europe";
+type CoverMeta = PostMeta & { cover?: string; coverAlt?: string };
+
+/** A 16:10 editorial image, or the designed category fallback when no photo exists. */
+export function PostCover({ post, wide = false, priority = false }: { post: PostMeta; wide?: boolean; priority?: boolean }) {
+  const item = post as CoverMeta;
   return (
-    <div aria-hidden="true" className={`flex flex-col justify-between p-6 text-white ${blue ? "bg-vivid" : "bg-navy"} ${wide ? "min-h-64 lg:p-10" : "h-48"}`}>
-      <span className="text-sm font-medium">{post.category}</span>
-      <span className={`font-head line-clamp-2 leading-[1.1] font-semibold tracking-[-0.02em] ${wide ? "text-[clamp(28px,3vw,44px)]" : "text-[24px]"}`}>{post.title}</span>
+    <div className={`blog-cover-inner${wide ? " blog-cover-inner-wide" : ""}`}>
+      {item.cover ? (
+        <Image
+          src={item.cover}
+          alt={item.coverAlt || `Editorial cover for ${post.title}`}
+          fill
+          priority={priority}
+          sizes={wide ? "(max-width: 767px) 100vw, 55vw" : "(max-width: 767px) 100vw, (max-width: 900px) 50vw, 33vw"}
+        />
+      ) : (
+        <BlogCoverFallback category={post.category} />
+      )}
     </div>
   );
 }
 
 export default function BlogCard({ post }: { post: PostMeta }) {
   return (
-    <article className="card lift group relative flex h-full flex-col overflow-hidden">
-      <PostCover post={post} />
-      <div className="flex flex-1 flex-col p-6">
-        <p className="text-sm font-medium text-vivid">{post.category}</p>
-        <h3 className="mt-2 text-[20px] leading-[1.25] font-semibold tracking-[-0.01em]">
-          <Link href={`/blog/${post.slug}`} className="after:absolute after:inset-0 after:content-['']">
-            {post.title}
-          </Link>
+    <article className="blog-card">
+      <Link href={`/blog/${post.slug}`} className="blog-card-cover" aria-label={`Read ${post.title}`}>
+        <PostCover post={post} />
+      </Link>
+      <div className="blog-card-copy">
+        <p className="blog-card-category">{post.category}</p>
+        <h3 className="blog-card-title">
+          <Link href={`/blog/${post.slug}`}>{post.title}</Link>
         </h3>
-        <p className="mt-3 line-clamp-2 text-[15px] leading-[1.5] text-navy/70">{post.description}</p>
-        <p className="mt-auto pt-5 text-sm text-navy/70">
-          {post.dateLabel} · {post.readingTime}
-        </p>
+        <p className="blog-card-excerpt">{post.description}</p>
+        <p className="blog-card-meta">{post.dateLabel} · {post.readingTime}</p>
       </div>
     </article>
   );

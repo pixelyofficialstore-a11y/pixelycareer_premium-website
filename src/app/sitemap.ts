@@ -24,5 +24,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/privacy",
     "/terms",
   ];
-  return [...MARKET_KEYS.map((k) => ({ url: url(MARKETS[k].path), lastModified: new Date(), priority: k === "us" ? 1 : 0.9, alternates: { languages } })), ...pages.map((path) => ({ url: url(path) })), ...getPosts().map((p) => ({ url: url(`/blog/${p.slug}`), lastModified: p.updated ?? p.date }))];
+  return [...MARKET_KEYS.map((k) => ({ url: url(MARKETS[k].path), lastModified: new Date(), priority: k === "us" ? 1 : 0.9, alternates: { languages } })), ...pages.map((path) => ({ url: url(path) })), ...getPosts().map((p) => ({ url: url(`/blog/${p.slug}`), lastModified: p.updated ?? p.date, ...(p.cover ? { images: [url(p.cover)] } : {}) }))];
 }
