@@ -89,14 +89,18 @@ export default function Pricing({
     <div className={`${styles.page} ${standalone ? styles.standalone : ""}`} data-pricing-surface>
       <header className={styles.hero}>
         <div className={styles.heroInner}>
-          <p className={styles.eyebrow}>Pricing</p>
+          {!standalone && <p className={styles.eyebrow}>Pricing</p>}
           <HeroHeading className={styles.heroTitle}>One price. <em>No surprises.</em></HeroHeading>
-          <p className={styles.heroText}>Pick a package, pay once, and get a CV written for your role and your country.</p>
-          <ul className={styles.heroChips} aria-label="Included with every package">
-            <li><CheckIcon />PDF and Word files</li>
-            <li><CheckIcon />Revisions included</li>
-            <li><CheckIcon />First draft in 2 days</li>
-          </ul>
+          {!standalone && (
+            <>
+              <p className={styles.heroText}>Pick a package, pay once, and get a CV written for your role and your country.</p>
+              <ul className={styles.heroChips} aria-label="Included with every package">
+                <li><CheckIcon />PDF and Word files</li>
+                <li><CheckIcon />Revisions included</li>
+                <li><CheckIcon />First draft in 2 days</li>
+              </ul>
+            </>
+          )}
         </div>
       </header>
 

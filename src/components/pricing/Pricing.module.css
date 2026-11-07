@@ -15,7 +15,18 @@
 }
 
 .standalone .hero {
-  padding-top: calc(136px + var(--bar-h, 0px));
+  /* Reserve the fixed navigation separately from the requested hero padding. */
+  margin-top: calc(80px + var(--bar-h, 0px));
+  padding: 64px 1.25rem 40px;
+  min-height: 0;
+  background: var(--price-wash);
+}
+
+.standalone .heroTitle {
+  max-width: none;
+  font-size: clamp(36px, 4.5vw, 56px);
+  line-height: 1.1;
+  white-space: nowrap;
 }
 
 .heroInner,
@@ -733,6 +744,8 @@
 @media (max-width: 900px) {
   .hero { padding: 3.6rem 1.2rem 2.8rem; }
   .heroTitle { font-size: clamp(2.65rem, 12vw, 4.25rem); }
+  .standalone .hero { margin-top: calc(72px + var(--bar-h, 0px)); padding: 40px 1.2rem 28px; }
+  .standalone .heroTitle { white-space: normal; }
   .heroChips { max-width: 360px; gap: .45rem; }
   .heroChips li { padding: .48rem .65rem; font-size: .74rem; }
   .packages { padding: 2.8rem 1.1rem 3rem; }
