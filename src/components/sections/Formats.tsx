@@ -1,93 +1,187 @@
 "use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
-import { FORMATS } from "@/config/formats";
-import { MARKETS, localize, localizeTitle, type MarketKey } from "@/config/markets";
-import { ArrowRight } from "@/components/ui/Icons";
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
+import { FORMATS, FORMAT_LABELS } from "@/config/formats";
+import type { MarketKey } from "@/config/markets";
+import styles from "./Formats.module.css";
 
-const Chevron = ({ back }: { back?: boolean }) => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-    <path d={back ? "M15 5l-7 7 7 7" : "M9 5l7 7-7 7"} />
+const Chevron = ({ back = false }: { back?: boolean }) => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+    <path d={back ? "m15 5-7 7 7 7" : "m9 5 7 7-7 7"} />
   </svg>
 );
 
-/** One straight row of formats, with small arrows at its ends. */
-export default function Formats({ market }: { market: MarketKey }) {
-  const m = MARKETS[market];
-  const l = (t: string) => localize(m, t);
-  const items = FORMATS[market];
-  const track = useRef<HTMLUListElement>(null);
-  const [ends, setEnds] = useState({ start: true, end: false });
+function offsetFor(index: number, active: number, count: number) {
+  let offset = index - active;
+  if (offset > count / 2) offset -= count;
+  if (offset < -count / 2) offset += count;
+  return offset;
+}
 
-  const sync = () => {
-    const t = track.current;
-    if (t) setEnds({ start: t.scrollLeft < 8, end: t.scrollLeft + t.clientWidth > t.scrollWidth - 8 });
-  };
+export default function Formats({ market }: { market: MarketKey }) {
+  const items = FORMATS[market];
+  const labels = FORMAT_LABELS[market];
+  const resumeWord = market === "us" ? "Resume" : "CV";
+  const [active, setActive] = useState(0);
+  const [hovered, setHovered] = useState(false);
+  const [touching, setTouching] = useState(false);
+  const [stopped, setStopped] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const pointerStart = useRef<number | null>(null);
+
   useEffect(() => {
-    sync();
-    window.addEventListener("resize", sync);
-    return () => window.removeEventListener("resize", sync);
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
   }, []);
-  const move = (dir: number) => {
-    const t = track.current;
-    const card = t?.querySelector("li");
-    if (t && card) t.scrollBy({ left: dir * (card.clientWidth + 20), behavior: "smooth" });
+
+  useEffect(() => {
+    if (reducedMotion || stopped || hovered || touching || items.length < 2) return;
+    const timer = window.setInterval(() => {
+      setActive((current) => (current + 1) % items.length);
+    }, 4000);
+    return () => window.clearInterval(timer);
+  }, [hovered, items.length, reducedMotion, stopped, touching]);
+
+  const select = (index: number) => {
+    setStopped(true);
+    setActive(index);
+  };
+
+  const step = (direction: number) => {
+    select((active + direction + items.length) % items.length);
+  };
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      step(1);
+    } else if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      step(-1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      select(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      select(items.length - 1);
+    }
+  };
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    pointerStart.current = event.clientX;
+    if (event.pointerType === "touch") setTouching(true);
+  };
+
+  const handlePointerUp = (event: PointerEvent<HTMLDivElement>) => {
+    const start = pointerStart.current;
+    pointerStart.current = null;
+    setTouching(false);
+    if (start === null || Math.abs(event.clientX - start) < 42) return;
+    step(event.clientX < start ? 1 : -1);
+  };
+
+  const cancelPointer = () => {
+    pointerStart.current = null;
+    setTouching(false);
   };
 
   return (
-    <section id="formats" aria-labelledby="formats-title" className="section bg-white">
-      <div className="wrap">
-        <div data-reveal>
-          <p className="label">Our work</p>
-          <h2 id="formats-title" className="h2 mt-6">
-            {localizeTitle(m, "CV")} formats for <em>every market.</em>
+    <section
+      id="formats"
+      aria-labelledby="formats-title"
+      className={styles.section}
+      data-reduced={reducedMotion}
+    >
+      <div className={`wrap ${styles.container}`}>
+        <header className={styles.heading}>
+          <h2 id="formats-title" className={styles.title}>
+            {resumeWord} formats for <em>every market.</em>
           </h2>
-          <p className="mt-5 max-w-[620px] text-lg leading-[1.5] text-navy/70">{m.formatsIntro}</p>
-        </div>
+          <p>Real samples. Built for the country you&apos;re applying to.</p>
+        </header>
 
-        <div className="fm" data-reveal>
-          <button type="button" className="fm-arrow" aria-label="Previous formats" disabled={ends.start} onClick={() => move(-1)}>
-            <Chevron back />
-          </button>
-          <ul ref={track} className="fm-track" onScroll={sync} tabIndex={0} aria-label={`${l("CV")} formats`}>
-            {items.map((f, i) => (
-              <li key={f.src} className="fm-card">
-                <Image src={f.src} alt={`Sample ${l("CV")} format ${i + 1}`} width={f.width} height={f.height} sizes="(min-width: 1024px) 300px, 70vw" className="block h-auto w-full" />
-              </li>
+        <div
+          className={styles.carousel}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        >
+          <div
+            className={styles.stage}
+            role="region"
+            aria-label={`${resumeWord} format samples`}
+            aria-roledescription="carousel"
+            tabIndex={0}
+            onKeyDown={handleKeyDown}
+            onPointerDown={handlePointerDown}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={cancelPointer}
+          >
+            {items.map((format, index) => {
+              const offset = offsetFor(index, active, items.length);
+              const label = labels[index];
+              const position = offset === 0 ? "center" : offset === -1 ? "left" : offset === 1 ? "right" : "hidden";
+              return (
+                <button
+                  type="button"
+                  key={format.src}
+                  className={styles.slide}
+                  data-position={position}
+                  aria-label={`${label.name}, ${label.chip}`}
+                  aria-pressed={offset === 0}
+                  tabIndex={Math.abs(offset) <= 1 ? 0 : -1}
+                  onClick={() => select(index)}
+                >
+                  <Image
+                    src={format.src}
+                    alt={`${label.name} ${resumeWord} sample`}
+                    width={format.width}
+                    height={format.height}
+                    sizes="(max-width: 767px) 78vw, 368px"
+                    priority={index === active}
+                  />
+                </button>
+              );
+            })}
+            <button type="button" className={`${styles.arrow} ${styles.previous}`} aria-label="Previous format" onClick={() => step(-1)}>
+              <Chevron back />
+            </button>
+            <button type="button" className={`${styles.arrow} ${styles.next}`} aria-label="Next format" onClick={() => step(1)}>
+              <Chevron />
+            </button>
+          </div>
+
+          <div className={styles.caption} key={active} aria-live={stopped ? "polite" : "off"}>
+            <span>{labels[active].name}</span>
+            <span className={styles.chip}>{labels[active].chip}</span>
+          </div>
+
+          <div className={styles.dots} aria-label="Choose a format">
+            {items.map((item, index) => (
+              <button
+                key={item.src}
+                type="button"
+                className={styles.dot}
+                data-active={index === active}
+                aria-label={`Show format ${index + 1}: ${labels[index].name}`}
+                aria-current={index === active ? "true" : undefined}
+                onClick={() => select(index)}
+              />
             ))}
-          </ul>
-          <button type="button" className="fm-arrow" aria-label="Next formats" disabled={ends.end} onClick={() => move(1)}>
-            <Chevron />
-          </button>
-        </div>
+          </div>
 
-        <nav aria-label="Related" className="mt-10 flex flex-wrap items-center gap-x-7 gap-y-1">
-          <Link href="/services/ats-cv" className="link-u font-head font-medium">
-            {l("ATS CV writing")}
-            <ArrowRight />
-          </Link>
-          <Link href="/services/cover-letter" className="link-u font-head font-medium">
-            Cover letters
-            <ArrowRight />
-          </Link>
-          <Link href="/services/linkedin" className="link-u font-head font-medium">
-            LinkedIn optimization
-            <ArrowRight />
-          </Link>
-          {(market === "pk" || market === "ae" || market === "sa") && (
-            <>
-              <Link href="/blog/cv-for-uae-jobs" className="link-u font-head font-medium">
-                CVs for UAE jobs
-                <ArrowRight />
-              </Link>
-              <Link href="/blog/cv-for-saudi-arabia-jobs" className="link-u font-head font-medium">
-                CVs for Saudi Arabia jobs
-                <ArrowRight />
-              </Link>
-            </>
-          )}
-        </nav>
+          <nav className={styles.links} aria-label="Related services">
+            <Link href="/services/ats-cv">ATS CVs <span aria-hidden="true">→</span></Link>
+            <span aria-hidden="true">·</span>
+            <Link href="/services/cover-letter">Cover letters <span aria-hidden="true">→</span></Link>
+            <span aria-hidden="true">·</span>
+            <Link href="/services/linkedin">LinkedIn <span aria-hidden="true">→</span></Link>
+          </nav>
+        </div>
       </div>
     </section>
   );

@@ -1,6 +1,17 @@
-import type { MarketKey } from "@/config/markets";
+import { MARKET_KEYS, type MarketKey } from "@/config/markets";
 
 export type CvFormat = { src: string; width: number; height: number };
+export type FormatLabel = { name: string; chip: string };
+
+const SAMPLE_LABELS: FormatLabel[] = [
+  { name: "Classic ATS", chip: "No photo" },
+  { name: "Modern ATS", chip: "Single column" },
+  { name: "Modern ATS", chip: "Color accent" },
+  { name: "With photo", chip: "International format" },
+  { name: "Executive", chip: "Gulf ready" },
+  { name: "Designed CV", chip: "With photo" },
+  { name: "Europass", chip: "EU standard" },
+];
 
 /** Each market's sample formats, in the order shown. Images are in public/formats/{market}/. */
 export const FORMATS: Record<MarketKey, CvFormat[]> = {
@@ -179,4 +190,13 @@ export const FORMATS: Record<MarketKey, CvFormat[]> = {
       "height": 1273
     }
   ]
+};
+
+/** Short captions for the matching sample image order above. */
+export const FORMAT_LABELS: Record<MarketKey, readonly FormatLabel[]> = {
+  us: SAMPLE_LABELS.slice(0, FORMATS.us.length),
+  pk: SAMPLE_LABELS.slice(0, FORMATS.pk.length),
+  ae: SAMPLE_LABELS.slice(0, FORMATS.ae.length),
+  sa: SAMPLE_LABELS.slice(0, FORMATS.sa.length),
+  uk: SAMPLE_LABELS.slice(0, FORMATS.uk.length),
 };
