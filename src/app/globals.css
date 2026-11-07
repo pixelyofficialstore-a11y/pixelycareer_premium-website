@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import "tailwindcss" source("../");
 
 /*
  * BRAND FONT SWAP: the brand fonts are Virtual (headlines) and Aloevera Display (body).
