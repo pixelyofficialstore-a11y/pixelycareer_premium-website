@@ -1,5 +1,21 @@
 @media (max-width: 767px) {
   .centerMobileHeadline {
     text-align: center;
+    font-size: clamp(40px, 11vw, 48px);
+    line-height: 1.08;
+    letter-spacing: -.035em;
+  }
+
+  .mainMobileHero :global(.hero-sub) {
+    max-width: 32ch;
+    margin-inline: auto;
+    font-size: 17px;
+    line-height: 1.65;
+    text-align: center;
+    text-wrap: pretty;
+  }
+
+  .mainMobileHero :global(.hero-actions) {
+    margin-top: 32px;
   }
 }

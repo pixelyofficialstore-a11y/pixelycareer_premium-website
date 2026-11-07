@@ -18,7 +18,7 @@ export default function Hero({ market, centerMobileHeadline = false }: { market:
       </Fragment>
     ));
   return (
-    <section id="top" className="hero">
+    <section id="top" className={`hero${centerMobileHeadline ? ` ${styles.mainMobileHero}` : ""}`}>
       <div className="wrap hero-inner">
         <div className="grid12 hero-grid">
           <div className="hero-copy col-span-12 lg:col-span-6">
