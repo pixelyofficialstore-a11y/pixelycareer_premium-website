@@ -1,9 +1,9 @@
 import { MARKETS, getPackages, getPricingFaq, isMarketKey } from "@/config/markets";
+import { cookies } from "next/headers";
 import FinalCta from "@/components/sections/FinalCta";
 import Pricing from "@/components/sections/Pricing";
 import Reveal from "@/components/ui/Reveal";
 import { JsonLd, SITE, breadcrumbJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
-import { requestMarket } from "@/lib/market-server";
 
 export const metadata = pageMetadata(
   "/pricing",
@@ -13,7 +13,9 @@ export const metadata = pageMetadata(
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ m?: string; market?: string }> }) {
   const query = await searchParams;
-  const market = await requestMarket(isMarketKey(query.m) ? query.m : query.market);
+  const explicit = isMarketKey(query.m) ? query.m : query.market;
+  const saved = (await cookies()).get("pc_market")?.value;
+  const market = MARKETS[isMarketKey(explicit) ? explicit : isMarketKey(saved) ? saved : "us"];
   const faq = getPricingFaq(market);
   const packages = getPackages(market);
   const offerCatalog = {

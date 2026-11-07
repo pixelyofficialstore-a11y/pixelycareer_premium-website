@@ -200,19 +200,35 @@
   line-height: 1.5;
 }
 
-.compareAt {
-  margin: 0 0 2px;
-  color: #8994a5;
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 1.2;
+.pricePair {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  container-type: inline-size;
 }
+
+.compareAt {
+  display: block;
+  color: #8994a5;
+  text-decoration: none;
+}
+
+.compareAt .price { color: inherit; font-size: 40px; }
+.compareAt .priceUnit { color: inherit; }
+.compareAt .priceNumber,
+.compareAt .priceUnit {
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.priceNumber { white-space: nowrap; }
 
 .price {
   display: flex;
   align-items: flex-start;
   justify-content: flex-start;
   gap: .28rem;
+  flex: 0 0 auto;
   margin: 0;
   color: var(--price-ink);
   font-family: var(--font-head);
@@ -391,13 +407,6 @@
   line-height: 1.25;
 }
 
-.fasterNote {
-  margin: 1.35rem 0 0;
-  color: #768298;
-  font-size: .78rem;
-  text-align: center;
-}
-
 .sectionTitle {
   margin: 0;
   color: var(--price-ink);
@@ -417,34 +426,6 @@
 .compare {
   padding: 5rem 1.25rem 3rem;
   background: var(--price-wash);
-}
-
-.compareChips {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: .55rem;
-  margin: 1.35rem auto 0;
-}
-
-.compareChips span {
-  display: inline-flex;
-  align-items: center;
-  gap: .4rem;
-  padding: .5rem .75rem;
-  border-radius: 999px;
-  background: #eef3ff;
-  color: #30466e;
-  font-size: .78rem;
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-.compareChips svg {
-  width: 14px;
-  height: 14px;
-  flex: 0 0 14px;
-  color: var(--price-blue);
 }
 
 .compareCard {
@@ -592,12 +573,6 @@
   align-self: start;
 }
 
-.faq .eyebrow {
-  display: inline-flex;
-  margin-bottom: 1rem;
-  text-align: left;
-}
-
 .faq .sectionTitle { text-align: left; }
 
 .faqList {
@@ -699,6 +674,22 @@
 
 @media (min-width: 1200px) {
   .page .packageName { min-height: 24px; }
+}
+
+@container (max-width: 270px) {
+  .price { font-size: 36px; }
+  .compareAt .price { font-size: 34px; }
+  .priceUnit { font-size: 16px; }
+}
+
+@container (max-width: 240px) {
+  .price { font-size: 32px; }
+  .compareAt .price { font-size: 30px; }
+  .priceUnit { font-size: 14px; }
+}
+
+@media (min-width: 901px) and (max-width: 1023px) {
+  .faqIntro { top: 104px; }
 }
 
 @media (max-width: 900px) {

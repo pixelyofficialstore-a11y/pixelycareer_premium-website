@@ -69,7 +69,7 @@ function PriceAmount({ label }: { label: string }) {
   return (
     <span className={styles.price}>
       <span className={styles.priceUnit}>{parts[1]}</span>
-      {parts[2]}
+      <span className={styles.priceNumber}>{parts[2]}</span>
     </span>
   );
 }
@@ -129,8 +129,10 @@ export default function Pricing({
                     {recommended && <span className={styles.badge}>Recommended</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
-                    {p.showCompareAt && <p className={styles.compareAt}><s>{p.compareAtLabel}</s></p>}
-                    <PriceAmount label={p.priceLabel} />
+                    <div className={styles.pricePair}>
+                      {p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}
+                      <PriceAmount label={p.priceLabel} />
+                    </div>
                     <p className={styles.resultLine}><ArrowIcon className={styles.resultArrow} /><span>{m.pricingResults[p.id]}</span></p>
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={`pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
@@ -161,18 +163,12 @@ export default function Pricing({
               );
             })}
           </ul>
-          <p className={styles.fasterNote}>PDF and Word files with every package · Same day delivery available for a small fee</p>
         </div>
       </section>
 
       <section className={styles.compare} aria-labelledby="compare-heading">
         <div className={styles.sectionInner}>
           <h2 className={styles.sectionTitle} id="compare-heading">Compare <em>every detail.</em></h2>
-          <div className={styles.compareChips} aria-label="Included with every package">
-            {["Written by a real person", "Built to pass ATS", "Made for your country", "Direct WhatsApp support"].map((label) => (
-              <span key={label}><CheckIcon />{label}</span>
-            ))}
-          </div>
           <div className={`${styles.compareCard} ${styles.desktopCompare}`}>
             <table className={styles.table}>
               <colgroup><col /><col /><col className={styles.recommendedCol} /><col /></colgroup>
@@ -244,7 +240,6 @@ export default function Pricing({
         <section className={styles.faq} aria-labelledby="faq-heading">
           <div className={`${styles.sectionInner} ${styles.faqLayout}`}>
             <div className={styles.faqIntro}>
-              <p className={styles.eyebrow}>FAQ</p>
               <h2 className={styles.sectionTitle} id="faq-heading">Fair <em>questions.</em></h2>
               <p className={styles.faqContact}>Still unsure? <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">Ask us on WhatsApp <span aria-hidden="true">→</span></a></p>
             </div>

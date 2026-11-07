@@ -6,7 +6,7 @@ import { ArrowRight } from "@/components/ui/Icons";
 import { WHATSAPP_URL } from "@/lib/site";
 
 export default function FinalCta({ market }: { market: Market }) {
-  const requestedImage = HERO_PERSONAS[market.key].images.good;
+  const requestedImage = HERO_PERSONAS[market.key]?.images?.good ?? HERO_PERSONAS.us.images.good;
 
   return (
     <section id="final-cta" aria-labelledby="cta-title" className="on-blue final-cta bg-vivid text-white">
@@ -26,7 +26,7 @@ export default function FinalCta({ market }: { market: Market }) {
           </div>
         </div>
         <div className="final-cv" aria-hidden="true">
-          <CtaCvImage image={requestedImage} fallback={HERO_PERSONAS.us.images.good} />
+          <CtaCvImage key={requestedImage.src} image={requestedImage} fallback={HERO_PERSONAS.us.images.good} />
         </div>
       </div>
     </section>
