@@ -11,6 +11,7 @@ import HomeProblem from "@/components/sections/HomeProblem";
 import Process from "@/components/sections/Process";
 import Reviews from "@/components/sections/Reviews";
 import Services from "@/components/sections/Services";
+import HomeServices from "@/components/sections/HomeServices";
 import MarketSync from "@/components/ui/MarketSync";
 import Reveal from "@/components/ui/Reveal";
 import StickyBar from "@/components/ui/StickyBar";
@@ -36,7 +37,7 @@ export default function HomePage({ market, useHomeProblem = false }: { market: M
         </>
       )}
       <Suspense>
-        <Services market={market.key} />
+        {market.path === "/" ? <HomeServices /> : <Services market={market.key} />}
       </Suspense>
       <Suspense>
         <Formats market={market.key} />
