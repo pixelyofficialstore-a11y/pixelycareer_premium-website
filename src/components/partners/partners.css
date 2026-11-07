@@ -123,10 +123,17 @@
 .agency-page .agency-proof-number { display: block; color: var(--agency-blue); font-family: var(--font-head, "Poppins", sans-serif); font-size: clamp(38px, 4.5vw, 56px); font-weight: 600; letter-spacing: -.05em; line-height: 1.05; font-variant-numeric: tabular-nums; }
 .agency-page .agency-proof-label { display: block; margin-top: 8px; color: rgb(8 27 67 / .68); font-size: 14px; }
 
-/* Audience tabs */
+/* Partner audiences */
 .agency-page .agency-audience-section { background: #fff; }
-.agency-page .agency-audience-section .agency-title { max-width: 23ch; }
+.agency-page .agency-audience-section .agency-title { max-width: none; margin-inline: auto; text-align: center; }
 .agency-page .agency-audience-section .agency-title em { display: inline; }
+.agency-page .agency-audience-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; margin-top: 36px; }
+.agency-page .agency-audience-card { min-width: 0; min-height: 166px; padding: 20px; border: 1px solid #e3e8f1; border-radius: 13px; background: #fff; transition: transform 200ms ease, border-color 200ms ease, box-shadow 200ms ease; }
+.agency-page .agency-audience-card:hover { transform: translateY(-4px); border-color: #b7c9ef; box-shadow: 0 16px 32px -26px rgb(8 27 67 / .36); }
+.agency-page .agency-audience-mark { display: grid; width: 40px; height: 40px; place-items: center; border-radius: 11px; color: var(--agency-blue); background: #edf2ff; }
+.agency-page .agency-audience-mark svg { width: 22px; height: 22px; }
+.agency-page .agency-audience-card h3 { margin: 15px 0 0; font-family: var(--font-head, "Poppins", sans-serif); font-size: 15px; font-weight: 600; line-height: 1.35; }
+.agency-page .agency-audience-card p { margin: 7px 0 0; color: rgb(8 27 67 / .68); font-size: 12px; line-height: 1.5; }
 .agency-page .agency-audience-tabs { display: flex; gap: 9px; margin-top: 35px; overflow-x: auto; padding: 2px 2px 12px; scrollbar-width: thin; scrollbar-color: #b9c8e3 transparent; }
 .agency-page .agency-audience-tab { min-height: 42px; flex: 0 0 auto; padding: 0 16px; border: 1px solid #dfe6f2; border-radius: 999px; color: #34496f; background: #fff; font: inherit; font-size: 12px; cursor: pointer; transition: color 180ms ease, border-color 180ms ease, background 180ms ease; }
 .agency-page .agency-audience-tab[aria-selected="true"] { border-color: var(--agency-navy); color: #fff; background: var(--agency-navy); }
@@ -357,6 +364,7 @@
 
 @media (max-width: 1023px) {
   .agency-page .agency-hero { min-height: auto; }
+  .agency-page .agency-audience-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .agency-page .agency-visual-wrap { min-height: 420px; }
   .agency-page .agency-process-track { height: 340px; }
   .agency-page .agency-process-step { padding-inline: 9px; }
@@ -386,9 +394,9 @@
   .agency-page .agency-proof-grid { gap: 18px 10px; padding-block: 22px; }
   .agency-page .agency-proof-number { font-size: clamp(31px, 8.5vw, 42px); }
   .agency-page .agency-proof-label { max-width: 15ch; font-size: 11px; line-height: 1.35; }
-  .agency-page .agency-audience-tabs { margin-top: 24px; margin-right: -20px; }
-  .agency-page .agency-audience-panel { grid-template-columns: minmax(0, 1fr); gap: 15px; padding: 24px; }
-  .agency-page .agency-audience-art { min-height: 220px; }
+  .agency-page .agency-audience-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 27px; }
+  .agency-page .agency-audience-card { min-height: 0; padding: 17px; }
+  .agency-page .agency-audience-card h3 { font-size: 14px; }
   .agency-page .agency-why-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 28px; }
   .agency-page .agency-why-card { min-height: 0; padding: 23px; }
   .agency-page .agency-line-icon { width: 46px; height: 46px; }

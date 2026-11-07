@@ -12,36 +12,11 @@ import type { AgencySample } from "./types";
 import "./partners.css";
 
 const AUDIENCES = [
-  {
-    label: "Recruitment agencies",
-    line: "CVs for every candidate you place, under your name.",
-    points: ["Gulf and European formats", "Bulk orders welcome", "Your template, your branding"],
-    visual: "stack",
-  },
-  {
-    label: "Overseas employment promoters",
-    line: "Documents ready for overseas employers and visa files.",
-    points: ["Country specific formats", "Fast turnaround for deployment", "Europass when needed"],
-    visual: "destinations",
-  },
-  {
-    label: "Career & interview coaches",
-    line: "Give your clients a professional CV with your coaching.",
-    points: ["White label delivery", "Interview guides available", "Referral commission option"],
-    visual: "guide",
-  },
-  {
-    label: "Employers & HR teams",
-    line: "Consistent profiles for your staff and client submissions.",
-    points: ["Standard CV format across your team", "Professional bios", "LinkedIn profiles"],
-    visual: "lineup",
-  },
-  {
-    label: "Training institutes",
-    line: "Job ready CVs for your graduates.",
-    points: ["CVs for graduating batches", "LinkedIn profiles", "Your institute's branding"],
-    visual: "graduate",
-  },
+  { label: "Recruitment agencies", line: "Candidate CVs under your brand.", icon: "document" },
+  { label: "Overseas employment promoters", line: "Overseas-ready candidate documents.", icon: "growth" },
+  { label: "Career & interview coaches", line: "CVs to support your coaching.", icon: "team" },
+  { label: "Employers & HR teams", line: "Consistent CVs and staff profiles.", icon: "document" },
+  { label: "Training institutes", line: "CVs for graduating candidates.", icon: "growth" },
 ];
 
 const WHY = [
@@ -199,68 +174,19 @@ function CountUp({ to }: { to: number }) {
   return <>{value.toLocaleString("en-US")}</>;
 }
 
-function AudienceVisual({ kind }: { kind: string }) {
-  return (
-    <div className={`agency-audience-art agency-art-${kind}`} aria-hidden="true">
-      {kind === "destinations" ? <>
-        <CvMock role="Staff Nurse" mini />
-        <div className="agency-destination-list"><span>KSA</span><span>UAE</span><span>Qatar</span><span>Europe</span></div>
-      </> : kind === "guide" ? <>
-        <CvMock role="Accountant" mini />
-        <div className="agency-guide-mini"><span className="agency-guide-icon"><FeatureIcon type="document" /></span><b>Interview guide</b><i /><i /><i /></div>
-      </> : kind === "lineup" ? <>
-        <CvMock role="Staff Nurse" mini /><CvMock role="Staff Nurse" mini /><CvMock role="Staff Nurse" mini />
-      </> : <>
-        <div className="agency-art-stack"><CvMock role={kind === "graduate" ? "Graduate profile" : "Staff Nurse"} mini /><CvMock role="Electrical Technician" mini /><CvMock role="Accountant" mini /></div>
-        {kind === "stack" && <span className="agency-art-badge">Your agency</span>}
-        {kind === "graduate" && <span className="agency-grad-badge"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m2 9 10-5 10 5-10 5L2 9Zm4 2v5c3.4 2.7 8.6 2.7 12 0v-5M22 9v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg></span>}
-      </>}
-    </div>
-  );
-}
-
 function WhoItsFor() {
-  const [active, setActive] = useState(0);
-  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    let next = active;
-    if (event.key === "ArrowRight") next = (active + 1) % AUDIENCES.length;
-    else if (event.key === "ArrowLeft") next = (active - 1 + AUDIENCES.length) % AUDIENCES.length;
-    else if (event.key === "Home") next = 0;
-    else if (event.key === "End") next = AUDIENCES.length - 1;
-    else return;
-    event.preventDefault();
-    setActive(next);
-    tabRefs.current[next]?.focus();
-  };
-  const audience = AUDIENCES[active];
   return (
     <section className="agency-section agency-audience-section" aria-labelledby="agency-audience-title" data-agency-reveal>
       <div className="agency-wrap">
-        <p className="agency-kicker">Who it's for</p>
         <h2 className="agency-title" id="agency-audience-title">Built for teams that <em>work with candidates.</em></h2>
-        <div className="agency-audience-tabs" role="tablist" aria-label="Partner team types">
-          {AUDIENCES.map((item, index) => <button
-            key={item.label}
-            ref={(element) => { tabRefs.current[index] = element; }}
-            className="agency-audience-tab"
-            id={`audience-tab-${index}`}
-            type="button"
-            role="tab"
-            aria-selected={active === index}
-            aria-controls="agency-audience-panel"
-            tabIndex={active === index ? 0 : -1}
-            onClick={() => setActive(index)}
-            onKeyDown={onKeyDown}
-          >{item.label}</button>)}
-        </div>
-        <div className="agency-audience-panel" id="agency-audience-panel" role="tabpanel" aria-labelledby={`audience-tab-${active}`} key={active}>
-          <div className="agency-audience-copy">
-            <div className="agency-audience-mark"><FeatureIcon type={active === 0 ? "growth" : active === 1 ? "document" : active === 2 ? "team" : "document"} /></div>
-            <h3>{audience.line}</h3>
-            <ul>{audience.points.map((point) => <li key={point}><span className="agency-check" aria-hidden="true">✓</span>{point}</li>)}</ul>
-          </div>
-          <AudienceVisual kind={audience.visual} />
+        <div className="agency-audience-grid">
+          {AUDIENCES.map((item) => (
+            <article className="agency-audience-card" key={item.label}>
+              <span className="agency-audience-mark" aria-hidden="true"><FeatureIcon type={item.icon} /></span>
+              <h3>{item.label}</h3>
+              <p>{item.line}</p>
+            </article>
+          ))}
         </div>
       </div>
     </section>
