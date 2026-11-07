@@ -10,10 +10,12 @@
 
 .item {
   position: relative;
-  display: flex;
+  display: grid;
   min-width: 0;
-  flex-direction: column;
-  align-items: center;
+  grid-template-rows: 44px 22px 18px;
+  justify-items: center;
+  align-content: start;
+  row-gap: 8px;
   padding-inline: 20px;
   color: inherit;
   text-align: center;
@@ -22,7 +24,7 @@
 
 .item + .item::before {
   position: absolute;
-  inset: 0 auto 0 0;
+  inset: 4px auto 4px 0;
   width: 1px;
   background: #e6ecf5;
   content: "";
@@ -36,17 +38,18 @@
 .number {
   color: #010c28;
   font-family: var(--font-head);
-  font-size: 36px;
-  font-weight: 500;
-  letter-spacing: -.02em;
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -.035em;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
 
 .label {
-  margin-top: 6px;
-  color: #6b7280;
-  font-size: 13px;
+  min-width: 0;
+  color: #526079;
+  font-size: 14px;
+  font-weight: 600;
   line-height: 1.4;
 }
 
@@ -54,15 +57,20 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 6px;
   color: #6b7280;
   font-size: 12px;
+  font-weight: 500;
   line-height: 1.4;
   white-space: nowrap;
 }
 
 .reviews svg {
   flex: 0 0 14px;
+}
+
+a.item:hover .reviews {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .strip[data-phase="pending"] .item {
@@ -89,8 +97,12 @@
 
 @media (max-width: 767px) {
   .strip { padding-block: 24px; }
-  .item { padding-inline: 8px; }
-  .number { font-size: 26px; }
+  .item {
+    grid-template-rows: 31px 34px 18px;
+    row-gap: 6px;
+    padding-inline: 4px;
+  }
+  .number { font-size: 28px; }
   .label { font-size: 12px; }
 }
 
