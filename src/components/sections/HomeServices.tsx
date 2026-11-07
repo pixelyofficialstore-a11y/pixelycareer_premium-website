@@ -63,10 +63,9 @@ export default function HomeServices({ marketKey }: { marketKey: MarketKey }) {
     <section ref={sectionRef} id="services" aria-labelledby="services-title" className={styles.section}>
       <div className={`wrap ${styles.container}`}>
         <header className={styles.heading}>
-          <h2 id="services-title" className={styles.title}>
+          <h2 id="services-title" className={`h1 ${styles.title}`}>
             Three layers. <em>One brand.</em>
           </h2>
-          <p>Your CV, LinkedIn and website, telling the same story.</p>
         </header>
 
         <ul className={styles.gallery}>
