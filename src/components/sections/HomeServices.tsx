@@ -10,21 +10,18 @@ import styles from "./HomeServices.module.css";
 
 const SERVICES = [
   {
-    number: "01",
     title: "Career documents",
     description: "ATS CVs, Europass and cover letters.",
     href: "/services/ats-cv",
     link: "Explore CV writing",
   },
   {
-    number: "02",
     title: "Professional visibility",
     description: "A LinkedIn profile recruiters can find.",
     href: "/services/linkedin",
     link: "Explore LinkedIn",
   },
   {
-    number: "03",
     title: "Digital presence",
     description: "A personal website with your name on it.",
     href: "/services/portfolio-website",
@@ -84,7 +81,6 @@ export default function HomeServices({ marketKey }: { marketKey: MarketKey }) {
                 </div>
               </div>
               <div className={styles.copy}>
-                <span className={styles.number}>{SERVICES[0].number}</span>
                 <h3>{SERVICES[0].title}</h3>
                 <p>{SERVICES[0].description}</p>
                 <span className={styles.link}>{SERVICES[0].link}<ArrowRight size={16} /></span>
@@ -106,7 +102,6 @@ export default function HomeServices({ marketKey }: { marketKey: MarketKey }) {
                 </div>
               </div>
               <div className={styles.copy}>
-                <span className={styles.number}>{SERVICES[1].number}</span>
                 <h3>{SERVICES[1].title}</h3>
                 <p>{SERVICES[1].description}</p>
                 <span className={styles.link}>{SERVICES[1].link}<ArrowRight size={16} /></span>
@@ -127,7 +122,6 @@ export default function HomeServices({ marketKey }: { marketKey: MarketKey }) {
                 </div>
               </div>
               <div className={styles.copy}>
-                <span className={styles.number}>{SERVICES[2].number}</span>
                 <h3>{SERVICES[2].title}</h3>
                 <p>{SERVICES[2].description}</p>
                 <span className={styles.link}>{SERVICES[2].link}<ArrowRight size={16} /></span>
