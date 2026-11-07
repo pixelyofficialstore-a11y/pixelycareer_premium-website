@@ -3,6 +3,7 @@ import FinalCta from "@/components/sections/FinalCta";
 import Pricing from "@/components/sections/Pricing";
 import Reveal from "@/components/ui/Reveal";
 import { JsonLd, SITE, breadcrumbJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
+import { requestMarket } from "@/lib/market-server";
 
 export const metadata = pageMetadata(
   "/pricing",
@@ -10,10 +11,9 @@ export const metadata = pageMetadata(
   "Clear, one time prices for ATS CVs, cover letters and LinkedIn profiles. First draft in 2 days, revisions included, PDF and Word files.",
 );
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ market?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ m?: string; market?: string }> }) {
   const query = await searchParams;
-  // The general pricing URL is deliberately independent of the visitor's saved market cookie.
-  const market = isMarketKey(query.market) ? MARKETS[query.market] : MARKETS.us;
+  const market = await requestMarket(isMarketKey(query.m) ? query.m : query.market);
   const faq = getPricingFaq(market);
   const packages = getPackages(market);
   const offerCatalog = {

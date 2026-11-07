@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { saveMarket } from "@/components/ui/useMarket";
 import { MARKETS, getComparison, getPackages, orderHref, type MarketKey } from "@/config/markets";
 import { WHATSAPP_URL } from "@/lib/site";
 import styles from "./Pricing.module.css";
@@ -17,10 +18,9 @@ const CARD_CONTENT = {
   "ats-career": {
     audience: "For beginners",
     name: "ATS Career",
-    result: "A CV that passes ATS and gets you your first interviews.",
     button: "Choose ATS Career",
     lead: "",
-    items: ["ATS CV, 1 to 2 pages", "Tailored cover letter", "LinkedIn profile content", "Keywords for your target job"],
+    items: ["ATS CV, 1 to 2 pages", "Tailored cover letter", "LinkedIn profile content", "Keywords for your target job", "PDF and editable Word files"],
     support: "30 days",
     delivery: "2 days",
     revisions: "3 revisions",
@@ -28,7 +28,6 @@ const CARD_CONTENT = {
   "international-pro": {
     audience: "For professionals",
     name: "International Career Pro",
-    result: "Get shortlisted for Gulf and international roles.",
     button: "Choose International Pro",
     lead: "Everything in ATS Career, plus:",
     items: ["International standard CV", "Country specific cover letter", "Full LinkedIn makeover", "Indeed and Naukrigulf profiles", "Bio statement and digital contact card"],
@@ -39,7 +38,6 @@ const CARD_CONTENT = {
   executive: {
     audience: "For executives",
     name: "Executive Career Branding",
-    result: "A leadership profile that wins senior level interviews.",
     button: "Choose Executive",
     lead: "Everything in International Pro, plus:",
     items: ["Premium executive CV", "One page visual CV", "Executive cover letter and bio", "LinkedIn content pack (10 posts)", "Interview preparation guide"],
@@ -65,14 +63,6 @@ function ArrowIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function ChevronIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <path d="m5 7.5 5 5 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 function PriceAmount({ label }: { label: string }) {
   const parts = label.match(/^(.+?)\s?([\d,]+)$/);
   if (!parts) return <span className={styles.price}>{label}</span>;
@@ -90,20 +80,6 @@ function CellValue({ value }: { value: string }) {
   return <>{value}</>;
 }
 
-function IncludedIcon({ kind }: { kind: number }) {
-  const paths = [
-    <><path d="M5 3.5h7l3 3v10H5z" /><path d="M12 3.5v3h3M7.5 10h5M7.5 13h5" /></>,
-    <><path d="M4 5.5h12v9H4z" /><path d="m6.5 10 2.1 2 4.9-5" /></>,
-    <><circle cx="10" cy="10" r="6.5" /><path d="M3.8 10h12.4M10 3.5c1.7 1.8 2.4 4 2.4 6.5s-.7 4.7-2.4 6.5C8.3 14.7 7.6 12.5 7.6 10s.7-4.7 2.4-6.5Z" /></>,
-    <><path d="M4 5.5h12v9H4z" /><path d="m5.5 7 4.5 3.5L14.5 7M4.5 14l3.7-3M15.5 14l-3.7-3" /></>,
-  ];
-  return (
-    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <g stroke="currentColor" strokeWidth="1.35" strokeLinecap="round" strokeLinejoin="round">{paths[kind]}</g>
-    </svg>
-  );
-}
-
 export default function Pricing({
   market,
   standalone = false,
@@ -117,9 +93,10 @@ export default function Pricing({
   const packages = getPackages(m);
   const comparison = getComparison(m);
   const HeroHeading = standalone ? "h1" : "h2";
-  const [comparisonOpen, setComparisonOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(1);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+
+  useEffect(() => saveMarket(market), [market]);
 
   return (
     <div className={`${styles.page} ${standalone ? styles.standalone : ""}`} data-pricing-surface>
@@ -152,8 +129,9 @@ export default function Pricing({
                     {recommended && <span className={styles.badge}>Recommended</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
+                    {p.showCompareAt && <p className={styles.compareAt}><s>{p.compareAtLabel}</s></p>}
                     <PriceAmount label={p.priceLabel} />
-                    <p className={styles.resultLine}><ArrowIcon className={styles.resultArrow} /><span>{content.result}</span></p>
+                    <p className={styles.resultLine}><ArrowIcon className={styles.resultArrow} /><span>{m.pricingResults[p.id]}</span></p>
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={`pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
                     </Link>
@@ -187,97 +165,69 @@ export default function Pricing({
         </div>
       </section>
 
-      <section className={styles.included} aria-labelledby="included-heading">
-        <div className={styles.sectionInner}>
-          <h2 className={styles.sectionTitle} id="included-heading">Included in <em>every package.</em></h2>
-          <div className={styles.includedGrid}>
-            {[
-              ["Written by a real person.", "No templates, no AI dumps."],
-              ["Built to pass ATS.", "Clean layout software can read."],
-              ["Made for your country.", "Format and keywords that local recruiters expect."],
-              ["Direct WhatsApp support.", "Talk to your writer, not a ticket system."],
-            ].map(([title, text], index) => (
-              <article className={styles.includedItem} key={title}>
-                <span className={styles.iconBox}><IncludedIcon kind={index} /></span>
-                <div><h3>{title}</h3><p>{text}</p></div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className={styles.compare} aria-labelledby="compare-heading">
         <div className={styles.sectionInner}>
           <h2 className={styles.sectionTitle} id="compare-heading">Compare <em>every detail.</em></h2>
-          <button
-            type="button"
-            className={styles.comparisonToggle}
-            aria-expanded={comparisonOpen}
-            aria-controls="pricing-comparison"
-            onClick={() => setComparisonOpen((open) => !open)}
-          >
-            {comparisonOpen ? "Hide comparison" : "Show full comparison"} <ChevronIcon />
-          </button>
-          <div id="pricing-comparison" className={`${styles.compareReveal} ${comparisonOpen ? styles.compareRevealOpen : ""}`} aria-hidden={!comparisonOpen} inert={!comparisonOpen}>
-            <div className={styles.compareClip}>
-              <div className={`${styles.compareCard} ${styles.desktopCompare}`}>
-                <table className={styles.table}>
-                  <colgroup><col /><col /><col className={styles.recommendedCol} /><col /></colgroup>
-                  <thead>
-                    <tr>
-                      <th scope="col"><span className="sr-only">Feature</span></th>
-                      {packages.map((p, i) => <th scope="col" className={i === 1 ? styles.recommendedCol : ""} key={p.id}>
-                        {p.name}<span className={styles.tablePrice}>{p.priceLabel}</span>
-                      </th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {comparison.map(([label, ...values], index) => (
-                      <FragmentRow
-                        key={label}
-                        label={label}
-                        values={values}
-                        index={index}
-                      />
-                    ))}
-                  </tbody>
-                </table>
+          <div className={styles.compareChips} aria-label="Included with every package">
+            {["Written by a real person", "Built to pass ATS", "Made for your country", "Direct WhatsApp support"].map((label) => (
+              <span key={label}><CheckIcon />{label}</span>
+            ))}
+          </div>
+          <div className={`${styles.compareCard} ${styles.desktopCompare}`}>
+            <table className={styles.table}>
+              <colgroup><col /><col /><col className={styles.recommendedCol} /><col /></colgroup>
+              <thead>
+                <tr>
+                  <th scope="col"><span className="sr-only">Feature</span></th>
+                  {packages.map((p, i) => <th scope="col" className={i === 1 ? styles.recommendedCol : ""} key={p.id}>
+                    {p.name}<span className={styles.tablePrice}>{p.priceLabel}</span>
+                  </th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {comparison.map(([label, ...values], index) => (
+                  <FragmentRow
+                    key={label}
+                    label={label}
+                    values={values}
+                    index={index}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className={styles.mobileCompare}>
+            <div className={styles.mobileTabs} role="tablist" aria-label="Choose a package to compare">
+              {packages.map((p, index) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={selectedPackage === index}
+                  aria-controls="pricing-mobile-comparison"
+                  className={`${styles.mobileTab} ${selectedPackage === index ? styles.mobileTabActive : ""}`}
+                  onClick={() => setSelectedPackage(index)}
+                >
+                  {index === 0 ? "ATS" : index === 1 ? "Pro" : "Executive"}
+                </button>
+              ))}
+            </div>
+            <div className={styles.mobileCompareCard} id="pricing-mobile-comparison" role="tabpanel">
+              <div className={styles.mobileCompareTitle}>
+                <strong>{packages[selectedPackage].name}</strong>
+                <span>{packages[selectedPackage].priceLabel}</span>
               </div>
-
-              <div className={styles.mobileCompare}>
-                <div className={styles.mobileTabs} role="tablist" aria-label="Choose a package to compare">
-                  {packages.map((p, index) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={selectedPackage === index}
-                      aria-controls="pricing-mobile-comparison"
-                      className={`${styles.mobileTab} ${selectedPackage === index ? styles.mobileTabActive : ""}`}
-                      onClick={() => setSelectedPackage(index)}
-                    >
-                      {index === 0 ? "ATS" : index === 1 ? "Pro" : "Executive"}
-                    </button>
-                  ))}
-                </div>
-                <div className={styles.mobileCompareCard} id="pricing-mobile-comparison" role="tabpanel">
-                  <div className={styles.mobileCompareTitle}>
-                    <strong>{packages[selectedPackage].name}</strong>
-                    <span>{packages[selectedPackage].priceLabel}</span>
-                  </div>
-                  {GROUPS.map((group) => (
-                    <div key={group.name}>
-                      <p className={styles.mobileGroup}>{group.name}</p>
-                      {comparison.slice(group.start, group.end).map(([label, ...values]) => (
-                        <div className={styles.mobileRow} key={label}>
-                          <span>{label}</span>
-                          <span className={styles.mobileRowValue}><CellValue value={values[selectedPackage]} /></span>
-                        </div>
-                      ))}
+              {GROUPS.map((group) => (
+                <div key={group.name}>
+                  <p className={styles.mobileGroup}>{group.name}</p>
+                  {comparison.slice(group.start, group.end).map(([label, ...values]) => (
+                    <div className={styles.mobileRow} key={label}>
+                      <span>{label}</span>
+                      <span className={styles.mobileRowValue}><CellValue value={values[selectedPackage]} /></span>
                     </div>
                   ))}
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -292,9 +242,12 @@ export default function Pricing({
 
       {faqItems.length > 0 && (
         <section className={styles.faq} aria-labelledby="faq-heading">
-          <div className={styles.sectionInner}>
-            <p className={styles.eyebrow}>FAQ</p>
-            <h2 className={styles.sectionTitle} id="faq-heading">Fair <em>questions.</em></h2>
+          <div className={`${styles.sectionInner} ${styles.faqLayout}`}>
+            <div className={styles.faqIntro}>
+              <p className={styles.eyebrow}>FAQ</p>
+              <h2 className={styles.sectionTitle} id="faq-heading">Fair <em>questions.</em></h2>
+              <p className={styles.faqContact}>Still unsure? <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">Ask us on WhatsApp <span aria-hidden="true">→</span></a></p>
+            </div>
             <div className={styles.faqList}>
               {faqItems.map(({ q, a }, index) => {
                 const open = openFaq === index;
@@ -319,7 +272,6 @@ export default function Pricing({
                 );
               })}
             </div>
-            <p className={styles.faqContact}>Still unsure? <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">Ask us on WhatsApp <span aria-hidden="true">→</span></a></p>
           </div>
         </section>
       )}

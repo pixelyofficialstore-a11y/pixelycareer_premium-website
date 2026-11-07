@@ -6,11 +6,14 @@ import { isMarketKey, type MarketKey } from "@/config/markets";
 const EVENT = "pixely-market";
 
 function readCookie(): MarketKey | null {
-  const v = document.cookie.match(/(?:^|; )market=([^;]+)/)?.[1];
-  return isMarketKey(v) ? v : null;
+  const current = document.cookie.match(/(?:^|; )pc_market=([^;]+)/)?.[1];
+  if (isMarketKey(current)) return current;
+  const legacy = document.cookie.match(/(?:^|; )market=([^;]+)/)?.[1];
+  return isMarketKey(legacy) ? legacy : null;
 }
 
 export function saveMarket(key: MarketKey) {
+  document.cookie = `pc_market=${key}; path=/; max-age=31536000; samesite=lax`;
   document.cookie = `market=${key}; path=/; max-age=31536000; samesite=lax`;
   window.dispatchEvent(new Event(EVENT));
 }
@@ -26,9 +29,21 @@ export function marketFromPath(path: string): MarketKey | null {
   return isMarketKey(seg) && seg !== "us" && path === `/${seg}` ? seg : null;
 }
 
+function marketFromQuery(path: string): MarketKey | null {
+  if (path !== "/pricing") return null;
+  const params = new URLSearchParams(window.location.search);
+  const explicit = params.get("m");
+  const legacy = params.get("market");
+  return isMarketKey(explicit) ? explicit : isMarketKey(legacy) ? legacy : null;
+}
+
 /** A market home's URL decides its market; every other page follows the saved choice. */
 export function useMarket(): MarketKey {
   const path = usePathname();
-  const saved = useSyncExternalStore(subscribe, readCookie, () => null);
+  const saved = useSyncExternalStore(
+    subscribe,
+    () => marketFromQuery(path) ?? readCookie(),
+    () => null,
+  );
   return marketFromPath(path) ?? saved ?? "us";
 }

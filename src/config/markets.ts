@@ -23,7 +23,10 @@ export type Market = {
   phoneCode: string;
   approved: boolean;
   prices: Record<PackageId, number>;
+  compareAt: Record<PackageId, number>;
+  showCompareAt: boolean;
   sameDay: Record<PackageId, number>;
+  pricingResults: Record<PackageId, string>;
   internationalFor: string;
   indeedItem: string;
   indeedRow: string;
@@ -51,7 +54,14 @@ export const MARKETS: Record<MarketKey, Market> = {
     phoneCode: "+1",
     approved: false,
     prices: { "ats-career": 99, "international-pro": 169, executive: 279 },
+    compareAt: { "ats-career": 120, "international-pro": 199, executive: 329 },
+    showCompareAt: true,
     sameDay: { "ats-career": 20, "international-pro": 20, executive: 25 },
+    pricingResults: {
+      "ats-career": "A resume that passes ATS and lands your first interviews.",
+      "international-pro": "Get shortlisted for competitive roles in the US and abroad.",
+      executive: "A leadership resume that wins senior level interviews.",
+    },
     internationalFor: "For professionals moving up or changing roles.",
     ...INDEED,
     formatsIntro: "Formats for US employers and applications.",
@@ -77,7 +87,14 @@ export const MARKETS: Record<MarketKey, Market> = {
     phoneCode: "+92",
     approved: true,
     prices: { "ats-career": 2999, "international-pro": 4999, executive: 7500 },
+    compareAt: { "ats-career": 3999, "international-pro": 5999, executive: 9999 },
+    showCompareAt: true,
     sameDay: { "ats-career": 500, "international-pro": 500, executive: 700 },
+    pricingResults: {
+      "ats-career": "A CV that passes ATS and gets you your first interviews.",
+      "international-pro": "Get shortlisted for Gulf and international roles.",
+      executive: "A leadership profile that wins senior level interviews.",
+    },
     internationalFor: "For professionals applying abroad.",
     ...NAUKRI,
     formatsIntro: "Formats for Pakistani employers and overseas applications.",
@@ -104,7 +121,14 @@ export const MARKETS: Record<MarketKey, Market> = {
     phoneCode: "+971",
     approved: false,
     prices: { "ats-career": 299, "international-pro": 499, executive: 849 },
+    compareAt: { "ats-career": 369, "international-pro": 599, executive: 999 },
+    showCompareAt: true,
     sameDay: { "ats-career": 60, "international-pro": 60, executive: 80 },
+    pricingResults: {
+      "ats-career": "A CV that passes ATS and gets UAE recruiters calling.",
+      "international-pro": "Get shortlisted for top roles in Dubai, Abu Dhabi and the Gulf.",
+      executive: "A leadership profile that wins senior roles in the UAE.",
+    },
     internationalFor: "For professionals targeting Gulf roles.",
     ...NAUKRI,
     formatsIntro: "Formats for UAE employers and Gulf applications.",
@@ -130,7 +154,14 @@ export const MARKETS: Record<MarketKey, Market> = {
     phoneCode: "+966",
     approved: false,
     prices: { "ats-career": 299, "international-pro": 499, executive: 849 },
+    compareAt: { "ats-career": 369, "international-pro": 599, executive: 999 },
+    showCompareAt: true,
     sameDay: { "ats-career": 60, "international-pro": 60, executive: 80 },
+    pricingResults: {
+      "ats-career": "A CV that passes ATS and gets you interviews in Saudi Arabia.",
+      "international-pro": "Get shortlisted for roles in Riyadh, Jeddah and across the Gulf.",
+      executive: "A leadership profile that wins senior roles in Saudi Arabia.",
+    },
     internationalFor: "For professionals targeting Gulf roles.",
     ...NAUKRI,
     formatsIntro: "Formats for Saudi employers and Gulf applications.",
@@ -157,7 +188,14 @@ export const MARKETS: Record<MarketKey, Market> = {
     phoneCode: "+44",
     approved: false,
     prices: { "ats-career": 69, "international-pro": 119, executive: 199 },
+    compareAt: { "ats-career": 85, "international-pro": 145, executive: 239 },
+    showCompareAt: true,
     sameDay: { "ats-career": 15, "international-pro": 15, executive: 20 },
+    pricingResults: {
+      "ats-career": "A CV that passes ATS and gets you your first UK interviews.",
+      "international-pro": "Get shortlisted for competitive UK and European roles.",
+      executive: "A leadership CV that wins senior level interviews.",
+    },
     internationalFor: "For professionals targeting UK and European roles.",
     ...INDEED,
     formatsIntro: "Formats for UK employers and European applications.",
@@ -255,6 +293,9 @@ export function getPackages(m: Market) {
     forLine: p.forLine,
     items: [...p.items],
     price: m.prices[p.id],
+    compareAt: m.compareAt[p.id],
+    compareAtLabel: formatPricingPrice(m, m.compareAt[p.id]),
+    showCompareAt: m.showCompareAt,
     sameDay: m.sameDay[p.id],
     priceLabel: formatPricingPrice(m, m.prices[p.id]),
     sameDayLabel: `+${formatPricingPrice(m, m.sameDay[p.id])}`,

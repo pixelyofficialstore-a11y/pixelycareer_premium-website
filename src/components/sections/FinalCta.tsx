@@ -1,11 +1,13 @@
 import Link from "next/link";
-import CvSheet from "@/components/cv/CvSheet";
+import CtaCvImage from "@/components/cv/CtaCvImage";
 import { HERO_PERSONAS } from "@/config/heroPersonas";
 import { localize, orderHref, type Market } from "@/config/markets";
 import { ArrowRight } from "@/components/ui/Icons";
 import { WHATSAPP_URL } from "@/lib/site";
 
 export default function FinalCta({ market }: { market: Market }) {
+  const requestedImage = HERO_PERSONAS[market.key].images.good;
+
   return (
     <section id="final-cta" aria-labelledby="cta-title" className="on-blue final-cta bg-vivid text-white">
       <div className="wrap final-grid">
@@ -24,7 +26,7 @@ export default function FinalCta({ market }: { market: Market }) {
           </div>
         </div>
         <div className="final-cv" aria-hidden="true">
-          <CvSheet image={HERO_PERSONAS[market.key].images.good} />
+          <CtaCvImage image={requestedImage} fallback={HERO_PERSONAS.us.images.good} />
         </div>
       </div>
     </section>

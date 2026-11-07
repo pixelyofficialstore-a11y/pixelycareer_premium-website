@@ -200,6 +200,14 @@
   line-height: 1.5;
 }
 
+.compareAt {
+  margin: 0 0 2px;
+  color: #8994a5;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
 .price {
   display: flex;
   align-items: flex-start;
@@ -227,7 +235,7 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  min-height: 48px;
+  min-height: 72px;
   margin: 12px 0 24px;
   color: var(--price-ink);
   font-size: 16px;
@@ -277,7 +285,6 @@
 .choose:hover svg { transform: translateX(3px); }
 
 .choose:focus-visible,
-.comparisonToggle:focus-visible,
 .mobileTab:focus-visible,
 .faqQuestion:focus-visible,
 .whatsAppLink:focus-visible,
@@ -391,11 +398,6 @@
   text-align: center;
 }
 
-.included {
-  padding: 5.25rem 1.25rem 5.5rem;
-  background: #fff;
-}
-
 .sectionTitle {
   margin: 0;
   color: var(--price-ink);
@@ -412,98 +414,38 @@
   font-style: normal;
 }
 
-.includedGrid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1.5rem;
-  margin-top: 3.25rem;
-}
-
-.includedItem {
-  display: flex;
-  align-items: flex-start;
-  gap: .9rem;
-}
-
-.iconBox {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 42px;
-  place-items: center;
-  border-radius: 13px;
-  background: #eef3ff;
-  color: var(--price-blue);
-}
-
-.iconBox svg {
-  width: 20px;
-  height: 20px;
-}
-
-.includedItem h3 {
-  margin: .1rem 0 .32rem;
-  color: var(--price-ink);
-  font-size: .95rem;
-  font-weight: 650;
-  line-height: 1.35;
-}
-
-.includedItem p {
-  margin: 0;
-  color: #707d92;
-  font-size: .82rem;
-  line-height: 1.55;
-}
-
 .compare {
   padding: 5rem 1.25rem 3rem;
   background: var(--price-wash);
 }
 
-.comparisonToggle {
+.compareChips {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: .55rem;
-  margin: 1.5rem auto 0;
-  padding: .7rem 1rem;
-  border: 1px solid #d9e3f5;
+  margin: 1.35rem auto 0;
+}
+
+.compareChips span {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem .75rem;
   border-radius: 999px;
-  background: #fff;
+  background: #eef3ff;
+  color: #30466e;
+  font-size: .78rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.compareChips svg {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
   color: var(--price-blue);
-  cursor: pointer;
-  font: inherit;
-  font-size: .88rem;
-  font-weight: 650;
-  transition: background 180ms ease, border-color 180ms ease;
 }
-
-.comparisonToggle:hover {
-  border-color: var(--price-blue);
-  background: #f9fbff;
-}
-
-.comparisonToggle svg {
-  width: 15px;
-  height: 15px;
-  transition: transform 250ms ease;
-}
-
-.comparisonToggle[aria-expanded="true"] svg { transform: rotate(180deg); }
-
-.compareReveal {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  transition: grid-template-rows 420ms cubic-bezier(.22, .8, .25, 1), opacity 260ms ease;
-}
-
-.compareRevealOpen {
-  grid-template-rows: 1fr;
-  opacity: 1;
-}
-
-.compareClip { overflow: hidden; }
 
 .compareCard {
   width: min(100%, 1000px);
@@ -637,11 +579,30 @@
   background: #fff;
 }
 
-.faq .eyebrow { display: flex; justify-content: center; }
+.faqLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  align-items: start;
+  gap: clamp(2rem, 6vw, 5rem);
+}
+
+.faqIntro {
+  position: sticky;
+  top: 112px;
+  align-self: start;
+}
+
+.faq .eyebrow {
+  display: inline-flex;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.faq .sectionTitle { text-align: left; }
 
 .faqList {
-  width: min(100%, 760px);
-  margin: 2rem auto 0;
+  width: 100%;
+  margin: 0;
   border-top: 1px solid var(--price-line);
 }
 
@@ -656,7 +617,7 @@
   padding: 1.2rem .25rem;
   border: 0;
   background: transparent;
-  color: #263650;
+  color: var(--price-ink);
   cursor: pointer;
   font: inherit;
   font-size: 1rem;
@@ -667,6 +628,8 @@
 
 .faqQuestion:hover,
 .faqQuestion[aria-expanded="true"] { color: var(--price-blue); }
+
+.faqQuestion:not(:hover):not([aria-expanded="true"]) { color: var(--price-ink); }
 
 .faqPlus {
   position: relative;
@@ -710,10 +673,10 @@
 }
 
 .faqContact {
-  margin: 1.9rem 0 0;
+  margin: 1.4rem 0 0;
   color: #6c7a90;
   font-size: .9rem;
-  text-align: center;
+  text-align: left;
 }
 
 .faqContact a {
@@ -738,14 +701,6 @@
   .page .packageName { min-height: 24px; }
 }
 
-@media (min-width: 901px) and (max-width: 1199px) {
-  .resultLine { min-height: 72px; }
-}
-
-@media (max-width: 900px) {
-  .includedGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
-
 @media (max-width: 900px) {
   .hero { padding: 3.6rem 1.2rem 2.8rem; }
   .heroTitle { font-size: clamp(2.65rem, 12vw, 4.25rem); }
@@ -757,13 +712,6 @@
   .priceGrid { grid-template-columns: 1fr; grid-auto-rows: 1fr; gap: 24px; padding-top: .75rem; }
   .cardSlot { order: 2; }
   .recommendedSlot { order: 1; }
-  .included { padding: 4rem 1.25rem; }
-  .includedGrid { gap: 1.35rem 1rem; margin-top: 2.35rem; }
-  .includedItem { gap: .65rem; }
-  .iconBox { width: 36px; height: 36px; flex-basis: 36px; border-radius: 11px; }
-  .iconBox svg { width: 18px; height: 18px; }
-  .includedItem h3 { font-size: .85rem; }
-  .includedItem p { font-size: .75rem; }
   .compare { padding: 4rem 1.1rem 2.5rem; }
   .desktopCompare { display: none; }
   .mobileCompare { display: block; }
@@ -826,16 +774,17 @@
   .customStrip { align-items: flex-start; flex-direction: column; gap: .75rem; padding: 1.2rem; border-radius: 18px; }
   .whatsAppLink { min-height: 2.3rem; }
   .faq { padding: 4rem 1.25rem; }
+  .faqLayout { grid-template-columns: 1fr; gap: 2rem; }
+  .faqIntro { position: static; }
   .faqQuestion { font-size: .94rem; }
 }
 
 @media (max-width: 390px) {
-  .includedItem p { font-size: .82rem; }
   .heroChips { max-width: 315px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .cardSlot { animation: none; }
   .badge { animation: none; }
-  .page .card, .choose, .choose svg, .comparisonToggle svg, .compareReveal, .faqAnswer, .faqPlus { transition: none; }
+  .page .card, .choose, .choose svg, .faqAnswer, .faqPlus { transition: none; }
 }
