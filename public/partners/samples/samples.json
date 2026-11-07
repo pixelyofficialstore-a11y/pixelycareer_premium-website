@@ -1,0 +1,44 @@
+[
+  {
+    "image": "dentist-ats.webp",
+    "type": "ATS CV",
+    "profession": "Dentist",
+    "tab": "Gulf CVs",
+    "alt": "ATS CV sample for a dentist applying in the Gulf"
+  },
+  {
+    "image": "general-practitioner-ats.webp",
+    "type": "ATS CV with photo",
+    "profession": "General Practitioner",
+    "tab": "Gulf CVs",
+    "alt": "ATS CV with photo sample for a general practitioner"
+  },
+  {
+    "image": "emergency-medicine-europass.webp",
+    "type": "Europass CV",
+    "profession": "Emergency Medicine",
+    "tab": "Europass",
+    "alt": "Europass CV sample for an emergency medicine doctor"
+  },
+  {
+    "image": "cover-letter-ats.webp",
+    "type": "Cover letter",
+    "profession": "ATS format",
+    "tab": "Cover letters",
+    "alt": "Cover letter sample in ATS format"
+  },
+  {
+    "image": "designed-photo.webp",
+    "type": "Designed CV",
+    "profession": "Photo layout",
+    "tab": "Designed CVs",
+    "alt": "Designed CV sample with a photo layout"
+  },
+  {
+    "image": "designed-sidebar.webp",
+    "type": "Designed CV",
+    "profession": "Sidebar layout",
+    "tab": "Designed CVs",
+    "alt": "Designed CV sample with a sidebar layout"
+  }
+]

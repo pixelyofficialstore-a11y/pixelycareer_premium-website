@@ -9,7 +9,7 @@ import { WHATSAPP_URL, whatsappMessage } from "@/lib/site";
 export type Announcement = { key: string; text: string; href: string; ctaLabel?: string };
 
 const PRICING = "#pricing";
-const PARTNER_WHATSAPP = whatsappMessage("Hi, I'm from [agency]. I'd like to discuss a CV partnership.");
+const PARTNER_WHATSAPP = whatsappMessage("Hi, I'm from [agency name]. I'd like to discuss a CV partnership.");
 
 const GULF = "Applying in the Gulf? CVs built for UAE & Saudi roles →";
 const BUNDLE = "CV + cover letter + LinkedIn, from {price} →";
