@@ -278,21 +278,26 @@
   .title {
     grid-column: 1;
     grid-row: 2;
-    font-size: clamp(34px, 3.8vw, 50px);
-    font-weight: 700;
-    line-height: 1.08;
-    letter-spacing: -.02em;
+    max-width: 560px;
+    font-size: clamp(44px, 5vw, 68px);
+    font-weight: 500;
+    line-height: 1.04;
+    letter-spacing: -.035em;
     text-wrap: initial;
   }
 
   .title span {
     display: block;
+    color: #0048ff;
   }
 
   .subtitle {
     grid-column: 1;
     grid-row: 3;
-    margin-top: 20px;
+    margin-top: 24px;
+    font-size: 16px;
+    font-weight: 400;
+    color: #6b7280;
   }
 
   .comparison {
@@ -317,16 +322,38 @@
   .mobileSummary {
     grid-column: 1;
     grid-row: 4;
-    margin-top: 40px;
+    width: 392px;
+    grid-template-columns: 180px 180px;
+    margin-top: 48px;
     font-size: 14px;
-    gap: 0;
+    font-weight: 400;
+    color: #6b7280;
+    line-height: 1.7;
+    gap: 32px;
+  }
+
+  .mobileSummary h3 {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
   }
 
   .review {
     grid-column: 1;
     grid-row: 5;
     justify-self: start;
-    margin-top: 40px;
+    margin-top: 48px;
+    padding-block: 0 6px;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+}
+
+@media (min-width: 1366px) {
+  .title {
+    white-space: nowrap;
   }
 }
 
