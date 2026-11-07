@@ -20,3 +20,9 @@ Match the Before/After section's typography and spacing to the hero's minimal, p
 **Why:** The user repeated this direction after rejecting a thin heading with small, quiet supporting text.
 
 **How to apply:** Use the hero as the visual reference for font treatment and hierarchy while preserving the two-line heading and full A4 comparison.
+
+Keep the solution-section trial on the main homepage. The user rejected the interactive overlapping Resume/LinkedIn/Website stack with service selectors.
+
+**Why:** The user explicitly clarified that the rejected design was the solution section on the main page, even though their preview was on `/pk`.
+
+**How to apply:** Do not restore that overlapping-stack direction or infer a market-page change from the preview URL alone. Keep the eyebrow removed.
