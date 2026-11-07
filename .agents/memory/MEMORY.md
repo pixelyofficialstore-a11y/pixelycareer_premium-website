@@ -1,1 +1,2 @@
 - [Tailwind build verification](tailwind-build-verification.md) — compiler changes need rendered-style checks; a successful build can still omit utility classes.
+- [Preview hydration safety](preview-hydration.md) — injected preview scripts can collide with raw head scripts; preserve React-owned markup until hydration.

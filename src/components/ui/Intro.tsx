@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import Script from "next/script";
 
 /*
  * Loading screen: the brand story in about 2.1s. Grey CVs drop into a pile, the blue CV lifts out of
@@ -16,18 +17,17 @@ const SCRIPT = `(function(){
   try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(e){return}
   d.setAttribute("data-intro","on");
   setTimeout(function(){d.setAttribute("data-intro","done")},${CURTAIN_STARTS});
-  setTimeout(function(){var n=document.getElementById("intro");if(n)n.remove()},${CURTAIN_STARTS + 500});
 })();`;
 
 export default function Intro() {
   if (process.env.NEXT_PUBLIC_ENABLE_INTRO === "false") return null;
   // Inlined so the two official pixel squares can animate as their own layers.
   const mark = fs.readFileSync(path.join(process.cwd(), "public/brand/mark-white.svg"), "utf8").replace(' role="img" aria-label="Pixely Careers"', "");
-  // Static HTML that React never inspects: the screen can remove itself before hydration on a slow phone.
+  // Keep the overlay mounted: CSS moves it offscreen without changing React's hydration markup.
   const html = `<div id="intro" aria-hidden="true"><div class="intro-stage"><div class="intro-sheet intro-s1"></div><div class="intro-sheet intro-s2"></div><div class="intro-cv">${mark}<i></i></div><div class="intro-sheet intro-s3"></div></div></div>`;
   return (
     <>
-      <script dangerouslySetInnerHTML={{ __html: SCRIPT }} />
+      <Script id="pixely-intro-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: SCRIPT }} />
       <div suppressHydrationWarning dangerouslySetInnerHTML={{ __html: html }} />
     </>
   );

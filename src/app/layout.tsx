@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import SmoothScroll from "@/components/ui/SmoothScroll";
 import Header from "@/components/ui/Header";
@@ -55,11 +56,9 @@ const SET_LANG = `document.documentElement.lang={"/pk":"en-PK","/ae":"en-AE","/s
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-US" className={poppins.variable} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: SET_LANG }} />
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA).replace(/</g, "\\u003c") }} />
-      </head>
       <body>
+        <Script id="pixely-market-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: SET_LANG }} />
+        <script id="pixely-structured-data" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA).replace(/</g, "\\u003c") }} />
         <Intro />
         <a href="#main" className="skip-link">
           Skip to content
