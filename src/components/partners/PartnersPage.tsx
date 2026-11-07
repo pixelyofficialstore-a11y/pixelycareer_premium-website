@@ -11,14 +11,6 @@ import PartnersCarousel from "./PartnersCarousel";
 import type { AgencySample } from "./types";
 import "./partners.css";
 
-const AUDIENCES = [
-  { label: "Recruitment agencies", line: "Candidate CVs under your brand.", icon: "document" },
-  { label: "Overseas employment promoters", line: "Overseas-ready candidate documents.", icon: "growth" },
-  { label: "Career & interview coaches", line: "CVs to support your coaching.", icon: "team" },
-  { label: "Employers & HR teams", line: "Consistent CVs and staff profiles.", icon: "document" },
-  { label: "Training institutes", line: "CVs for graduating candidates.", icon: "growth" },
-];
-
 const WHY = [
   { title: "Stronger candidate CVs", text: "ATS-ready, recruiter-focused CVs for Gulf and European employers.", icon: "document" },
   { title: "A new income line", text: "You set your own price and keep the difference.", icon: "growth" },
@@ -172,25 +164,6 @@ function CountUp({ to }: { to: number }) {
     return () => cancelAnimationFrame(frame);
   }, [to]);
   return <>{value.toLocaleString("en-US")}</>;
-}
-
-function WhoItsFor() {
-  return (
-    <section className="agency-section agency-audience-section" aria-labelledby="agency-audience-title" data-agency-reveal>
-      <div className="agency-wrap">
-        <h2 className="agency-title" id="agency-audience-title">Built for teams that <em>work with candidates.</em></h2>
-        <div className="agency-audience-grid">
-          {AUDIENCES.map((item) => (
-            <article className="agency-audience-card" key={item.label}>
-              <span className="agency-audience-mark" aria-hidden="true"><FeatureIcon type={item.icon} /></span>
-              <h3>{item.label}</h3>
-              <p>{item.line}</p>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
 }
 
 function WhySection() {
@@ -373,7 +346,6 @@ export default function PartnersPage({ samples }: { samples: AgencySample[] }) {
       </div>
     </section>
     <ProofBand />
-    <WhoItsFor />
     <WhySection />
     <WaysSection />
     <section className="agency-section agency-samples" id="samples" aria-labelledby="agency-samples-title" data-agency-reveal>
