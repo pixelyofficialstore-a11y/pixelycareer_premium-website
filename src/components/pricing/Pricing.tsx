@@ -23,7 +23,7 @@ const CARD_CONTENT = {
     items: ["ATS CV, 1 to 2 pages", "Tailored cover letter", "LinkedIn profile content", "Keywords for your target job"],
     support: "30 days",
     delivery: "2 days",
-    revisions: "3 revisions included",
+    revisions: "3 revisions",
   },
   "international-pro": {
     audience: "For professionals",
@@ -34,7 +34,7 @@ const CARD_CONTENT = {
     items: ["International standard CV", "Country specific cover letter", "Full LinkedIn makeover", "Indeed and Naukrigulf profiles", "Bio statement and digital contact card"],
     support: "3 months",
     delivery: "2 days",
-    revisions: "3 revisions included",
+    revisions: "3 revisions",
   },
   executive: {
     audience: "For executives",
@@ -44,8 +44,8 @@ const CARD_CONTENT = {
     lead: "Everything in International Pro, plus:",
     items: ["Premium executive CV", "One page visual CV", "Executive cover letter and bio", "LinkedIn content pack (10 posts)", "Interview preparation guide"],
     support: "6 months",
-    delivery: "3 days, priority",
-    revisions: "4 revisions included",
+    delivery: "3 days",
+    revisions: "4 revisions",
   },
 } as const;
 
@@ -150,19 +150,15 @@ export default function Pricing({
                 <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`}>
                   <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
                     {recommended && <span className={styles.badge}>Recommended</span>}
-                    <span className={styles.audience}>{content.audience}</span>
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
+                    <p className={styles.audience}>{content.audience}</p>
                     <PriceAmount label={p.priceLabel} />
-                    <p className={styles.oneTime}>one time</p>
-                    <div className={styles.resultBox}>
-                      <span className={styles.resultLabel}>The result</span>
-                      <strong>{content.result}</strong>
-                    </div>
+                    <p className={styles.resultLine}><ArrowIcon className={styles.resultArrow} /><span>{content.result}</span></p>
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={`pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
                     </Link>
+                    <hr className={styles.divider} />
                     <div className={styles.includedContent}>
-                      <p className={styles.listHeading}>What&apos;s included</p>
                       <ul className={styles.itemList}>
                         {content.lead && <li className={styles.listLead}>{content.lead}</li>}
                         {content.items.map((item) => <li key={item}><span className={styles.textCheck} aria-hidden="true">✓</span>{item}</li>)}
@@ -171,14 +167,17 @@ export default function Pricing({
                     <div className={styles.supportRow}>
                       <div className={styles.supportBlock}>
                         <strong>{content.support}</strong>
-                        <span>WhatsApp support</span>
+                        <span>Support</span>
                       </div>
                       <div className={styles.supportBlock}>
                         <strong>{content.delivery}</strong>
                         <span>Delivery</span>
                       </div>
+                      <div className={styles.supportBlock}>
+                        <strong>{content.revisions}</strong>
+                        <span>Revisions</span>
+                      </div>
                     </div>
-                    <p className={styles.cardFooter}>{content.revisions}</p>
                   </article>
                 </li>
               );
