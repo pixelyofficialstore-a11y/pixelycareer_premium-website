@@ -20,3 +20,9 @@ Use only approved agency proof figures: 20+ partner agencies, 1,800+ clients ser
 **Why:** The user explicitly corrected the larger agency and resume counts as unapproved.
 
 **How to apply:** Do not infer growth or substitute different metrics without the user's approval.
+
+Reuse the existing homepage CV and format portfolio for partner-page visuals before requesting new uploads or using blank mockups.
+
+**Why:** The user explicitly asked to use the CVs and formats already uploaded for other market homepages.
+
+**How to apply:** Curate suitable existing assets and preserve their real document types rather than inventing missing sample content.

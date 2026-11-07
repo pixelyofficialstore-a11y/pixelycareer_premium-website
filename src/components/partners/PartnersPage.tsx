@@ -45,9 +45,9 @@ const AUDIENCES = [
 ];
 
 const WHY = [
-  { title: "Stronger candidate CVs", text: "Clear, ATS-ready documents for employers.", icon: "document" },
-  { title: "A new income line", text: "Set your price. We handle the documents.", icon: "growth" },
-  { title: "No team to hire", text: "Writing, design and formatting, handled.", icon: "team" },
+  { title: "Stronger candidate CVs", text: "ATS-ready, recruiter-focused CVs for Gulf and European employers.", icon: "document" },
+  { title: "A new income line", text: "You set your own price and keep the difference.", icon: "growth" },
+  { title: "No team to hire", text: "We write, design and format everything.", icon: "team" },
 ];
 
 const MODELS = {
@@ -128,19 +128,23 @@ function HeroStack() {
     });
   };
   return (
-    <div ref={visualRef} className="agency-visual-wrap" aria-label="Three sample CVs for different professions" onPointerMove={onMove} onPointerLeave={() => setTilt({ x: 0, y: 0 })}>
+    <div ref={visualRef} className="agency-visual-wrap" aria-label="Three examples of Pixely Careers CV formats" onPointerMove={onMove} onPointerLeave={() => setTilt({ x: 0, y: 0 })}>
       <div className="agency-hero-orbit agency-hero-orbit-one" />
       <div className="agency-hero-orbit agency-hero-orbit-two" />
       <div ref={scrollLayerRef} className="agency-cv-scroll-layer">
         <div className="agency-cv-stack" style={{ "--tilt-x": `${tilt.x}deg`, "--tilt-y": `${tilt.y}deg` } as CSSProperties}>
-          {["Staff Nurse", "Electrical Technician", "Accountant"].map((role, index) => (
-            <div className={`agency-cv-card agency-cv-card-${index + 1}`} key={role}>
-              <CvMock role={role} />
-              {index === 2 && <span className="agency-logo-placeholder">Your agency logo</span>}
+          {[
+            { name: "Gulf-format CV with navy sidebar", src: "/formats/pk/5.webp" },
+            { name: "CV with a navy header", src: "/formats/pk/6.webp" },
+            { name: "Clean ATS-friendly CV", src: "/cv/ae/good.webp" },
+          ].map((sample, index) => (
+            <div className={`agency-cv-card agency-cv-card-${index + 1}`} key={sample.src}>
+              <img src={sample.src} alt={sample.name} />
             </div>
           ))}
         </div>
       </div>
+      <span className="agency-logo-placeholder">Your agency logo</span>
       <div className="agency-float-chip agency-float-chip-one"><span className="agency-chip-dot" />24-hour first drafts</div>
       <div className="agency-float-chip agency-float-chip-two"><span className="agency-chip-spark" aria-hidden="true" />Your branding or ours</div>
     </div>
@@ -266,7 +270,7 @@ function WhoItsFor() {
 function WhySection() {
   return <section className="agency-section agency-why" aria-labelledby="agency-why-title" data-agency-reveal>
     <div className="agency-wrap">
-      <h2 className="agency-title" id="agency-why-title">Why work <em>with us.</em></h2>
+      <h2 className="agency-title" id="agency-why-title">Why agencies <em>partner with us.</em></h2>
       <div className="agency-why-grid">{WHY.map((item, index) => <article className="agency-why-card" data-agency-reveal key={item.title} style={{ "--reveal-delay": `${index * 80}ms` } as CSSProperties}>
         <span className="agency-line-icon"><FeatureIcon type={item.icon} /></span>
         <h3>{item.title}</h3><p>{item.text}</p>
@@ -276,15 +280,21 @@ function WhySection() {
 }
 
 function ModelFlow({ model }: { model: keyof typeof MODELS }) {
-  const steps = MODELS[model].flow;
-  return <div className={`agency-flow agency-flow-${model === "White label" ? "white" : "referral"}`} aria-label={`${model} workflow`}>
+  const isWhiteLabel = model === "White label";
+  const steps = isWhiteLabel
+    ? ["Candidate", "Your agency", "Pixely Careers", "Your agency", "Employer"]
+    : ["Your agency", "Pixely Careers", "Candidate", "You earn a commission"];
+  return <div className={`agency-flow agency-flow-${isWhiteLabel ? "white" : "referral"}`} aria-label={`${model} workflow`}>
     {steps.map((step, index) => <div className="agency-flow-step" key={`${step}-${index}`}>
-      <div className={`agency-flow-node${model === "White label" && index === 2 ? " is-muted" : ""}${model === "Referral" && index === 4 ? " is-commission" : ""}`}>
-        <span>{model === "White label" && index === 2 ? "Pixely Careers" : step}</span>
-        {model === "White label" && index === 2 && <small>behind the scenes</small>}
-        {model === "Referral" && index === 4 && <span className="agency-coin" aria-hidden="true">$</span>}
+      <div className={`agency-flow-node${isWhiteLabel && index === 2 ? " is-muted" : ""}${!isWhiteLabel && index === 3 ? " is-commission" : ""}`}>
+        <span>{step}</span>
+        {isWhiteLabel && index === 2 && <small>behind the scenes</small>}
+        {!isWhiteLabel && index === 3 && <span className="agency-coin" aria-hidden="true">$</span>}
       </div>
-      {index < steps.length - 1 && <svg className="agency-flow-arrow" viewBox="0 0 40 12" fill="none" aria-hidden="true"><path d="M1 6h35m0 0-5-5m5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>}
+      {index < steps.length - 1 && <div className="agency-flow-connector">
+        {!isWhiteLabel && index === 0 && <span className="agency-flow-note">refers the candidate</span>}
+        <svg className="agency-flow-arrow" viewBox="0 0 12 24" fill="none" aria-hidden="true"><path d="M6 1v21m0 0 5-5m-5 5-5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
+      </div>}
     </div>)}
   </div>;
 }
@@ -302,9 +312,11 @@ function WaysSection() {
   };
   return <section className="agency-section agency-ways" aria-labelledby="agency-ways-title" data-agency-reveal>
     <div className="agency-wrap">
-      <h2 className="agency-title" id="agency-ways-title">Two ways to <em>work together.</em></h2>
-      <div className="agency-model-switch" role="tablist" aria-label="Choose a partnership model">
-        {(Object.keys(MODELS) as Array<keyof typeof MODELS>).map((item, index) => <button id={`model-tab-${index}`} key={item} ref={(element) => { modelTabs.current[index] = element; }} type="button" role="tab" aria-selected={model === item} aria-controls="agency-model-panel" tabIndex={model === item ? 0 : -1} onClick={() => setModel(item)} onKeyDown={onModelKeyDown}>{item}</button>)}
+      <div className="agency-ways-heading">
+        <h2 className="agency-title" id="agency-ways-title">Two ways <em>to work.</em></h2>
+        <div className="agency-model-switch" role="tablist" aria-label="Choose a partnership model">
+          {(Object.keys(MODELS) as Array<keyof typeof MODELS>).map((item, index) => <button id={`model-tab-${index}`} key={item} ref={(element) => { modelTabs.current[index] = element; }} type="button" role="tab" aria-selected={model === item} aria-controls="agency-model-panel" tabIndex={model === item ? 0 : -1} onClick={() => setModel(item)} onKeyDown={onModelKeyDown}>{item}</button>)}
+        </div>
       </div>
       <div className="agency-model-panel" id="agency-model-panel" role="tabpanel" aria-labelledby={`model-tab-${model === "White label" ? 0 : 1}`} key={model}>
         <div className="agency-model-copy">

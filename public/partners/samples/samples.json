@@ -1,44 +1,58 @@
 [
   {
-    "image": "dentist-ats.webp",
+    "image": "/formats/ae/1.webp",
     "type": "ATS CV",
-    "profession": "Dentist",
+    "profession": "UAE format",
     "tab": "Gulf CVs",
-    "alt": "ATS CV sample for a dentist applying in the Gulf"
+    "alt": "Single-column ATS CV from the UAE homepage portfolio"
   },
   {
-    "image": "general-practitioner-ats.webp",
-    "type": "ATS CV with photo",
-    "profession": "General Practitioner",
-    "tab": "Gulf CVs",
-    "alt": "ATS CV with photo sample for a general practitioner"
-  },
-  {
-    "image": "emergency-medicine-europass.webp",
-    "type": "Europass CV",
-    "profession": "Emergency Medicine",
-    "tab": "Europass",
-    "alt": "Europass CV sample for an emergency medicine doctor"
-  },
-  {
-    "image": "cover-letter-ats.webp",
-    "type": "Cover letter",
-    "profession": "ATS format",
-    "tab": "Cover letters",
-    "alt": "Cover letter sample in ATS format"
-  },
-  {
-    "image": "designed-photo.webp",
-    "type": "Designed CV",
-    "profession": "Photo layout",
-    "tab": "Designed CVs",
-    "alt": "Designed CV sample with a photo layout"
-  },
-  {
-    "image": "designed-sidebar.webp",
+    "image": "/formats/pk/5.webp",
     "type": "Designed CV",
     "profession": "Sidebar layout",
     "tab": "Designed CVs",
-    "alt": "Designed CV sample with a sidebar layout"
+    "alt": "Navy sidebar CV with a profile photo from the Pakistan portfolio"
+  },
+  {
+    "image": "/formats/pk/7.webp",
+    "type": "Europass CV",
+    "profession": "European format",
+    "tab": "Europass",
+    "alt": "Europass CV from the Pakistan homepage portfolio"
+  },
+  {
+    "image": "/formats/pk/2.webp",
+    "type": "ATS CV",
+    "profession": "Finance",
+    "tab": "Gulf CVs",
+    "alt": "Senior finance executive CV with a clean single-column layout"
+  },
+  {
+    "image": "/formats/pk/3.webp",
+    "type": "Designed CV",
+    "profession": "Graphic design",
+    "tab": "Designed CVs",
+    "alt": "Graphic designer CV with teal headings and a structured layout"
+  },
+  {
+    "image": "/formats/ae/4.webp",
+    "type": "CV with photo",
+    "profession": "UAE format",
+    "tab": "Gulf CVs",
+    "alt": "UAE CV format with a photo and a single-column experience section"
+  },
+  {
+    "image": "/formats/pk/6.webp",
+    "type": "Designed CV",
+    "profession": "Header layout",
+    "tab": "Designed CVs",
+    "alt": "CV with a navy header and neatly separated content sections"
+  },
+  {
+    "image": "/formats/uk/7.webp",
+    "type": "Europass CV",
+    "profession": "European format",
+    "tab": "Europass",
+    "alt": "Europass CV from the UK homepage portfolio"
   }
 ]

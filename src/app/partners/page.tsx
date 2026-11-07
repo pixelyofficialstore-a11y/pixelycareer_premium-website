@@ -22,12 +22,15 @@ export const metadata = {
 const faqs = QUESTIONS.map(([q, a]) => ({ q, a }));
 
 export default function Page() {
-  const sampleDirectory = path.join(process.cwd(), "public", "partners", "samples");
-  const samples: AgencySample[] = sampleDefinitions.map((sample) => ({
-    ...sample,
-    image: `/partners/samples/${sample.image}`,
-    available: fs.existsSync(path.join(sampleDirectory, sample.image)),
-  }));
+  const publicDirectory = path.join(process.cwd(), "public");
+  const samples: AgencySample[] = sampleDefinitions.map((sample) => {
+    const image = sample.image.startsWith("/") ? sample.image : `/partners/samples/${sample.image}`;
+    return {
+      ...sample,
+      image,
+      available: fs.existsSync(path.join(publicDirectory, image.replace(/^\/+/, ""))),
+    };
+  });
 
   return (
     <>
