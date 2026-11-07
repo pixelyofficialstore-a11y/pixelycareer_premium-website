@@ -20,3 +20,26 @@ export function getReviews(market: MarketKey): Review[] {
   const own = json(`content/reviews/${market}.json`).reviews as Review[];
   return own.length > 0 ? own : (json("content/reviews/global.json").reviews as Review[]);
 }
+
+export type Testimonial = {
+  id: string;
+  type: "result" | "review";
+  quote: string;
+  name: string;
+  tag?: string;
+  source: "whatsapp" | "facebook";
+  location: string;
+  markets: MarketKey[];
+};
+
+/** Separate collection keeps the unapproved country and About page rollout unchanged. */
+export function getTestimonials(market: MarketKey): Testimonial[] {
+  const global = json("content/reviews/global.json");
+  const own = json(`content/reviews/${market}.json`);
+  const items: Testimonial[] = own.testimonials?.length ? own.testimonials : global.testimonials ?? [];
+  // Only explicitly client approved result IDs may be published.
+  const approved = new Set<string>([...(global.approvedResultIds ?? []), ...(own.approvedResultIds ?? [])]);
+  return items.filter((item) =>
+    (item.markets.length === 0 || item.markets.includes(market)) &&
+    (item.type !== "result" || approved.has(item.id)));
+}

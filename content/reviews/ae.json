@@ -17,5 +17,15 @@
     "image": "/reviews/file-name.webp",
     "source": "WhatsApp"
   },
-  "reviews": []
+  "reviews": [],
+  "approvedResultIds": [],
+  "testimonials": [
+    { "id": "dubai-interviews", "type": "result", "quote": "I got interview calls in Dubai with the new documents.", "name": "Client, Dubai", "tag": "Interview calls in Dubai", "source": "whatsapp", "location": "UAE", "markets": ["ae"] },
+    { "id": "new-job-lahore", "type": "result", "quote": "After applying with this CV, I got a new job in 15 days.", "name": "Client, Lahore", "tag": "New job in 15 days", "source": "whatsapp", "location": "Pakistan", "markets": ["ae"] },
+    { "id": "assistant-director", "type": "result", "quote": "I have been selected as Assistant Director Admin at a prestigious university.", "name": "Client, Pakistan", "tag": "Selected as Assistant Director", "source": "whatsapp", "location": "Pakistan", "markets": ["ae"] },
+    { "id": "international-interview", "type": "result", "quote": "For the first time, I received an international interview call via Zoom.", "name": "Maham S.", "tag": "First international interview", "source": "whatsapp", "location": "Pakistan", "markets": ["ae"] },
+    { "id": "hina-facebook", "type": "review", "quote": "They structured my CV according to job market standards. Highly professional, and delivered right on time.", "name": "Hina M.", "source": "facebook", "location": "", "markets": ["ae"] },
+    { "id": "touheed-facebook", "type": "review", "quote": "They perfectly crafted the CV as per requirement, and the attention to detail on the LinkedIn page was amazing.", "name": "Touheed Iqbal", "source": "facebook", "location": "", "markets": ["ae"] },
+    { "id": "mhassan-facebook", "type": "review", "quote": "Clean, modern and professionally designed. Well structured and easy to read.", "name": "Mhassan Ali", "source": "facebook", "location": "", "markets": ["ae"] }
+  ]
 }

@@ -11,6 +11,7 @@ import Problem, { ProblemNext } from "@/components/sections/Problem";
 import HomeProblem from "@/components/sections/HomeProblem";
 import Process from "@/components/sections/Process";
 import HomeProcess from "@/components/sections/HomeProcess";
+import HomeTestimonials from "@/components/sections/HomeTestimonials";
 import HomeWhatsApp from "@/components/ui/HomeWhatsApp";
 import Reviews from "@/components/sections/Reviews";
 import Services from "@/components/sections/Services";
@@ -19,7 +20,7 @@ import HomeTrustStrip from "@/components/sections/HomeTrustStrip";
 import MarketSync from "@/components/ui/MarketSync";
 import Reveal from "@/components/ui/Reveal";
 import StickyBar from "@/components/ui/StickyBar";
-import { getReviews } from "@/lib/home-content";
+import { getReviews, getTestimonials } from "@/lib/home-content";
 import { FACEBOOK_REVIEWS_URL } from "@/lib/site";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd, homeJsonLd } from "@/lib/seo";
 
@@ -53,10 +54,11 @@ export default function HomePage({ market, useHomeProblem = false }: { market: M
       <Suspense>
         {market.path === "/" ? <Formats market={market.key} /> : <MarketFormats market={market.key} />}
       </Suspense>
-      <Reviews market={market} reviews={getReviews(market.key)} />
+      {market.path !== "/" && <Reviews market={market} reviews={getReviews(market.key)} />}
       <Suspense>
         {market.path === "/" ? <HomeProcess /> : <Process market={market.key} />}
       </Suspense>
+      {market.path === "/" && <HomeTestimonials items={getTestimonials(market.key)} />}
       <Suspense>
         <Pricing market={market.key} variant={market.path === "/" ? "compact" : "default"} />
       </Suspense>
