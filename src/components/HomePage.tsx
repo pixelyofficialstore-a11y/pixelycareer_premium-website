@@ -7,6 +7,7 @@ import FinalCta from "@/components/sections/FinalCta";
 import Formats from "@/components/sections/Formats";
 import Pricing from "@/components/sections/Pricing";
 import Problem, { ProblemNext } from "@/components/sections/Problem";
+import HomeProblem from "@/components/sections/HomeProblem";
 import Process from "@/components/sections/Process";
 import Reviews from "@/components/sections/Reviews";
 import Services from "@/components/sections/Services";
@@ -17,7 +18,7 @@ import { getReviews } from "@/lib/home-content";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd, homeJsonLd } from "@/lib/seo";
 
 /** One template for every market. Each boundary hydrates in its own task, so nothing visibly loads in. */
-export default function HomePage({ market }: { market: Market }) {
+export default function HomePage({ market, useHomeProblem = false }: { market: Market; useHomeProblem?: boolean }) {
   const faq = getHomeFaq(market);
   return (
     <>
@@ -28,8 +29,12 @@ export default function HomePage({ market }: { market: Market }) {
       <HeroRise>
         <Hero market={market} />
       </HeroRise>
-      <Problem market={market} />
-      <ProblemNext market={market} />
+      {useHomeProblem ? <HomeProblem /> : (
+        <>
+          <Problem market={market} />
+          <ProblemNext market={market} />
+        </>
+      )}
       <Suspense>
         <Services market={market.key} />
       </Suspense>
