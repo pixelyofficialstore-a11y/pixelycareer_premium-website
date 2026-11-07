@@ -28,9 +28,10 @@ export default function Page() {
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: "Blog", path: "/blog" }])} />
       <section className="blog-page">
         <div className="blog-intro">
-        <p className="label">Blog</p>
-        <h1 className="blog-heading mt-5">Career <em>notes.</em></h1>
-        <p className="blog-deck">Practical advice for your next application.</p>
+        <div className="blog-heading-block">
+          <h1 className="blog-heading">Career <em>notes.</em></h1>
+          <p className="blog-deck">Practical advice on CVs, LinkedIn and your next application.</p>
+        </div>
         <BlogIndex posts={posts} />
         </div>
       </section>

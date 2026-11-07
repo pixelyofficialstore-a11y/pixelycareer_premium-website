@@ -77,6 +77,21 @@ export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
 
   return (
     <>
+      <div className="blog-toolbar">
+      <nav className="blog-filter-scroll" aria-label="Filter by category">
+        <ul className="blog-filters">
+          {[null, ...categories].map((name) => {
+            const count = name ? posts.filter((post) => post.category === name).length : posts.length;
+            return (
+              <li key={name ?? "all"}>
+                <button type="button" className="blog-filter" aria-pressed={category === name} onClick={() => setFilter(name)}>
+                  {name ?? "All"} <span className="blog-filter-count">{count}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
       <div className="blog-search">
         <label htmlFor="blog-search" className="sr-only">Search posts</label>
         <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -95,6 +110,7 @@ export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
           }}
         />
       </div>
+      </div>
 
       {featured && (
         <article className="blog-feature">
@@ -112,21 +128,6 @@ export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
           </div>
         </article>
       )}
-
-      <nav className="blog-filter-scroll" aria-label="Filter by category">
-        <ul className="blog-filters">
-          {[null, ...categories].map((name) => {
-            const count = name ? posts.filter((post) => post.category === name).length : posts.length;
-            return (
-              <li key={name ?? "all"}>
-                <button type="button" className="blog-filter" aria-pressed={category === name} onClick={() => setFilter(name)}>
-                  {name ?? "All"} <span className="blog-filter-count">{count}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
 
       <h2 className="sr-only">Posts</h2>
       {shown.length ? (

@@ -20,3 +20,9 @@ Keep the blog's free review promotion outside the article grid, as a horizontal 
 **Why:** The user rejected a promotion taking an article's place in the grid and explicitly requested a direct WhatsApp message.
 
 **How to apply:** Preserve article-only grid rows when changing blog discovery or review promotion layouts.
+
+Keep search controls stationary when the featured article disappears during filtering.
+
+**Why:** Putting search below conditional featured content moves the input while the visitor is typing.
+
+**How to apply:** Keep discovery controls before the conditional featured article, or preserve an equivalent stable position.
