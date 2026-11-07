@@ -779,3 +779,200 @@
   .badge { animation: none; }
   .page .card, .choose, .choose svg, .faqAnswer, .faqPlus { transition: none; }
 }
+
+/* Compact package cards are enabled only for the main homepage. */
+.compact {
+  background: var(--price-wash);
+}
+
+.compactHero {
+  padding: 40px 1.25rem 0;
+  background: var(--price-wash);
+}
+
+.compactHeroTitle {
+  max-width: none;
+  font-size: clamp(40px, 4.6vw, 60px);
+  font-weight: 500;
+  letter-spacing: -.035em;
+  line-height: 1.05;
+}
+
+.compactHeroText {
+  margin: 16px auto 0;
+  color: #6b7280;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.compactPackages {
+  padding: 40px 1.25rem 32px;
+  background: var(--price-wash);
+}
+
+.compactPriceGrid {
+  gap: 20px;
+  padding-top: 0;
+}
+
+.compact .card {
+  padding: 28px;
+  border-radius: 24px;
+}
+
+.compact .cardRecommended {
+  padding: 27px;
+}
+
+.compact .packageName {
+  min-height: 24px;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -.025em;
+}
+
+.compact .audience {
+  margin: 4px 0 16px;
+}
+
+.compact .pricePair {
+  align-items: baseline;
+  gap: 10px;
+}
+
+.compact .pricePair > .price {
+  align-items: flex-start;
+  gap: 4px;
+  font-size: 44px;
+  font-weight: 600;
+  letter-spacing: -.04em;
+}
+
+.compact .pricePair > .price .priceUnit {
+  padding-top: 4px;
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.compact .pricePair .compareAt {
+  align-self: center;
+  color: #8994a5;
+  text-decoration: none;
+}
+
+.compact .pricePair .compareAt .price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.2;
+}
+
+.compact .pricePair .compareAt .priceUnit {
+  padding: 0;
+  color: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.compact .pricePair .compareAt .priceUnit,
+.compact .pricePair .compareAt .priceNumber {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.compact .resultLine {
+  min-height: 68px;
+  margin: 12px 0 24px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.compact .supportRow {
+  display: none;
+}
+
+.compactSupportRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  color: #748096;
+  font-size: 12px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.compactCta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 28px auto 0;
+  color: #8994a5;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.compactCta a {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--price-blue);
+  text-decoration: none;
+}
+
+.compactCta a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.compactCta svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 900px) {
+  .compactHero {
+    padding: 32px 1.1rem 0;
+  }
+
+  .compactHeroTitle {
+    font-size: clamp(32px, 9vw, 40px);
+    line-height: 1.05;
+  }
+
+  .compactPackages {
+    padding: 32px 1.1rem;
+  }
+
+  .compactPriceGrid {
+    gap: 16px;
+    grid-auto-rows: auto;
+    padding-top: 0;
+  }
+
+  .compact .resultLine {
+    min-height: 0;
+  }
+
+  .compactSupportRow {
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .compactCta {
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 24px;
+  }
+
+  .compactCtaDivider {
+    display: none;
+  }
+}

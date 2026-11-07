@@ -83,10 +83,12 @@ function CellValue({ value }: { value: string }) {
 export default function Pricing({
   market,
   standalone = false,
+  compact = false,
   faqItems = [],
 }: {
   market: MarketKey;
   standalone?: boolean;
+  compact?: boolean;
   faqItems?: { q: string; a: string }[];
 }) {
   const m = MARKETS[market];
@@ -99,12 +101,19 @@ export default function Pricing({
   useEffect(() => saveMarket(market), [market]);
 
   return (
-    <div className={`${styles.page} ${standalone ? styles.standalone : ""}`} data-pricing-surface>
-      <header className={styles.hero}>
+    <div
+      className={`${styles.page} ${standalone ? styles.standalone : ""} ${compact ? styles.compact : ""}`}
+      data-pricing-surface
+      data-pricing-variant={compact ? "compact" : undefined}
+    >
+      <header className={`${styles.hero} ${compact ? styles.compactHero : ""}`}>
         <div className={styles.heroInner}>
-          {!standalone && <p className={styles.eyebrow}>Pricing</p>}
-          <HeroHeading className={styles.heroTitle}>One price. <em>No surprises.</em></HeroHeading>
-          {!standalone && (
+          {!standalone && !compact && <p className={styles.eyebrow}>Pricing</p>}
+          <HeroHeading className={`${styles.heroTitle} ${compact ? styles.compactHeroTitle : ""}`}>
+            {compact ? <>Simple pricing. <em>Real results.</em></> : <>One price. <em>No surprises.</em></>}
+          </HeroHeading>
+          {compact && <p className={styles.compactHeroText}>One time payment. PDF and Word files included.</p>}
+          {!standalone && !compact && (
             <>
               <p className={styles.heroText}>Pick a package, pay once, and get a CV written for your role and your country.</p>
               <ul className={styles.heroChips} aria-label="Included with every package">
@@ -117,15 +126,15 @@ export default function Pricing({
         </div>
       </header>
 
-      <section id="pricing" className={styles.packages} aria-label="Pricing packages">
+      <section id="pricing" className={`${styles.packages} ${compact ? styles.compactPackages : ""}`} aria-label="Pricing packages">
         <div className={styles.sectionInner}>
-          <ul className={styles.priceGrid}>
+          <ul className={`${styles.priceGrid} ${compact ? styles.compactPriceGrid : ""}`}>
             {packages.map((p) => {
               const recommended = p.id === "international-pro";
               const content = CARD_CONTENT[p.id];
               return (
                 <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`}>
-                  <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
+                  <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""} ${compact ? styles.compactCard : ""}`} aria-label={`${content.name} package`}>
                     {recommended && <span className={styles.badge}>Recommended</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
@@ -137,36 +146,57 @@ export default function Pricing({
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={`pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
                     </Link>
-                    <hr className={styles.divider} />
-                    <div className={styles.includedContent}>
-                      <ul className={styles.itemList}>
-                        {content.lead && <li className={styles.listLead}>{content.lead}</li>}
-                        {content.items.map((item) => <li key={item}><span className={styles.textCheck} aria-hidden="true">✓</span>{item}</li>)}
-                      </ul>
-                    </div>
-                    <div className={styles.supportRow}>
-                      <div className={styles.supportBlock}>
-                        <strong>{content.support}</strong>
-                        <span>Support</span>
+                    {compact ? (
+                      <div className={styles.compactSupportRow}>
+                        <span>{content.support} Support</span><span aria-hidden="true">·</span>
+                        <span>{content.delivery} Delivery</span><span aria-hidden="true">·</span>
+                        <span>{content.revisions}</span>
                       </div>
-                      <div className={styles.supportBlock}>
-                        <strong>{content.delivery}</strong>
-                        <span>Delivery</span>
-                      </div>
-                      <div className={styles.supportBlock}>
-                        <strong>{content.revisions}</strong>
-                        <span>Revisions</span>
-                      </div>
-                    </div>
+                    ) : (
+                      <>
+                        <hr className={styles.divider} />
+                        <div className={styles.includedContent}>
+                          <ul className={styles.itemList}>
+                            {content.lead && <li className={styles.listLead}>{content.lead}</li>}
+                            {content.items.map((item) => <li key={item}><span className={styles.textCheck} aria-hidden="true">✓</span>{item}</li>)}
+                          </ul>
+                        </div>
+                        <div className={styles.supportRow}>
+                          <div className={styles.supportBlock}>
+                            <strong>{content.support}</strong>
+                            <span>Support</span>
+                          </div>
+                          <div className={styles.supportBlock}>
+                            <strong>{content.delivery}</strong>
+                            <span>Delivery</span>
+                          </div>
+                          <div className={styles.supportBlock}>
+                            <strong>{content.revisions}</strong>
+                            <span>Revisions</span>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </article>
                 </li>
               );
             })}
           </ul>
+          {compact && (
+            <nav className={styles.compactCta} aria-label="Pricing details and questions">
+              <Link href={`/pricing?m=${market}`} data-cta="home-pricing-compare">
+                Compare every feature <ArrowIcon />
+              </Link>
+              <span className={styles.compactCtaDivider} aria-hidden="true">·</span>
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" data-cta="home-pricing-whatsapp">
+                Not sure? Ask on WhatsApp
+              </a>
+            </nav>
+          )}
         </div>
       </section>
 
-      <section className={styles.compare} aria-labelledby="compare-heading">
+      {!compact && <section className={styles.compare} aria-labelledby="compare-heading">
         <div className={styles.sectionInner}>
           <h2 className={styles.sectionTitle} id="compare-heading">Compare <em>every detail.</em></h2>
           <div className={`${styles.compareCard} ${styles.desktopCompare}`}>
@@ -234,9 +264,9 @@ export default function Pricing({
             </a>
           </aside>
         </div>
-      </section>
+      </section>}
 
-      {faqItems.length > 0 && (
+      {!compact && faqItems.length > 0 && (
         <section className={styles.faq} aria-labelledby="faq-heading">
           <div className={`${styles.sectionInner} ${styles.faqLayout}`}>
             <div className={styles.faqIntro}>
