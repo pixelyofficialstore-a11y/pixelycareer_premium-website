@@ -41,9 +41,7 @@
 .comparison {
   position: relative;
   flex: 0 0 auto;
-  /* Reserve both heading lines, all gaps, the link, and the 96px section padding.
-     The cap grows on taller screens rather than forcing an 880px wide image. */
-  width: min(880px, 100%, max(240px, calc((100svh - 552px) * 1.333333)));
+  width: min(880px, 100%);
   aspect-ratio: 4 / 3;
   margin-top: 40px;
   border: 1px solid #e6ecf5;
@@ -235,10 +233,6 @@
     white-space: nowrap;
   }
 
-  .comparison {
-    /* Keep the heading, subtitle and entire comparison below the sticky header. */
-    width: min(880px, 100%, max(240px, calc((100svh - 422px) * 1.333333)));
-  }
 }
 
 @media (max-width: 767px) {
