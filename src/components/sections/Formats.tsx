@@ -30,6 +30,7 @@ export default function Formats({ market }: { market: MarketKey }) {
   const [stopped, setStopped] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const pointerStart = useRef<number | null>(null);
+  const swiped = useRef(false);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -73,6 +74,7 @@ export default function Formats({ market }: { market: MarketKey }) {
   };
 
   const handlePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    swiped.current = false;
     pointerStart.current = event.clientX;
     if (event.pointerType === "touch") setTouching(true);
   };
@@ -82,6 +84,7 @@ export default function Formats({ market }: { market: MarketKey }) {
     pointerStart.current = null;
     setTouching(false);
     if (start === null || Math.abs(event.clientX - start) < 42) return;
+    swiped.current = true;
     step(event.clientX < start ? 1 : -1);
   };
 
@@ -100,7 +103,7 @@ export default function Formats({ market }: { market: MarketKey }) {
       <div className={`wrap ${styles.container}`}>
         <header className={styles.heading}>
           <h2 id="formats-title" className={styles.title}>
-            {resumeWord} formats for <em>every market.</em>
+            Formats for <em>every market.</em>
           </h2>
           <p>Real samples. Built for the country you&apos;re applying to.</p>
         </header>
@@ -120,6 +123,12 @@ export default function Formats({ market }: { market: MarketKey }) {
             onPointerDown={handlePointerDown}
             onPointerUp={handlePointerUp}
             onPointerCancel={cancelPointer}
+            onClickCapture={(event) => {
+              if (!swiped.current) return;
+              event.preventDefault();
+              event.stopPropagation();
+              swiped.current = false;
+            }}
           >
             {items.map((format, index) => {
               const offset = offsetFor(index, active, items.length);

@@ -11,8 +11,8 @@ Use framework-managed initialization scripts rather than position-dependent raw 
 
 ## Screenshot origin checks
 
-When a localhost capture shows unstyled client-component markup, compare it with the actual proxied preview before changing the styles.
+When a localhost capture shows unstyled or noninteractive client-component markup, compare it with the actual proxied preview before changing the app.
 
-**Why:** Local captures showed server-rendered styling but omitted client-injected styles, while the same page rendered correctly through the proxied preview with no browser errors.
+**Why:** Local captures have shown static markup without working client behavior or injected styles, while the same page worked through the proxied preview without browser errors.
 
-**How to apply:** Use a browser pass on the current proxied development hostname to distinguish a capture-origin issue from an application styling defect.
+**How to apply:** Run interactive checks on the current proxied development hostname. A local screenshot or static DOM is not proof that the client app hydrated.

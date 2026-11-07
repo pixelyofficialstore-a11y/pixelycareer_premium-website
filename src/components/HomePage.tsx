@@ -5,6 +5,7 @@ import HeroRise from "@/components/hero/HeroRise";
 import Faq from "@/components/sections/Faq";
 import FinalCta from "@/components/sections/FinalCta";
 import Formats from "@/components/sections/Formats";
+import MarketFormats from "@/components/sections/MarketFormats";
 import Pricing from "@/components/sections/Pricing";
 import Problem, { ProblemNext } from "@/components/sections/Problem";
 import HomeProblem from "@/components/sections/HomeProblem";
@@ -40,7 +41,7 @@ export default function HomePage({ market, useHomeProblem = false }: { market: M
         {market.path === "/" ? <HomeServices marketKey={market.key} /> : <Services market={market.key} />}
       </Suspense>
       <Suspense>
-        <Formats market={market.key} />
+        {market.path === "/" ? <Formats market={market.key} /> : <MarketFormats market={market.key} />}
       </Suspense>
       <Reviews market={market} reviews={getReviews(market.key)} />
       <Suspense>

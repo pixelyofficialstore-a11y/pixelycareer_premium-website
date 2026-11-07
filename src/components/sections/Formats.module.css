@@ -282,7 +282,7 @@
   .heading p {
     max-width: 360px;
     margin: 16px auto 0;
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .carousel {
@@ -331,8 +331,8 @@
 
   .links {
     gap: 9px;
-    margin-top: 20px;
-    font-size: 13px;
+    margin-top: 24px;
+    font-size: 14px;
   }
 }
 

@@ -26,3 +26,9 @@ Keep the solution-section trial on the main homepage. The user rejected the inte
 **Why:** The user explicitly clarified that the rejected design was the solution section on the main page, even though their preview was on `/pk`.
 
 **How to apply:** Do not restore that overlapping-stack direction or infer a market-page change from the preview URL alone. Keep the eyebrow removed.
+
+Keep the formats-section redesign on the main homepage only until the user finalizes it.
+
+**Why:** The user repeated: “For Now Only Fix for main page once we finalzie it we will replicate to all pages.”
+
+**How to apply:** Preserve the existing formats design on localized market homepages. Do not replicate the trial without approval.
