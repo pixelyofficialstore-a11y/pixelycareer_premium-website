@@ -182,6 +182,10 @@
 }
 
 @media (max-width: 767px) {
+  .title {
+    text-align: center;
+  }
+
   .title em {
     display: block;
   }
