@@ -66,7 +66,7 @@
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center top;
 }
 
@@ -139,7 +139,7 @@
 }
 
 .markerGroup {
-  --y: var(--crop-y);
+  --y: var(--full-y);
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -211,7 +211,7 @@
 }
 
 .mobileSummary > div:nth-child(2) {
-  padding-left: 12px;
+  padding-left: 0;
 }
 
 .mobileSummary h3 {
@@ -261,24 +261,31 @@
 
 @media (min-width: 1024px) {
   .section {
-    padding-block: 56px;
+    --problem-header-height: 80px;
+    height: calc(100svh - var(--problem-header-height));
+    padding-block: 40px;
+    display: flex;
+    align-items: center;
   }
 
   .inner {
     display: grid;
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-rows: 1fr repeat(4, auto) 1fr;
-    column-gap: clamp(48px, 6vw, 88px);
-    width: min(1200px, 100%);
+    column-gap: 48px;
+    width: min(1200px, calc(100% - 48px));
     margin-inline: auto;
-    padding-inline: 40px;
+    padding-inline: 0;
     text-align: left;
   }
 
   .title {
     grid-column: 1;
     grid-row: 2;
-    font-size: clamp(36px, 3.8vw, 52px);
+    font-size: clamp(52px, 5.6vw, 84px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -.02em;
     text-wrap: initial;
   }
 
@@ -289,14 +296,17 @@
   .subtitle {
     grid-column: 1;
     grid-row: 3;
+    margin-top: 20px;
   }
 
   .comparison {
     grid-column: 2;
     grid-row: 1 / 7;
     justify-self: center;
-    width: min(100%, 400px);
-    aspect-ratio: 210 / 297;
+    height: min(720px, calc(100svh - var(--problem-header-height) - 80px));
+    width: auto;
+    max-width: 100%;
+    aspect-ratio: 1 / 1.414;
     margin-top: 0;
   }
 
@@ -311,15 +321,16 @@
   .mobileSummary {
     grid-column: 1;
     grid-row: 4;
-    margin-top: 30px;
+    margin-top: 40px;
     font-size: 14px;
-    gap: 16px;
+    gap: 0;
   }
 
   .review {
     grid-column: 1;
     grid-row: 5;
     justify-self: start;
+    margin-top: 40px;
   }
 }
 
@@ -340,6 +351,7 @@
 
   .title {
     max-width: 520px;
+    font-size: clamp(34px, 9vw, 44px);
   }
 
   .title span {
@@ -352,7 +364,7 @@
 
   .comparison {
     width: 100%;
-    aspect-ratio: 3 / 4;
+    aspect-ratio: 1 / 1.414;
   }
 
   .markers {
@@ -360,7 +372,11 @@
   }
 
   .mobileSummary {
-    margin-top: 18px;
+    margin-top: 12px;
+  }
+
+  .review {
+    margin-top: 24px;
   }
 }
 
