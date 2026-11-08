@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Testimonial } from "@/lib/home-content";
 import { FACEBOOK_REVIEWS_URL } from "@/lib/site";
@@ -7,6 +8,30 @@ import styles from "./HomeTestimonials.module.css";
 
 function FacebookIcon() {
   return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.51 1.5-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46H15.2c-1.24 0-1.64.77-1.64 1.56V12h2.79l-.45 2.89h-2.34v6.99A10 10 0 0 0 22 12Z" /></svg>;
+}
+
+function ReviewScreenshot({ item }: { item: Testimonial }) {
+  if (item.screenshot) {
+    return (
+      <a className={styles.media} href={item.screenshot} target="_blank" rel="noopener noreferrer"
+        aria-label={`View the full review screenshot from ${item.name}`} data-cta={`home-testimonials-proof-${item.id}`}>
+        <Image src={item.screenshot} alt={item.screenshotAlt || `Original ${item.source === "whatsapp" ? "WhatsApp" : "Facebook"} review from ${item.name}`}
+          fill sizes="(max-width: 767px) 85vw, (max-width: 1279px) 30vw, 380px" />
+        <span className={styles.expand} aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M14 4h6v6M20 4l-8 8M10 20H4v-6M4 20l8-8" /></svg>
+        </span>
+      </a>
+    );
+  }
+  return (
+    <div className={`${styles.media} ${styles.placeholder}`} role="img" aria-label={`Review screenshot placeholder for ${item.name}`}>
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="3" /><circle cx="8.5" cy="8.5" r="1.5" /><path d="m3 17 5-5 4 4 3-3 6 6" />
+      </svg>
+      <span>Review screenshot</span>
+      <small>4:3</small>
+    </div>
+  );
 }
 
 function TestimonialRow({ items, kind, delay }: { items: Testimonial[]; kind: "result" | "review"; delay: number }) {
@@ -34,6 +59,8 @@ function TestimonialRow({ items, kind, delay }: { items: Testimonial[]; kind: "r
         {items.map((item, index) => (
           <li key={item.id} className={styles.reveal} style={{ "--delay": `${(delay + index) * 80}ms` } as CSSProperties}>
             <article className={`${styles.card} ${kind === "result" ? styles.result : styles.review}`}>
+              <ReviewScreenshot item={item} />
+              <div className={styles.body}>
               {kind === "result" ? <span className={styles.tag}>{item.tag}</span> : (
                 <span className={styles.stars} role="img" aria-label="5 stars">
                   {Array.from({ length: 5 }, (_, star) => <svg key={star} width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52l-5.88 3.09 1.12-6.55L2.48 9.42l6.58-.96L12 2.5Z" /></svg>)}
@@ -41,8 +68,9 @@ function TestimonialRow({ items, kind, delay }: { items: Testimonial[]; kind: "r
               )}
               <blockquote className={styles.quote}>{kind === "result" && <span className={styles.quoteMark} aria-hidden="true">“</span>}{item.quote}{kind === "result" && <span className={styles.quoteMark} aria-hidden="true">”</span>}</blockquote>
               <div className={styles.byline}>
-                <div><span className={styles.name}>{item.name}</span>{kind === "result" && item.location && <span className={styles.location}> · {item.location}</span>}</div>
+                <div><span className={styles.name}>{item.name}</span>{kind === "result" && item.location && <span className={styles.location}>{item.location}</span>}</div>
                 {kind === "result" ? <span className={styles.source}>via WhatsApp</span> : <span className={styles.facebook} role="img" aria-label="Facebook"><FacebookIcon /></span>}
+              </div>
               </div>
             </article>
           </li>

@@ -14,3 +14,9 @@ Use 78 Facebook reviews in the main homepage testimonial summary and trust strip
 **Why:** The testimonial brief explicitly corrected the previous count of 80.
 
 **How to apply:** Keep the two main homepage displays consistent. Do not add rating or review structured data for these claims.
+
+Use review screenshots for testimonial imagery, not client portrait photos.
+
+**Why:** The user explicitly selected “Review screenshots” when asked which images they would upload.
+
+**How to apply:** Use honest image placeholders until the real screenshots are supplied. Preserve readable review text and conceal private contact information in screenshots.

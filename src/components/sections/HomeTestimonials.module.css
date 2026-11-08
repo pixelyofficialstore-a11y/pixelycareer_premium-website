@@ -1,4 +1,5 @@
 .section { padding-block: 96px; background: #fff; color: #010c28; }
+.inner { max-width: 1280px; }
 .heading { text-align: center; }
 .heading h2 { margin: 0; font-family: var(--font-head); font-size: clamp(40px, 4.6vw, 60px); font-weight: 500; letter-spacing: -.035em; line-height: 1.1; }
 .heading em { color: #0048ff; font-style: normal; }
@@ -6,17 +7,24 @@
 .rows { display: grid; gap: 24px; margin-top: 48px; }
 .row { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding: 0; margin: 0; list-style: none; }
 .reveal { min-width: 0; }
-.card { display: flex; height: 100%; flex-direction: column; border-radius: 20px; transition: transform 220ms ease; }
-.result { padding: 28px; background: #f6f8fc; }
-.review { padding: 24px; border: 1px solid #e6ecf5; background: #fff; }
+.card { display: flex; height: 100%; flex-direction: column; border: 1px solid #e6ecf5; border-radius: 20px; background: #fff; transition: transform 220ms ease, box-shadow 220ms ease; }
+.body { display: flex; flex: 1; min-width: 0; flex-direction: column; padding: 22px; }
+.media { position: relative; display: grid; aspect-ratio: 4 / 3; flex-shrink: 0; place-items: center; margin: 12px 12px 0; overflow: hidden; border: 1px solid #edf0f5; border-radius: 12px; background: #f6f8fc; }
+.media img { object-fit: contain; padding: 8px; }
+.media:focus-visible { outline: 2px solid #0048ff; outline-offset: 3px; }
+.placeholder { align-content: center; gap: 10px; color: #9aa6b8; }
+.placeholder > span { color: #788497; font-size: 12px; font-weight: 500; }
+.placeholder > small { font-size: 11px; letter-spacing: .04em; }
+.expand { position: absolute; right: 10px; bottom: 10px; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #e6ecf5; border-radius: 50%; background: #fff; color: #526079; }
 .tag { align-self: flex-start; padding: 6px 10px; border-radius: 999px; background: #eef3ff; color: #0048ff; font-size: 12px; font-weight: 600; line-height: 1.4; }
-.quote { margin: 20px 0 24px; font-size: 18px; font-weight: 500; line-height: 1.5; }
-.quoteMark { color: #9daec9; font-family: Georgia, serif; font-size: 30px; line-height: 0; vertical-align: -.1em; }
+.quote { margin: 16px 0 22px; font-size: 16px; font-weight: 500; line-height: 1.6; }
+.result .quote { color: #010c28; }
+.quoteMark { color: #a9b6c9; font-family: Georgia, serif; font-size: 24px; line-height: 0; vertical-align: -.1em; }
 .review .quote { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 4; color: #4a5568; font-size: 15px; font-weight: 400; line-height: 1.6; }
 .stars { display: flex; gap: 3px; color: #0048ff; }
-.byline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; font-size: 14px; line-height: 1.5; }
+.byline { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 16px; border-top: 1px solid #f0f2f6; font-size: 13px; line-height: 1.5; }
 .name { font-weight: 500; }
-.location { color: #6b7280; }
+.location { display: block; margin-top: 2px; color: #6b7280; font-size: 12px; }
 .source { margin-left: auto; color: #6b7280; font-size: 11px; white-space: nowrap; }
 .facebook { display: inline-flex; color: #6b7280; }
 .summary { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px 20px; margin-top: 32px; color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center; }
@@ -27,7 +35,7 @@
 .section[data-motion="pending"] .reveal { opacity: 0; transform: translateY(14px); }
 .section[data-motion="entered"] .reveal { animation: testimonial-enter 550ms ease-out both; animation-delay: var(--delay); }
 @keyframes testimonial-enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-@media (hover: hover) { .card:hover { transform: translateY(-4px); } }
+@media (hover: hover) { .card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px -16px rgb(1 12 40 / .15); } }
 @media (max-width: 767px) {
   .section { padding-block: 64px; }
   .inner { padding-inline: 0; }

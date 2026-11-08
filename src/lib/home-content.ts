@@ -30,6 +30,8 @@ export type Testimonial = {
   source: "whatsapp" | "facebook";
   location: string;
   markets: MarketKey[];
+  screenshot?: string | null;
+  screenshotAlt?: string;
 };
 
 /** Separate collection keeps the unapproved country and About page rollout unchanged. */
