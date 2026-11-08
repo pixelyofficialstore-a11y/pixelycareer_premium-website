@@ -5,3 +5,4 @@
 - [Blog editorial rules](blog-editorial-rules.md) — preserve article bodies during UI work; verify free Unsplash/Pexels photos and photographer credits.
 - [Homepage design trials](homepage-design-trials.md) — keep unapproved homepage design and CTA trials on the main page until broader rollout is approved.
 - [Testimonial publication](testimonial-publication.md) — three supplied Pakistan WhatsApp outcomes approved; main-page-only rollout and 78 Facebook reviews.
+- [Browser focus verification](browser-focus-verification.md) — activate background browser targets before checking focus dependent interactions.

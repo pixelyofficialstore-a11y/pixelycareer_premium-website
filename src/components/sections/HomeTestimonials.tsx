@@ -1,14 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import type { Testimonial } from "@/lib/home-content";
-import { FACEBOOK_REVIEWS_URL } from "@/lib/site";
 import styles from "./HomeTestimonials.module.css";
-
-function FacebookIcon() {
-  return <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.51 1.5-3.9 3.78-3.9 1.1 0 2.24.2 2.24.2v2.46H15.2c-1.24 0-1.64.77-1.64 1.56V12h2.79l-.45 2.89h-2.34v6.99A10 10 0 0 0 22 12Z" /></svg>;
-}
 
 function ReviewScreenshot({ item }: { item: Testimonial }) {
   if (item.screenshot) {
@@ -38,6 +33,13 @@ function TestimonialCarousel({ items }: { items: Testimonial[] }) {
   const row = useRef<HTMLUListElement>(null);
   const [active, setActive] = useState(0);
   const [perView, setPerView] = useState(3);
+  const [paused, setPaused] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const [touching, setTouching] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [pageVisible, setPageVisible] = useState(true);
+  const [reducedMotion, setReducedMotion] = useState(false);
   useEffect(() => {
     const list = row.current;
     if (!list) return;
@@ -52,20 +54,52 @@ function TestimonialCarousel({ items }: { items: Testimonial[] }) {
     return () => window.removeEventListener("resize", update);
   }, []);
   const pageCount = Math.ceil(items.length / perView);
-  if (!items.length) return null;
-  const select = (page: number) => {
+  const select = useCallback((page: number) => {
     const list = row.current;
-    if (!list || !items.length) return;
-    const targetIndex = Math.max(0, Math.min(page, pageCount - 1)) * perView;
+    if (!list || !pageCount) return;
+    const targetIndex = ((page % pageCount + pageCount) % pageCount) * perView;
     const first = list.children[0] as HTMLElement;
     const card = list.children[targetIndex] as HTMLElement;
     if (!first || !card) return;
     list.scrollTo({ left: card.offsetLeft - first.offsetLeft,
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
-  };
+      behavior: page >= pageCount || page < 0 || window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
+  }, [pageCount, perView]);
+
+  useEffect(() => {
+    const list = row.current;
+    if (!list) return;
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncMotion = () => setReducedMotion(media.matches);
+    const syncVisibility = () => setPageVisible(!document.hidden);
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), { threshold: 0.5 });
+    observer.observe(list);
+    syncMotion();
+    syncVisibility();
+    media.addEventListener("change", syncMotion);
+    document.addEventListener("visibilitychange", syncVisibility);
+    return () => {
+      observer.disconnect();
+      media.removeEventListener("change", syncMotion);
+      document.removeEventListener("visibilitychange", syncVisibility);
+    };
+  }, []);
+
+  const playing = !paused && !hovered && !focused && !touching && inView && pageVisible && !reducedMotion;
+  useEffect(() => {
+    if (!playing || pageCount < 2) return;
+    const timer = window.setTimeout(() => select(active + 1), 4000);
+    return () => window.clearTimeout(timer);
+  }, [active, playing, pageCount, select]);
+
+  if (!items.length) return null;
   return (
-    <div className={styles.carousel}>
-      <ul className={styles.row} ref={row} tabIndex={0} aria-label="Customer testimonials" onKeyDown={(event) => {
+    <div className={styles.carousel} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <ul className={styles.row} ref={row} tabIndex={0} aria-label="Customer review screenshots"
+        data-active-page={active} data-autoplay={playing ? "playing" : "paused"}
+        onFocusCapture={() => setFocused(true)}
+        onBlurCapture={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setFocused(false); }}
+        onTouchStart={() => setTouching(true)} onTouchEnd={() => setTouching(false)} onTouchCancel={() => setTouching(false)}
+        onKeyDown={(event) => {
         if (event.key === "ArrowRight") {
           event.preventDefault();
           select(active + 1);
@@ -91,31 +125,20 @@ function TestimonialCarousel({ items }: { items: Testimonial[] }) {
       }}>
         {items.map((item, index) => (
           <li key={item.id} className={styles.reveal} style={{ "--delay": `${index * 70}ms` } as CSSProperties}>
-            <article className={styles.card}>
-              <ReviewScreenshot item={item} />
-              <div className={styles.body}>
-              {item.tag && <span className={styles.tag}>{item.tag}</span>}
-              <blockquote className={styles.quote}>{item.quote}</blockquote>
-              <div className={styles.byline}>
-                <span className={styles.name}>{item.name}</span>
-                <span className={styles.source} aria-label={`Shared via ${item.source === "whatsapp" ? "WhatsApp" : "Facebook"}`}>
-                  {item.source === "whatsapp" ? "WhatsApp" : <><FacebookIcon /><span>Facebook</span></>}
-                </span>
-              </div>
-              </div>
-            </article>
+            <ReviewScreenshot item={item} />
           </li>
         ))}
       </ul>
       {items.length > 1 && <nav className={styles.navigation} aria-label="Testimonial navigation">
-        <button className={styles.arrow} type="button" aria-label="Previous reviews" onClick={() => select(active - 1)} disabled={active === 0}>
+        <button className={styles.arrow} type="button" aria-label="Previous reviews" onClick={() => select(active - 1)}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
         </button>
-        <div className={styles.dots} role="group" aria-label="Choose a review page">
-          {Array.from({ length: pageCount }, (_, index) => <button key={index} type="button" aria-label={`Show review page ${index + 1}`} aria-pressed={active === index} onClick={() => select(index)}><span /></button>)}
-        </div>
-        <span className={styles.position} aria-live="polite">Page {active + 1} of {pageCount}</span>
-        <button className={styles.arrow} type="button" aria-label="Next reviews" onClick={() => select(active + 1)} disabled={active === pageCount - 1}>
+        {!reducedMotion && <button className={styles.arrow} type="button" aria-label={paused ? "Play review carousel" : "Pause review carousel"} aria-pressed={paused} onClick={() => setPaused((value) => !value)}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            {paused ? <path d="m8 5 11 7-11 7V5Z" /> : <path d="M7 5h3v14H7zm7 0h3v14h-3z" />}
+          </svg>
+        </button>}
+        <button className={styles.arrow} type="button" aria-label="Next reviews" onClick={() => select(active + 1)}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
         </button>
       </nav>}
@@ -151,13 +174,8 @@ export default function HomeTestimonials({ items }: { items: Testimonial[] }) {
       <div className={`wrap ${styles.inner}`}>
         <header className={styles.heading}>
           <h2 id="testimonials-title">Real Feedback. <em>Real Experiences.</em></h2>
-          <p>See what customers say about their experience with Pixely Careers.</p>
         </header>
         <TestimonialCarousel items={testimonials} />
-        <div className={styles.summary}>
-          <span><span className={styles.summaryMark} aria-hidden="true">↗</span> 78 Facebook reviews</span>
-          <a href={FACEBOOK_REVIEWS_URL} target="_blank" rel="noopener noreferrer" data-cta="home-testimonials-facebook">Read all reviews <span aria-hidden="true">→</span></a>
-        </div>
       </div>
     </section>
   );
