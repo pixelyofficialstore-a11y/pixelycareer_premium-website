@@ -20,3 +20,9 @@ Use review screenshots for testimonial imagery, not client portrait photos.
 **Why:** The user explicitly selected “Review screenshots” when asked which images they would upload.
 
 **How to apply:** Use honest image placeholders until the real screenshots are supplied. Preserve readable review text and conceal private contact information in screenshots.
+
+The user confirmed the supplied customer review collection is authentic and asked us to select the most relevant, strongest reviews for publication.
+
+**Why:** After the initial brief mentioned generated examples, the user clarified: “All of them are authentic just select most relevent and best reviews.”
+
+**How to apply:** Treat this as owner confirmation, not independent source verification. New collections still need source and publication approval. Never infer market residence from names and profile pictures, or merge anonymous outcome screenshots with unrelated named testimonials. Keep changes within the homepage reviews section.

@@ -14,9 +14,9 @@ function ReviewScreenshot({ item }: { item: Testimonial }) {
   if (item.screenshot) {
     return (
       <a className={styles.media} href={item.screenshot} target="_blank" rel="noopener noreferrer"
-        aria-label={`View the full review screenshot from ${item.name}`} data-cta={`home-testimonials-proof-${item.id}`}>
+        aria-label={`View the complete review screenshot from ${item.name}`} data-cta={`home-testimonials-proof-${item.id}`}>
         <Image src={item.screenshot} alt={item.screenshotAlt || `Original ${item.source === "whatsapp" ? "WhatsApp" : "Facebook"} review from ${item.name}`}
-          fill sizes="(max-width: 767px) 85vw, (max-width: 1279px) 30vw, 380px" />
+          fill sizes="(max-width: 767px) 88vw, (max-width: 1023px) 46vw, 30vw" />
         <span className={styles.expand} aria-hidden="true">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><path d="M14 4h6v6M20 4l-8 8M10 20H4v-6M4 20l8-8" /></svg>
         </span>
@@ -34,51 +34,91 @@ function ReviewScreenshot({ item }: { item: Testimonial }) {
   );
 }
 
-function TestimonialRow({ items, kind, delay }: { items: Testimonial[]; kind: "result" | "review"; delay: number }) {
+function TestimonialCarousel({ items }: { items: Testimonial[] }) {
   const row = useRef<HTMLUListElement>(null);
   const [active, setActive] = useState(0);
-  if (!items.length) return null;
-  const select = (index: number) => {
+  const [perView, setPerView] = useState(3);
+  useEffect(() => {
     const list = row.current;
     if (!list) return;
+    const update = () => {
+      const count = window.innerWidth < 768 ? 1 : window.innerWidth < 1024 ? 2 : 3;
+      setPerView(count);
+      setActive(0);
+      list.scrollTo({ left: 0, behavior: "instant" });
+    };
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  const pageCount = Math.ceil(items.length / perView);
+  if (!items.length) return null;
+  const select = (page: number) => {
+    const list = row.current;
+    if (!list || !items.length) return;
+    const targetIndex = Math.max(0, Math.min(page, pageCount - 1)) * perView;
     const first = list.children[0] as HTMLElement;
-    const card = list.children[index] as HTMLElement;
+    const card = list.children[targetIndex] as HTMLElement;
+    if (!first || !card) return;
     list.scrollTo({ left: card.offsetLeft - first.offsetLeft,
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" });
   };
   return (
-    <div className={styles.rowGroup} data-testimonial-row={kind}>
-      <ul className={styles.row} ref={row} aria-label={kind === "result" ? "Client results" : "Client reviews"} onScroll={() => {
+    <div className={styles.carousel}>
+      <ul className={styles.row} ref={row} tabIndex={0} aria-label="Customer testimonials" onKeyDown={(event) => {
+        if (event.key === "ArrowRight") {
+          event.preventDefault();
+          select(active + 1);
+        } else if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          select(active - 1);
+        } else if (event.key === "Home") {
+          event.preventDefault();
+          select(0);
+        } else if (event.key === "End") {
+          event.preventDefault();
+          select(pageCount - 1);
+        }
+      }} onScroll={() => {
         const list = row.current;
         if (!list) return;
         const first = list.children[0] as HTMLElement;
-        setActive(Array.from(list.children).reduce((best, card, index) =>
+        if (!first) return;
+        const firstVisible = Array.from(list.children).reduce((best, card, index) =>
           Math.abs((card as HTMLElement).offsetLeft - first.offsetLeft - list.scrollLeft) <
-          Math.abs((list.children[best] as HTMLElement).offsetLeft - first.offsetLeft - list.scrollLeft) ? index : best, 0));
+          Math.abs((list.children[best] as HTMLElement).offsetLeft - first.offsetLeft - list.scrollLeft) ? index : best, 0);
+        setActive(Math.min(Math.floor(firstVisible / perView), pageCount - 1));
       }}>
         {items.map((item, index) => (
-          <li key={item.id} className={styles.reveal} style={{ "--delay": `${(delay + index) * 80}ms` } as CSSProperties}>
-            <article className={`${styles.card} ${kind === "result" ? styles.result : styles.review}`}>
+          <li key={item.id} className={styles.reveal} style={{ "--delay": `${index * 70}ms` } as CSSProperties}>
+            <article className={styles.card}>
               <ReviewScreenshot item={item} />
               <div className={styles.body}>
-              {kind === "result" ? <span className={styles.tag}>{item.tag}</span> : (
-                <span className={styles.stars} role="img" aria-label="5 stars">
-                  {Array.from({ length: 5 }, (_, star) => <svg key={star} width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2.5 2.94 5.96 6.58.96-4.76 4.64 1.12 6.55L12 17.52l-5.88 3.09 1.12-6.55L2.48 9.42l6.58-.96L12 2.5Z" /></svg>)}
-                </span>
-              )}
-              <blockquote className={styles.quote}>{kind === "result" && <span className={styles.quoteMark} aria-hidden="true">“</span>}{item.quote}{kind === "result" && <span className={styles.quoteMark} aria-hidden="true">”</span>}</blockquote>
+              {item.tag && <span className={styles.tag}>{item.tag}</span>}
+              <blockquote className={styles.quote}>{item.quote}</blockquote>
               <div className={styles.byline}>
-                <div><span className={styles.name}>{item.name}</span>{kind === "result" && item.location && <span className={styles.location}>{item.location}</span>}</div>
-                {kind === "result" ? <span className={styles.source}>via WhatsApp</span> : <span className={styles.facebook} role="img" aria-label="Facebook"><FacebookIcon /></span>}
+                <span className={styles.name}>{item.name}</span>
+                <span className={styles.source} aria-label={`Shared via ${item.source === "whatsapp" ? "WhatsApp" : "Facebook"}`}>
+                  {item.source === "whatsapp" ? "WhatsApp" : <><FacebookIcon /><span>Facebook</span></>}
+                </span>
               </div>
               </div>
             </article>
           </li>
         ))}
       </ul>
-      {items.length > 1 && <div className={styles.dots} aria-label={kind === "result" ? "Choose a result" : "Choose a review"}>
-        {items.map((item, index) => <button key={item.id} type="button" aria-label={`Show ${kind} ${index + 1}`} aria-pressed={active === index} onClick={() => select(index)}><span /></button>)}
-      </div>}
+      {items.length > 1 && <nav className={styles.navigation} aria-label="Testimonial navigation">
+        <button className={styles.arrow} type="button" aria-label="Previous reviews" onClick={() => select(active - 1)} disabled={active === 0}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+        </button>
+        <div className={styles.dots} role="group" aria-label="Choose a review page">
+          {Array.from({ length: pageCount }, (_, index) => <button key={index} type="button" aria-label={`Show review page ${index + 1}`} aria-pressed={active === index} onClick={() => select(index)}><span /></button>)}
+        </div>
+        <span className={styles.position} aria-live="polite">Page {active + 1} of {pageCount}</span>
+        <button className={styles.arrow} type="button" aria-label="Next reviews" onClick={() => select(active + 1)} disabled={active === pageCount - 1}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+        </button>
+      </nav>}
     </div>
   );
 }
@@ -105,21 +145,17 @@ export default function HomeTestimonials({ items }: { items: Testimonial[] }) {
     return () => { observer?.disconnect(); media.removeEventListener("change", onChange); };
   }, [items.length]);
   if (!items.length) return null;
-  const results = items.filter((item) => item.type === "result").slice(0, 3);
-  const reviews = items.filter((item) => item.type === "review").slice(0, 3);
+  const testimonials = items.slice(0, 6);
   return (
     <section ref={root} id="testimonials" className={styles.section} data-motion={motion} aria-labelledby="testimonials-title">
       <div className={`wrap ${styles.inner}`}>
         <header className={styles.heading}>
-          <h2 id="testimonials-title">Real people. <em>Real results.</em></h2>
-          <p>What our clients told us after applying.</p>
+          <h2 id="testimonials-title">Real Feedback. <em>Real Experiences.</em></h2>
+          <p>See what customers say about their experience with Pixely Careers.</p>
         </header>
-        <div className={styles.rows}>
-          <TestimonialRow items={results} kind="result" delay={0} />
-          <TestimonialRow items={reviews} kind="review" delay={results.length} />
-        </div>
+        <TestimonialCarousel items={testimonials} />
         <div className={styles.summary}>
-          <span><span className={styles.summaryStar} aria-hidden="true">★</span> 100% recommended on Facebook <span aria-hidden="true">·</span> 78 reviews</span>
+          <span><span className={styles.summaryMark} aria-hidden="true">↗</span> 78 Facebook reviews</span>
           <a href={FACEBOOK_REVIEWS_URL} target="_blank" rel="noopener noreferrer" data-cta="home-testimonials-facebook">Read all reviews <span aria-hidden="true">→</span></a>
         </div>
       </div>

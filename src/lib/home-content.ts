@@ -32,6 +32,14 @@ export type Testimonial = {
   markets: MarketKey[];
   screenshot?: string | null;
   screenshotAlt?: string;
+  relevantMarkets?: (MarketKey | "global")[];
+  primaryService?: string;
+  feedbackCategory?: "outcome" | "service";
+  outcomeCategory?: "none" | "new_job" | "appointment" | "interview_call" | "interview_interest";
+  authenticity?: "owner_confirmed" | "source_verified" | "unverified" | "generated";
+  publicationApproved?: boolean;
+  displayPriority?: number;
+  sourceFile?: string;
 };
 
 /** Separate collection keeps the unapproved country and About page rollout unchanged. */
@@ -43,5 +51,9 @@ export function getTestimonials(market: MarketKey): Testimonial[] {
   const approved = new Set<string>([...(global.approvedResultIds ?? []), ...(own.approvedResultIds ?? [])]);
   return items.filter((item) =>
     (item.markets.length === 0 || item.markets.includes(market)) &&
-    (item.type !== "result" || approved.has(item.id)));
+    item.publicationApproved !== false &&
+    item.authenticity !== "generated" &&
+    item.authenticity !== "unverified" &&
+    (item.type !== "result" || approved.has(item.id)))
+    .sort((a, b) => (a.displayPriority ?? 100) - (b.displayPriority ?? 100));
 }
