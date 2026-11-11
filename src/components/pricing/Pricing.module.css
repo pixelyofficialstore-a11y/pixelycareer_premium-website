@@ -1138,3 +1138,9 @@
   .page .priceGrid > .cardSlot > .card { display: grid; grid-row: 1 / -1; grid-template-rows: subgrid; row-gap: 0; }
   .page .priceGrid .supportRow { align-self: end; }
 }
+
+/* Mobile compare tabs: one row, equal widths, for 3 or 4 packages */
+@media (max-width: 900px) {
+  .page .mobileTabs { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+  .page .mobileTab { white-space: nowrap; padding-inline: .25rem; }
+}
