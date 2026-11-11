@@ -147,12 +147,8 @@ export function ExecClaim() {
 export function FinalCtaOffer({ market, blog = false, children }: { market: MarketKey; blog?: boolean; children: ReactNode }) {
   const { live, t } = useLive(market, 60_000);
   if (!live) return <>{children}</>;
-  const tick = <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4" /><path d="m5 8.2 2 2L11 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
   return (
     <>
-      <ul className="of-flist">
-        {["Premium executive CV and LinkedIn makeover", "Your own personal portfolio website", "Free domain and hosting for 1 year"].map((i) => <li key={i}>{tick}{i}</li>)}
-      </ul>
       <div className="of-fstats"><p><b>1,800+</b>Professionals helped</p><p><b>100%</b>Recommended on Facebook</p></div>
       <div className="of-fcard">
         <div className="of-fcard-top"><span className="of-tag">11.11 BUNDLE</span><span suppressHydrationWarning>Ends in {inline(t)}</span></div>
