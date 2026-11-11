@@ -2628,7 +2628,7 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
 /* Footer: accepted payment logos */
 .pay-logos { display: flex; flex-wrap: nowrap; align-items: center; gap: 18px; white-space: nowrap; font-size: 13px; color: rgb(255 255 255 / 0.7); }
 .pay-logo { display: inline-flex; align-items: center; height: 24px; }
-.pay-logo img { display: block; width: auto; height: 18px; filter: brightness(0) invert(1); opacity: 0.75; transition: opacity 200ms ease; }
+.pay-logo img { display: block; width: auto; height: 18px; opacity: 0.9; transition: opacity 200ms ease; }
 .pay-logo:hover img { opacity: 1; }
 @media (max-width: 767px) { .pay-logos { gap: 14px; font-size: 12px; } .pay-logo { height: 22px; } .pay-logo img { height: 14px; } }
 
