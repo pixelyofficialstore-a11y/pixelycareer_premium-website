@@ -1099,8 +1099,24 @@
 .page .customBox a { white-space: nowrap; display: inline-block; max-width: none; width: auto; }
 .page .customBox a span { display: inline; margin: 0; color: inherit; font-size: inherit; font-weight: inherit; }
 
-.formatLine { margin: 22px auto 0; max-width: 720px; text-align: center; color: #4b5563; font-size: 15px; }
-/* 11.11 (pk, while the sale is on): one line under the Executive button */
-.saleLine { display: inline-flex; align-items: center; gap: 7px; margin-top: 10px; color: #c2410c; font-size: 13px; font-weight: 500; text-decoration: none; }
-.saleLine:hover { text-decoration: underline; }
-.saleLine i { width: 6px; height: 6px; border-radius: 50%; background: #c2410c; flex: none; }
+
+/* Price block, all cards: old price on its own line, then "Rs" small + the number (40px max) */
+.page .pricePair { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.page .pricePair .compareAt .price,
+.page .pricePair .compareAt .priceUnit,
+.page .pricePair .compareAt .priceNumber { font-size: 14px; color: #8a94a6; text-decoration: line-through; text-decoration-color: #8a94a6; }
+.page .pricePair > .price { font-size: clamp(30px, 2.8vw, 40px); }
+.page .pricePair > .price .priceUnit { font-size: clamp(14px, 1.2vw, 18px); padding-top: 4px; }
+
+/* 11.11 Sale Bundle (pk, while the sale is on): 4 equal columns, 2x2 on tablet, first on mobile */
+@media (min-width: 1100px) { .page .priceGrid.grid4 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; width: min(100%, 1280px); } }
+@media (min-width: 768px) and (max-width: 1099px) { .page .priceGrid.grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
+@media (max-width: 767px) { .page .priceGrid.grid4 { grid-template-columns: 1fr; } .bundleSlot { order: -1; } }
+.page .priceGrid.grid4 .card { height: 100%; display: flex; flex-direction: column; }
+.page .priceGrid.grid4 .supportRow { margin-top: auto; }
+.page .cardBundle { border: 1.5px solid #f4733c; background: #fff5ef; }
+.page .badgeSale { background: #f4733c; color: #fff; animation: none; }
+.bundleMeta { margin: -8px 0 16px; color: #c2410c; font-size: 13px; font-weight: 500; }
+.bundleCta { gap: 8px; }
+.bundleCta svg { width: 18px; height: 18px; }
+.bundleCol { background: rgb(244 115 60 / 0.05); }

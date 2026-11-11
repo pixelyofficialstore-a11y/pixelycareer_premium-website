@@ -5,7 +5,8 @@ import BackButton from "@/components/ui/BackButton";
 import { useEffect, useState, type ReactNode } from "react";
 import { saveMarket } from "@/components/ui/useMarket";
 import Faq from "@/components/sections/Faq";
-import { OfferBand, useLive } from "@/components/offer/Offer";
+import { OfferBand, inline, useLive } from "@/components/offer/Offer";
+import { BUNDLE } from "@/config/offers";
 import { MARKETS, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
 import { WHATSAPP_URL , whatsappMessage } from "@/lib/site";
 import styles from "./Pricing.module.css";
@@ -109,11 +110,19 @@ export default function Pricing({
   const m = MARKETS[market];
   const packages = getPackages(m);
   const doc = market === "us" ? "resume" : "CV";
-  // 11.11 Sale (pk): one small line under the Executive button. Gone after endsAt.
-  const { live: saleLive } = useLive(market, 60_000);
-  const comparison = getComparison(m);
-  const GROUPS = getComparisonGroups(comparison);
+  // 11.11 Sale (pk): a 4th card (first on mobile) and a bundle column. Gone after endsAt.
+  const { live: saleLive, t: saleT } = useLive(market, 60_000);
+  const showBundle = market === "pk" && saleLive;
+  const base = getComparison(m);
+  const comparison = (showBundle
+    ? base.flatMap((r) => (r[0] === "Digital contact card" ? [[...r, r[3]], ["Personal website", "✕", "✕", "✕", "✓"]] : [[...r, r[3]]]))
+    : base) as string[][];
+  const GROUPS = getComparisonGroups(comparison as [string, string, string, string][]);
   const cardContent = getCardContent(market);
+  const cols = [
+    ...packages.map((p) => ({ id: p.id as string, name: p.name, price: p.priceLabel, href: orderHref(m, p.id), button: cardContent[p.id].button })),
+    ...(showBundle ? [{ id: "executive_bundle", name: "11.11 Sale Bundle", price: "Rs 20,000", href: "/order?market=pk&package=executive&offer=brand-bundle", button: "Claim 11.11 Bundle" }] : []),
+  ];
   const HeroHeading = standalone ? "h1" : "h2";
   const [selectedPackage, setSelectedPackage] = useState(1);
 
@@ -153,7 +162,7 @@ export default function Pricing({
 
       <section id={compact ? undefined : "pricing"} className={`${styles.packages} ${compact ? styles.compactPackages : ""}`} aria-label="Pricing packages">
         <div className={styles.sectionInner}>
-          <ul className={`${styles.priceGrid} ${compact ? styles.compactPriceGrid : ""}`}>
+          <ul className={`${styles.priceGrid} ${compact ? styles.compactPriceGrid : ""} ${showBundle ? styles.grid4 : ""}`}>
             {packages.map((p) => {
               const recommended = p.id === "international-pro";
               const content = getCardContent(market)[p.id];
@@ -170,9 +179,6 @@ export default function Pricing({
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
                     </Link>
-                    {p.id === "executive" && market === "pk" && saleLive && (
-                      <Link href="/order?market=pk&package=executive&offer=brand-bundle" className={styles.saleLine} data-cta="pricing-exec-sale-line"><i aria-hidden="true" />11.11: With Personal Website for Rs 20,000 →</Link>
-                    )}
                     {(
                       <>
                         <hr className={styles.divider} />
@@ -202,8 +208,33 @@ export default function Pricing({
                 </li>
               );
             })}
+            {showBundle && (
+              <li className={`${styles.cardSlot} ${styles.bundleSlot}`} data-reveal>
+                <article className={`${styles.card} price-card ${styles.cardBundle}`} aria-label="11.11 Sale Bundle package">
+                  <span className={`${styles.badge} ${styles.badgeSale}`}>11.11 Sale</span>
+                  <h3 className={`${styles.packageName} price-name`}>11.11 Sale Bundle</h3>
+                  <p className={styles.audience}>Executive Branding &amp; Website</p>
+                  <div className={styles.pricePair}><s className={styles.compareAt}><PriceAmount label="Rs 27,500" /></s><PriceAmount label="Rs 20,000" /></div>
+                  <p className={styles.bundleMeta} suppressHydrationWarning>Only {BUNDLE.totalSlots} slots · {inline(saleT)}</p>
+                  <Link href="/order?market=pk&package=executive&offer=brand-bundle" className={`of-exec-claim ${styles.bundleCta}`} data-cta="pricing-claim-bundle">Claim 11.11 Bundle<ArrowIcon /></Link>
+                  <hr className={styles.divider} />
+                  <div className={styles.includedContent}>
+                    <ul className={styles.itemList}>
+                      <li className={styles.listLead}>Everything in Executive, plus:</li>
+                      <li><span className={styles.textCheck} aria-hidden="true">✓</span>Personal portfolio website</li>
+                      <li><span className={styles.textCheck} aria-hidden="true">✓</span>Free domain &amp; hosting for the first year</li>
+                      <li><span className={styles.textCheck} aria-hidden="true">✓</span>You save Rs 7,500</li>
+                    </ul>
+                  </div>
+                  <div className={styles.supportRow}>
+                    <div className={styles.supportBlock}><strong>{cardContent.executive.support}</strong><span>Support</span></div>
+                    <div className={styles.supportBlock}><strong>{cardContent.executive.delivery}</strong><span>Delivery</span></div>
+                    <div className={styles.supportBlock}><strong>{cardContent.executive.updates}</strong><span>Free updates</span></div>
+                  </div>
+                </article>
+              </li>
+            )}
           </ul>
-          <p className={styles.formatLine}>One {doc} for one target role, in the right format for your country: ATS or Europass.</p>
           {compact && (
             <nav className={styles.compactCta} aria-label="Pricing details">
               <Link href={`/pricing?m=${market}#compare`} data-cta="home-pricing-compare">
@@ -220,12 +251,12 @@ export default function Pricing({
           <h2 className={styles.sectionTitle} id="compare-heading">Compare <em className="m-break">every detail.</em></h2>
           <div className={`${styles.compareCard} ${styles.desktopCompare}`}>
             <table className={styles.table}>
-              <colgroup><col /><col /><col className={styles.recommendedCol} /><col /></colgroup>
+              <colgroup><col /><col /><col className={styles.recommendedCol} /><col />{showBundle && <col />}</colgroup>
               <thead>
                 <tr>
                   <th scope="col"><span className="sr-only">Feature</span></th>
-                  {packages.map((p, i) => <th scope="col" className={i === 1 ? styles.recommendedCol : ""} key={p.id}>
-                    {p.name}<span className={styles.tablePrice}>{p.priceLabel}</span>
+                  {cols.map((p, i) => <th scope="col" className={i === 1 ? styles.recommendedCol : i === 3 ? styles.bundleCol : ""} key={p.id}>
+                    {p.name}<span className={styles.tablePrice}>{p.price}</span>
                   </th>)}
                 </tr>
               </thead>
@@ -243,9 +274,9 @@ export default function Pricing({
               <tfoot>
                 <tr className={styles.ctaRow}>
                   <td />
-                  {packages.map((p, i) => (
-                    <td className={i === 1 ? styles.recommendedCol : ""} key={p.id}>
-                      <Link href={orderHref(m, p.id)} className={`${styles.choose} ${i === 1 ? styles.choosePrimary : ""}`} data-cta={`pricing-table-${p.id}`}>{cardContent[p.id].button}</Link>
+                  {cols.map((p, i) => (
+                    <td className={i === 1 ? styles.recommendedCol : i === 3 ? styles.bundleCol : ""} key={p.id}>
+                      <Link href={p.href} className={`${styles.choose} ${i === 1 ? styles.choosePrimary : ""}`} data-cta={`pricing-table-${p.id}`}>{p.button}</Link>
                     </td>
                   ))}
                 </tr>
@@ -254,7 +285,7 @@ export default function Pricing({
           </div>
           <div className={styles.mobileCompare}>
             <div className={styles.mobileTabs} role="tablist" aria-label="Choose a package to compare">
-              {packages.map((p, index) => (
+              {cols.map((p, index) => (
                 <button
                   key={p.id}
                   type="button"
@@ -264,14 +295,14 @@ export default function Pricing({
                   className={`${styles.mobileTab} ${selectedPackage === index ? styles.mobileTabActive : ""}`}
                   onClick={() => setSelectedPackage(index)}
                 >
-                  {index === 0 ? "ATS" : index === 1 ? "Pro" : "Executive"}
+                  {["ATS", "Pro", "Executive", "11.11 Bundle"][index]}
                 </button>
               ))}
             </div>
             <div className={styles.mobileCompareCard} id="pricing-mobile-comparison" role="tabpanel">
               <div className={styles.mobileCompareTitle}>
-                <strong>{packages[selectedPackage].name}</strong>
-                <span>{packages[selectedPackage].priceLabel}</span>
+                <strong>{cols[selectedPackage]?.name}</strong>
+                <span>{cols[selectedPackage]?.price}</span>
               </div>
               {GROUPS.map((group) => (
                 <div key={group.name}>
@@ -284,7 +315,7 @@ export default function Pricing({
                   ))}
                 </div>
               ))}
-              <Link href={orderHref(m, packages[selectedPackage].id)} className={`${styles.choose} ${selectedPackage === 1 ? styles.choosePrimary : ""} ${styles.mobileChoose}`} data-cta={`pricing-mobile-${packages[selectedPackage].id}`}>{cardContent[packages[selectedPackage].id].button}</Link>
+              <Link href={cols[selectedPackage]?.href ?? orderHref(m)} className={`${styles.choose} ${selectedPackage === 1 ? styles.choosePrimary : ""} ${styles.mobileChoose}`} data-cta={`pricing-mobile-${cols[selectedPackage]?.id}`}>{cols[selectedPackage]?.button}</Link>
             </div>
           </div>
 
@@ -306,10 +337,10 @@ function FragmentRow({ label, values, index, groups }: { label: string; values: 
   const group = groups.find((item) => item.start === index);
   return (
     <>
-      {group && <tr className={styles.groupRow}><th colSpan={4}>{group.name}</th></tr>}
+      {group && <tr className={styles.groupRow}><th colSpan={values.length + 1}>{group.name}</th></tr>}
       <tr>
         <th scope="row">{label}</th>
-        {values.map((value, column) => <td className={column === 1 ? styles.recommendedCol : ""} key={column}><CellValue value={value} /></td>)}
+        {values.map((value, column) => <td className={column === 1 ? styles.recommendedCol : column === 3 ? styles.bundleCol : ""} key={column}><CellValue value={value} /></td>)}
       </tr>
     </>
   );
