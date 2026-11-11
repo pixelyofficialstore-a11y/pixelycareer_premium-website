@@ -419,7 +419,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       </label>
       {errors.terms && <p className={styles.error}>{errors.terms}</p>}
       <p className={`${styles.tsStatus} ${styles["ts_" + tsStatus]}`} role="status" aria-live="polite">
-        {tsStatus === "checking" && <><span className={styles.spinner} aria-hidden="true" /> Running a quick security check…</>}
+        {tsStatus === "checking" && <><span className={styles.spinnerDark} aria-hidden="true" /> Running a quick security check…</>}
         {tsStatus === "ok" && <><Shield /> Security check passed</>}
         {tsStatus === "failed" && <>Security check failed. <button type="button" onClick={() => setTsRetry((n) => n + 1)}>Try again</button></>}
       </p>
