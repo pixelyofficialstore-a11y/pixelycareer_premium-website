@@ -147,3 +147,6 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
   .of-ends { display: block; }
   .of-price-card .of-btn { margin-top: 16px; }
 }
+/* Breathing room between the band and the next section (stats on /pk, "Compare every detail" on /pricing). */
+.of-band { margin-bottom: 64px; }
+@media (max-width: 767px) { .of-band { margin-bottom: 40px; } }
