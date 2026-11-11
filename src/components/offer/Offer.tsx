@@ -116,20 +116,28 @@ export function OfferBand({ market, slot = "home_band" }: { market: MarketKey; s
 /** Executive card: a gradient pill on the card's top border, like the Recommended badge. */
 export function ExecTag({ market }: { market: MarketKey }) {
   const { live } = useLive(market, 60_000);
-  return live ? <span className="of-card-tag">11.11 · Add website for Rs 12,500</span> : null;
+  return live ? <span className="of-card-tag">11.11 Sale</span> : null;
 }
 
 /** Executive card: the offer box between the price and the button. The whole box is one link. */
-export function ExecOfferBox({ market }: { market: MarketKey }) {
-  const { live, t } = useLive(market, 60_000);
-  if (!live) return null;
+export function ExecUpgrade({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
   return (
-    <Link href={OFFER_HREF} className="of-box" data-cta="offer-claim-pricing_card" onClick={claim("pricing_card")}>
-      <b>{BUNDLE.short}</b>
-      <span className="of-box-row of-box-meta"><span><s>27,500</s> <strong>{rs(BUNDLE.price)}</strong></span><em>Claim →</em></span>
-      <span className="of-box-meta" suppressHydrationWarning>Ends in {inline(t)}</span>
-    </Link>
+    <label className={`of-up${on ? " of-up-on" : ""}`}>
+      <input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked)} />
+      <span className="of-up-box" aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg></span>
+      <span className="of-up-body">
+        <b>Upgrade to the 11.11 Bundle</b>
+        <span className="of-up-row"><span>Executive Career Branding</span><span>7,500</span></span>
+        <span className="of-up-row"><span>Personal Website + domain</span><span>20,000</span></span>
+        <span className="of-up-row of-up-total"><span>Worth <s>27,500</s></span><strong>Both for {rs(BUNDLE.price)}</strong></span>
+      </span>
+    </label>
   );
+}
+
+/** Claim button for the ticked bundle. */
+export function ExecClaim() {
+  return <Link href={OFFER_HREF} className="of-exec-claim" data-cta="offer-claim-pricing_card" onClick={claim("pricing_card")}>Claim 11.11 Bundle →</Link>;
 }
 
 /** Final CTA on pk: a glass strip under the subtext and Claim as the main button while the sale is on. */

@@ -150,3 +150,22 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
 /* Breathing room between the band and the next section (stats on /pk, "Compare every detail" on /pricing). */
 .of-band { margin-bottom: 64px; }
 @media (max-width: 767px) { .of-band { margin-bottom: 40px; } }
+
+/* Executive card: tick to switch to the bundle */
+.of-up { position: relative; display: flex; gap: 12px; margin: 14px 0 4px; padding: 14px; border: 1.5px dashed var(--sale-border); border-radius: 16px; background: var(--sale-tint); color: #010c28; text-align: left; cursor: pointer; transition: border-color 150ms ease; }
+.of-up:hover, .of-up-on { border-style: solid; border-color: var(--sale-500); }
+.of-up input { position: absolute; opacity: 0; pointer-events: none; }
+.of-up-box { display: grid; place-items: center; flex: none; width: 20px; height: 20px; margin-top: 1px; border: 1.5px solid #c7cfdc; border-radius: 6px; background: #fff; color: transparent; transition: background 150ms ease, border-color 150ms ease; }
+.of-up-on .of-up-box { border-color: transparent; background: var(--sale-gradient); color: #fff; }
+.of-up input:focus-visible + .of-up-box { outline: 2px solid var(--sale-500); outline-offset: 2px; }
+.of-up-body { display: grid; flex: 1; gap: 5px; min-width: 0; }
+.of-up-body b { font-size: 14px; font-weight: 600; }
+.of-up-row { display: flex; justify-content: space-between; gap: 8px; color: #6b7280; font-size: 12.5px; white-space: nowrap; }
+.of-up-total { margin-top: 3px; padding-top: 7px; border-top: 1px dashed var(--sale-border); }
+.of-up-total s { color: #8792a5; }
+.of-up-total strong { color: var(--sale-600); font-weight: 700; }
+.of-exec-save { margin: -6px 0 12px; color: var(--sale-600); font-size: 13px; font-weight: 600; }
+.of-exec-claim { display: flex; align-items: center; justify-content: center; min-height: 48px; border-radius: 999px; background: var(--sale-gradient); box-shadow: var(--sale-glow); color: #fff; font-weight: 600; text-decoration: none; }
+.of-exec-claim:hover { box-shadow: var(--sale-glow-strong); }
+.of-exec-extra { color: var(--sale-600); font-weight: 600; }
+.of-exec-extra > span { color: var(--sale-600) !important; }

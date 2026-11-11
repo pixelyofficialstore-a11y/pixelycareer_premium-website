@@ -5,7 +5,7 @@ import BackButton from "@/components/ui/BackButton";
 import { useEffect, useState, type ReactNode } from "react";
 import { saveMarket } from "@/components/ui/useMarket";
 import Faq from "@/components/sections/Faq";
-import { ExecOfferBox, ExecTag, OfferBand } from "@/components/offer/Offer";
+import { ExecClaim, ExecTag, ExecUpgrade, OfferBand, useLive } from "@/components/offer/Offer";
 import { MARKETS, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
 import { WHATSAPP_URL , whatsappMessage } from "@/lib/site";
 import styles from "./Pricing.module.css";
@@ -113,6 +113,9 @@ export default function Pricing({
   const cardContent = getCardContent(market);
   const HeroHeading = standalone ? "h1" : "h2";
   const [selectedPackage, setSelectedPackage] = useState(1);
+  // 11.11 Sale (pk): the Executive card can switch to the Executive + Website bundle.
+  const { live: saleLive } = useLive(market, 60_000);
+  const [bundleOn, setBundleOn] = useState(false);
 
   useEffect(() => saveMarket(market), [market]);
 
@@ -160,16 +163,18 @@ export default function Pricing({
                     {recommended && <span className={styles.badge}>Recommended</span>}
                     {p.id === "executive" && market === "pk" && <ExecTag market={market} />}
                     {tag?.id === p.id && <span className="sp-includes">{tag.text}</span>}
-                    <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
+                    <h3 className={`${styles.packageName} price-name`}>{p.id === "executive" && saleLive && bundleOn ? "Executive + Website Bundle" : content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
                     <div className={styles.pricePair}>
-                      {p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}
-                      <PriceAmount label={p.priceLabel} />
+                      {p.id === "executive" && saleLive && bundleOn
+                        ? <><s className={styles.compareAt}><PriceAmount label="Rs 27,500" /></s><PriceAmount label="Rs 20,000" /></>
+                        : <>{p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}<PriceAmount label={p.priceLabel} /></>}
                     </div>
-                    {p.id === "executive" && market === "pk" && <ExecOfferBox market={market} />}
-                    <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`}>
+                    {p.id === "executive" && saleLive && bundleOn && <p className="of-exec-save">You save Rs 7,500</p>}
+                    {p.id === "executive" && saleLive && bundleOn ? <ExecClaim /> : <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
-                    </Link>
+                    </Link>}
+                    {p.id === "executive" && saleLive && <ExecUpgrade on={bundleOn} onChange={setBundleOn} />}
                     {(
                       <>
                         <hr className={styles.divider} />
@@ -177,6 +182,7 @@ export default function Pricing({
                           <ul className={styles.itemList}>
                             {content.lead && <li className={styles.listLead}>{content.lead}</li>}
                             {content.items.map((item) => <li key={item}><span className={styles.textCheck} aria-hidden="true">✓</span>{item}</li>)}
+                            {p.id === "executive" && saleLive && bundleOn && <li className="of-exec-extra"><span className={styles.textCheck} aria-hidden="true">✓</span>Personal portfolio website</li>}
                           </ul>
                         </div>
                         <div className={styles.supportRow}>
