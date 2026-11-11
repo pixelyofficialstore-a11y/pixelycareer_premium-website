@@ -411,3 +411,9 @@
 .pbadge.bundleBadge { background: #f05a1a; color: #fff; }
 .bundleWas { margin-right: 4px; color: #6b7280; font-weight: 500; font-size: 0.85em; }
 .pbadge.bestBadge { background: #0b1b3f; color: #fff; }
+
+.tsStatus { display: flex; align-items: center; gap: 8px; margin: 10px 0 0; font-size: 13px; color: #4b5563; }
+.tsStatus svg { width: 16px; height: 16px; }
+.ts_ok { color: #15803d; }
+.ts_failed { color: #b91c1c; }
+.tsStatus button { background: none; border: 0; padding: 0; color: inherit; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }

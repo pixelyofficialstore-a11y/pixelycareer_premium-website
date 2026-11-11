@@ -12,7 +12,7 @@ import { inline } from "@/components/offer/Offer";
 import { whatsappMessage } from "@/lib/site";
 import CountryPicker from "./CountryPicker";
 import { CODES } from "./Fields";
-import Turnstile from "./Turnstile";
+import Turnstile, { type TsStatus } from "./Turnstile";
 import styles from "./OrderForm.module.css";
 
 const STEPS = ["Package", "Your details", "Payment", "Review"];
@@ -152,6 +152,8 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const [qrOk, setQrOk] = useState(hasQr);
   const [terms, setTerms] = useState(false);
   const [tsToken, setTsToken] = useState("");
+  const [tsStatus, setTsStatus] = useState<TsStatus>("checking");
+  const [tsRetry, setTsRetry] = useState(0);
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const [sheet, setSheet] = useState(false);
@@ -380,8 +382,8 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const last = step === 4;
   const label = last ? "Place order →" : "Continue →";
   const continueBtn = (cls: string) => (
-    <button type="button" className={`btn btn-primary ${styles.continue} ${cls}`} onClick={last ? submit : cont} disabled={busy} aria-busy={busy || undefined} data-cta={last ? "order-send-request" : "order-continue"}>
-      {busy ? <><span className={styles.spinner} aria-hidden="true" /> Sending</> : label}
+    <button type="button" className={`btn btn-primary ${styles.continue} ${cls}`} onClick={last ? submit : cont} disabled={busy || (last && tsStatus !== "ok")} aria-busy={busy || undefined} data-cta={last ? "order-send-request" : "order-continue"}>
+      {busy ? <><span className={styles.spinner} aria-hidden="true" /> Sending</> : last && tsStatus === "checking" ? <><span className={styles.spinner} aria-hidden="true" /> Verifying</> : label}
     </button>
   );
 
@@ -416,6 +418,11 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         <span>I agree to the <Link href="/terms" target="_blank">Terms</Link>, <Link href="/privacy" target="_blank">Privacy Policy</Link> and <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
       </label>
       {errors.terms && <p className={styles.error}>{errors.terms}</p>}
+      <p className={`${styles.tsStatus} ${styles["ts_" + tsStatus]}`} role="status" aria-live="polite">
+        {tsStatus === "checking" && <><span className={styles.spinner} aria-hidden="true" /> Running a quick security check…</>}
+        {tsStatus === "ok" && <><Shield /> Security check passed</>}
+        {tsStatus === "failed" && <>Security check failed. <button type="button" onClick={() => setTsRetry((n) => n + 1)}>Try again</button></>}
+      </p>
       {errors.submit && <p className={styles.error} role="alert">{errors.submit}</p>}
       {failed && <a href={waOrder} target="_blank" rel="noopener noreferrer" className={styles.waFallback} data-cta="order-fail-whatsapp"><WaIcon /> Message us on WhatsApp</a>}
     </>
@@ -720,7 +727,6 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 </div>
               </div>
               <div className={styles.mOnly}>{finish}</div>
-              <Turnstile onToken={setTsToken} />
             </section>
           )}
         </form>
@@ -729,6 +735,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
           <h2>Order summary</h2>
           {summaryLines}
           {last && <div className={styles.sumFinish}>{finish}</div>}
+          <Turnstile onToken={setTsToken} onStatus={setTsStatus} retry={tsRetry} />
           {continueBtn(styles.summaryContinue)}
         </aside>
       </div>
