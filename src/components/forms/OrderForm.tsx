@@ -232,6 +232,10 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const byEmail = !pk && v.contact === "email";
   const channel = byEmail ? "email" : "WhatsApp";
 
+  // Same day delivery: only for ATS Career and International Career Pro. Cleared for Executive and the Bundle.
+  const sameDayOk = !bundle && packageId !== "executive";
+  useEffect(() => { if (!sameDayOk) setSameDay(false); }, [sameDayOk]);
+
   const choosePackage = (id: PackageId) => {
     setPackageId(id);
     if (id !== offer.packageId) setBundleOn(false);
@@ -471,8 +475,9 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   const sel = p.id === packageId && !bundle;
                   const items = CHECKLIST(m.key, p.id);
                   return (
-                    <div key={p.id} id={`pk-${p.id}`} className={`${styles.card} ${styles.pcard} ${sel ? styles.cardOn : styles.prow} ${p.id === "international-pro" ? styles.hasBadge : ""}`}>
-                      {p.id === "international-pro" && <span className={styles.pbadge}>Recommended</span>}
+                    <div key={p.id} id={`pk-${p.id}`} className={`${styles.card} ${styles.pcard} ${sel ? styles.cardOn : styles.prow} ${p.id === "international-pro" || p.id === "executive" ? styles.hasBadge : ""}`}>
+                      {p.id === "international-pro" && <span className={styles.pbadge}>Most Popular</span>}
+                      {p.id === "executive" && <span className={`${styles.pbadge} ${styles.bestBadge}`}>Best Results</span>}
                       <label className={styles.ptop}>
                         <input type="radio" name="package" checked={sel} onChange={() => { choosePackage(p.id); setBundleOn(false); }} />
                         <b className={styles.pname}>{p.name}</b>
@@ -510,14 +515,14 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 })}
               </div>
 
-              <div className={styles.group}>
+              {sameDayOk && <div className={styles.group}>
                 <label className={`${styles.card} ${styles.toggle}`}>
                   <input type="checkbox" role="switch" checked={sameDay} onChange={(e) => setSameDay(e.target.checked)} />
                   <span className={styles.switch} aria-hidden="true" />
                   <span className={styles.toggleText}>Same day delivery</span>
                   <span className={styles.toggleFee}>{pkg.sameDayLabel}</span>
                 </label>
-              </div>
+              </div>}
 
               <section className={styles.group} aria-labelledby="extras-title">
                 <div className={styles.groupHead}>

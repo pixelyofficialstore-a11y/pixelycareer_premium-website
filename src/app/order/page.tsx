@@ -14,8 +14,8 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
   const offer = !!q.offer && offerOpen(BUNDLE, "pk");
   return pageMetadata(
     "/order",
-    offer ? "11.11 Sale: Executive Branding & Website | Pixely Careers" : "Start Your Order | Pixely Careers",
-    offer ? "Executive Career Branding and a personal website for Rs 20,000 instead of Rs 27,500. Only 10 slots." : "Choose your package and send your order request in one minute. We confirm everything with you on WhatsApp, including your details, delivery and timing.",
+    offer ? `11.11 Sale: ${BUNDLE.headline}` : "Start Your Order | Pixely Careers",
+    offer ? `${BUNDLE.headline} for Rs 20,000 instead of Rs 27,500. Only 10 slots.` : "Choose your package and send your order request in one minute. We confirm everything with you on WhatsApp, including your details, delivery and timing.",
     { label: "Order", title: "Start your order", offer, locale: offer ? "en_PK" : "en_US" },
   );
 }

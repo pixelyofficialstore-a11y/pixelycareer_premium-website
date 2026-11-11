@@ -251,7 +251,7 @@ const BASE_PACKAGES = [
     ],
     lead: "",
     items: ["ATS / Europass CV written for your target role", "Tailored cover letter", "LinkedIn content rewrite", "Keywords matched to your job ads", "PDF and editable Word files"],
-    button: "Choose ATS Career",
+    button: "Get ATS Ready",
   },
   {
     id: "international-pro" as const,
@@ -266,7 +266,7 @@ const BASE_PACKAGES = [
     ],
     lead: "Everything in ATS Career, plus:",
     items: ["International ATS CV for your target country", "Country specific cover letter", "Full LinkedIn makeover", "Indeed profile setup", "Professional bio statement", "Digital contact card"],
-    button: "Choose International Pro",
+    button: "Go Global",
   },
   {
     id: "executive" as const,
@@ -281,7 +281,7 @@ const BASE_PACKAGES = [
     ],
     lead: "Everything in International Pro, plus:",
     items: ["Premium executive CV", "One page visual CV", "Executive cover letter and bio", "LinkedIn makeover with 10 ready posts", "Interview preparation guide", "Priority handling"],
-    button: "Choose Executive",
+    button: "Build My Brand",
   },
 ];
 

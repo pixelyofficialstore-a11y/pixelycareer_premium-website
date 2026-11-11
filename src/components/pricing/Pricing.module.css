@@ -1117,6 +1117,9 @@
 .page .cardBundle { border: 1.5px solid #f4733c; background: #fff5ef; }
 .page .badgeSale { background: #f4733c; color: #fff; animation: none; }
 .bundleMeta { margin: -8px 0 16px; color: #c2410c; font-size: 13px; font-weight: 500; }
-.bundleCta { gap: 8px; }
+.page .bundleCta { gap: 8px; min-height: 50px; }
 .bundleCta svg { width: 18px; height: 18px; }
 .bundleCol { background: rgb(244 115 60 / 0.05); }
+
+.page .badgeBest { background: #0b1b3f; color: #fff; animation: none; }
+.page .choose, .page .bundleCta { white-space: nowrap; }

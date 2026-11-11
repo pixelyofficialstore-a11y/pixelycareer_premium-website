@@ -31,7 +31,7 @@ export const OFFERS: Offer[] = [
     id: "brand-bundle",
     markets: ["pk"],
     title: "11.11 Sale",
-    headline: "Executive Career Branding & Personal Website",
+    headline: "Executive Career Branding + Personal Website",
     short: "Executive Branding & Website",
     includes: ["Executive Career Branding package", "Portfolio website with free domain and hosting for the first year"],
     packageId: "executive",

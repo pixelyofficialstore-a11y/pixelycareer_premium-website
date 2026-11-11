@@ -22,11 +22,12 @@ export async function priceOrder(i: PriceInput) {
   const selection: Record<string, number> = {};
   for (const [k, v] of Object.entries(i.addons ?? {})) selection[k] = Math.min(10, Math.max(0, Math.floor(Number(v) || 0)));
   if (isBundle) selection[offer!.addonId] = 1;
-  const { pkg, list, total } = calcOrder(m, pkgId, i.sameDay, selection);
+  const sameDay = i.sameDay && !isBundle && pkgId !== "executive";
+  const { pkg, list, total } = calcOrder(m, pkgId, sameDay, selection);
   const addons: AddonLine[] = list.map((a) => ({ id: a.id, name: a.name, qty: a.qty, price: a.total }));
   const discount = isBundle && i.payChoice === "now" ? offer!.payNowDiscount : 0;
   return {
-    market: m.key, package: isBundle ? "executive_bundle" : pkgId, packagePrice: pkg.price, addons, sameDay: i.sameDay, offer: isBundle ? offer!.id : null, isBundle,
+    market: m.key, package: isBundle ? "executive_bundle" : pkgId, packagePrice: pkg.price, addons, sameDay, offer: isBundle ? offer!.id : null, isBundle,
     discount, subtotal: total, total: total - discount, currency: m.currency,
   };
 }

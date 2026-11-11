@@ -20,7 +20,7 @@ function getCardContent(market: MarketKey) {
     "ats-career": {
       audience: "For beginners and early careers",
       name: "ATS Career",
-      button: "Choose ATS Career",
+      button: "Get ATS Ready",
       lead: "",
       items: [`ATS / Europass ${doc}, 1 to 2 pages`, "Tailored cover letter", "LinkedIn content optimization", "Keywords for your target job", "PDF & editable Word files", "Unlimited revisions until satisfied"],
       support: "30 days",
@@ -30,7 +30,7 @@ function getCardContent(market: MarketKey) {
     "international-pro": {
       audience: "For 3+ years of experience",
       name: "International Career Pro",
-      button: "Choose International Pro",
+      button: "Go Global",
       lead: "Everything in ATS Career, plus:",
       items: [
         gulf ? "Gulf & international standard CV" : `International standard ${doc}`,
@@ -46,7 +46,7 @@ function getCardContent(market: MarketKey) {
     executive: {
       audience: "For 7+ years of experience",
       name: "Executive Career Branding",
-      button: "Choose Executive",
+      button: "Build My Brand",
       lead: "Everything in International Pro, plus:",
       items: [`Premium executive ${doc}`, "One page executive visual profile", "Executive cover letter & bio statement", "LinkedIn content pack (10 posts)", "Interview preparation guide (PDF)"],
       support: "6 months",
@@ -121,7 +121,7 @@ export default function Pricing({
   const cardContent = getCardContent(market);
   const cols = [
     ...packages.map((p) => ({ id: p.id as string, name: p.name, price: p.priceLabel, href: orderHref(m, p.id), button: cardContent[p.id].button })),
-    ...(showBundle ? [{ id: "executive_bundle", name: "11.11 Sale Bundle", price: "Rs 20,000", href: "/order?market=pk&package=executive&offer=brand-bundle", button: "Claim 11.11 Bundle" }] : []),
+    ...(showBundle ? [{ id: "executive_bundle", name: "11.11 Sale Bundle", price: "Rs 20,000", href: "/order?market=pk&package=executive&offer=brand-bundle", button: "Claim My Bundle" }] : []),
   ];
   const HeroHeading = standalone ? "h1" : "h2";
   const [selectedPackage, setSelectedPackage] = useState(1);
@@ -169,7 +169,8 @@ export default function Pricing({
               return (
                 <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`} data-reveal>
                   <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
-                    {recommended && <span className={styles.badge}>Recommended</span>}
+                    {recommended && <span className={styles.badge}>Most Popular</span>}
+                    {p.id === "executive" && <span className={`${styles.badge} ${styles.badgeBest}`}>Best Results</span>}
                     {tag?.id === p.id && <span className="sp-includes">{tag.text}</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
@@ -213,10 +214,10 @@ export default function Pricing({
                 <article className={`${styles.card} price-card ${styles.cardBundle}`} aria-label="11.11 Sale Bundle package">
                   <span className={`${styles.badge} ${styles.badgeSale}`}>11.11 Sale</span>
                   <h3 className={`${styles.packageName} price-name`}>11.11 Sale Bundle</h3>
-                  <p className={styles.audience}>Executive Branding &amp; Website</p>
+                  <p className={styles.audience}>{BUNDLE.headline}</p>
                   <div className={styles.pricePair}><s className={styles.compareAt}><PriceAmount label="Rs 27,500" /></s><PriceAmount label="Rs 20,000" /></div>
                   <p className={styles.bundleMeta} suppressHydrationWarning>Only {BUNDLE.totalSlots} slots · {inline(saleT)}</p>
-                  <Link href="/order?market=pk&package=executive&offer=brand-bundle" className={`of-exec-claim ${styles.bundleCta}`} data-cta="pricing-claim-bundle">Claim 11.11 Bundle<ArrowIcon /></Link>
+                  <Link href="/order?market=pk&package=executive&offer=brand-bundle" className={`of-exec-claim ${styles.bundleCta}`} data-cta="pricing-claim-bundle">Claim My Bundle<ArrowIcon /></Link>
                   <hr className={styles.divider} />
                   <div className={styles.includedContent}>
                     <ul className={styles.itemList}>
