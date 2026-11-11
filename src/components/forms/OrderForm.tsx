@@ -399,7 +399,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         ))}
         {sameDay && <div className={styles.sumLine}><dt>Same day delivery</dt><dd>{pkg.sameDayLabel}</dd></div>}
         {payNow && step >= 3 && payOff > 0 && <div className={styles.sumLine}><dt>Pay now discount</dt><dd className={styles.sumSave}>−{money(payOff)}</dd></div>}
-        <div className={styles.sumMuted}><dt>Delivery</dt><dd>{sameDay ? "Same day" : pkg.deliveryDays}</dd></div>
+        <div className={styles.sumMuted}><dt>Delivery</dt><dd>{sameDay ? "Same day" : bundle ? "5 days" : pkg.deliveryDays}</dd></div>
       </dl>
       <div className={styles.sumTotal}>
         <span>Total</span>
@@ -692,7 +692,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   <dl className={styles.rList}>
                     <div><dt>Package</dt><dd>{bundle ? offer.headline : pkg.name}</dd></div>
                     {shownList.map((a) => <div key={a.id}><dt>Extra</dt><dd>{a.name}{a.qty > 1 ? ` × ${a.qty}` : ""}</dd></div>)}
-                    <div><dt>Delivery</dt><dd>{sameDay ? "Same day" : pkg.deliveryDays}</dd></div>
+                    <div><dt>Delivery</dt><dd>{sameDay ? "Same day" : bundle ? "5 days" : pkg.deliveryDays}</dd></div>
                   </dl>
                 </div>
                 <div className={styles.rSec}>

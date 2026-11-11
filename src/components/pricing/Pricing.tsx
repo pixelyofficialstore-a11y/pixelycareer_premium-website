@@ -7,7 +7,7 @@ import { saveMarket } from "@/components/ui/useMarket";
 import Faq from "@/components/sections/Faq";
 import { OfferBand, inline, useLive } from "@/components/offer/Offer";
 import { BUNDLE } from "@/config/offers";
-import { MARKETS, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
+import { MARKETS, formatPricingPrice, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
 import { WHATSAPP_URL , whatsappMessage } from "@/lib/site";
 import styles from "./Pricing.module.css";
 
@@ -115,7 +115,7 @@ export default function Pricing({
   const showBundle = market === "pk" && saleLive;
   const base = getComparison(m);
   const comparison = (showBundle
-    ? base.flatMap((r) => (r[0] === "Digital contact card" ? [[...r, r[3]], ["Personal website", "✕", "✕", "✕", "✓"]] : [[...r, r[3]]]))
+    ? base.flatMap((r) => (r[0] === "Digital contact card" ? [[...r, r[3]], ["Personal website", "✕", "✕", "✕", "✓"]] : [r[0] === "Delivery" ? [...r, "5 days"] : [...r, r[3]]]))
     : base) as string[][];
   const GROUPS = getComparisonGroups(comparison as [string, string, string, string][]);
   const cardContent = getCardContent(market);
@@ -177,6 +177,7 @@ export default function Pricing({
                     <div className={styles.pricePair}>
                       {p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}<PriceAmount label={p.priceLabel} />
                     </div>
+                    <p className={styles.priceNote}>{p.showCompareAt && p.compareAt > p.price ? `Save ${formatPricingPrice(m, p.compareAt - p.price)}` : "\u00a0"}</p>
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
                     </Link>
@@ -216,7 +217,7 @@ export default function Pricing({
                   <h3 className={`${styles.packageName} price-name`}>11.11 Sale Bundle</h3>
                   <p className={styles.audience}>{BUNDLE.headline}</p>
                   <div className={styles.pricePair}><s className={styles.compareAt}><PriceAmount label="Rs 27,500" /></s><PriceAmount label="Rs 20,000" /></div>
-                  <p className={styles.bundleMeta} suppressHydrationWarning>Only {BUNDLE.totalSlots} slots · {inline(saleT)}</p>
+                  <p className={`${styles.priceNote} ${styles.bundleMeta}`} suppressHydrationWarning>Only {BUNDLE.totalSlots} slots · {inline(saleT)}</p>
                   <Link href="/order?market=pk&package=executive&offer=brand-bundle" className={`of-exec-claim ${styles.bundleCta}`} data-cta="pricing-claim-bundle">Claim My Bundle<ArrowIcon /></Link>
                   <hr className={styles.divider} />
                   <div className={styles.includedContent}>
@@ -229,7 +230,7 @@ export default function Pricing({
                   </div>
                   <div className={styles.supportRow}>
                     <div className={styles.supportBlock}><strong>{cardContent.executive.support}</strong><span>Support</span></div>
-                    <div className={styles.supportBlock}><strong>{cardContent.executive.delivery}</strong><span>Delivery</span></div>
+                    <div className={styles.supportBlock}><strong>5 days</strong><span>Delivery</span></div>
                     <div className={styles.supportBlock}><strong>{cardContent.executive.updates}</strong><span>Free updates</span></div>
                   </div>
                 </article>

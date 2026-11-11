@@ -1100,14 +1100,6 @@
 .page .customBox a span { display: inline; margin: 0; color: inherit; font-size: inherit; font-weight: inherit; }
 
 
-/* Price block, all cards: old price on its own line, then "Rs" small + the number (40px max) */
-.page .pricePair { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-.page .pricePair .compareAt .price,
-.page .pricePair .compareAt .priceUnit,
-.page .pricePair .compareAt .priceNumber { font-size: 14px; color: #8a94a6; text-decoration: line-through; text-decoration-color: #8a94a6; }
-.page .pricePair > .price { font-size: clamp(30px, 2.8vw, 40px); }
-.page .pricePair > .price .priceUnit { font-size: clamp(14px, 1.2vw, 18px); padding-top: 4px; }
-
 /* 11.11 Sale Bundle (pk, while the sale is on): 4 equal columns, 2x2 on tablet, first on mobile */
 @media (min-width: 1100px) { .page .priceGrid.grid4 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; width: min(100%, 1280px); } }
 @media (min-width: 768px) and (max-width: 1099px) { .page .priceGrid.grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
@@ -1116,10 +1108,33 @@
 .page .priceGrid.grid4 .supportRow { margin-top: auto; }
 .page .cardBundle { border: 1.5px solid #f4733c; background: #fff5ef; }
 .page .badgeSale { background: #f4733c; color: #fff; animation: none; }
-.bundleMeta { margin: -8px 0 16px; color: #c2410c; font-size: 13px; font-weight: 500; }
 .page .bundleCta { gap: 8px; min-height: 50px; }
 .bundleCta svg { width: 18px; height: 18px; }
 .bundleCol { background: rgb(244 115 60 / 0.05); }
 
-.page .badgeBest { background: #0b1b3f; color: #fff; animation: none; }
 .page .choose, .page .bundleCta { white-space: nowrap; }
+
+/* ===== Card alignment: every row lines up across cards (subgrid from 768px) ===== */
+.page .packageName { font-size: 20px; line-height: 1.25; min-height: 2.5em; margin: 0; }
+.page .audience { min-height: 3em; }
+.page .pricePair { display: flex; flex-direction: row; flex-wrap: nowrap; align-items: baseline; gap: 8px; margin: 0; white-space: nowrap; }
+.page .pricePair .compareAt .price,
+.page .pricePair .compareAt .priceUnit,
+.page .pricePair .compareAt .priceNumber { font-size: 15px; font-weight: 400; color: #8a94a6; padding: 0; text-decoration: line-through; text-decoration-color: #8a94a6; }
+.page .pricePair > .price { display: inline-flex; align-items: baseline; gap: 3px; font-size: clamp(32px, 3vw, 40px); font-weight: 700; line-height: 1.1; }
+.page .pricePair > .price .priceUnit { align-self: baseline; padding: 0; font-size: 16px; font-weight: 600; }
+.priceNote { margin: 6px 0 16px; color: #6b7280; font-size: 13px; line-height: 1.4; }
+.page .bundleMeta { color: #c2410c; font-weight: 500; }
+.page .choose, .page .bundleCta { width: 100%; min-height: 48px; height: 48px; justify-content: center; gap: 8px; }
+.page .badge { white-space: nowrap; }
+.page .badgeBest { background: #eef2ff; color: #0b1b3f; border: 1px solid #d6dcf5; animation: none; }
+.page .badgeSale { background: #f4733c; color: #fff; border: 1px solid #f4733c; }
+.page .cardRecommended .badge { border: 1px solid var(--price-blue); }
+.page .priceGrid.grid4 { width: min(100%, 1240px); gap: 20px; }
+.page .priceGrid.grid4 .card { padding: 28px 24px; }
+@media (min-width: 768px) {
+  .page .priceGrid { grid-template-rows: repeat(6, auto) 1fr auto; }
+  .page .priceGrid > .cardSlot { display: grid; grid-row: span 8; grid-template-rows: subgrid; }
+  .page .priceGrid > .cardSlot > .card { display: grid; grid-row: 1 / -1; grid-template-rows: subgrid; row-gap: 0; }
+  .page .priceGrid .supportRow { align-self: end; }
+}
