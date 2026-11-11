@@ -324,7 +324,7 @@ export function getComparison(m: Market): [string, string, string, string][] {
     ["Free updates after delivery", "3", "3", "4"],
     ["WhatsApp support", "30 days", "3 months", "6 months"],
     ["Delivery", "2 days", "2 days", "3 days"],
-    ["Same day delivery", fee("ats-career"), fee("international-pro"), fee("executive")],
+    ["Same day delivery", fee("ats-career"), fee("international-pro"), X],
   ];
   return rows;
 }
