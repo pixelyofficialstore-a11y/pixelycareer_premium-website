@@ -9,7 +9,7 @@ import { useGsapSection } from "@/lib/motion";
  * The chips pop in as the CV clears the stack, a little before it reaches its final place.
  * A market with a second good CV spins between the two once the CV is fully out: always the same way, with a pause on each.
  */
-export default function HeroRise({ children }: { children: React.ReactNode }) {
+export default function HeroRise({ children, free = false }: { children: React.ReactNode; free?: boolean }) {
   const root = useRef<HTMLDivElement>(null);
   const flipTimer = useRef(0);
   const spinEnd = useRef(0);
@@ -19,6 +19,8 @@ export default function HeroRise({ children }: { children: React.ReactNode }) {
     const el = root.current;
     if (!el || flipTimer.current || !el.querySelector(".hs-flip")) return;
     flipTimer.current = window.setInterval(() => {
+      // A hidden tab plays no transitions; skipping turns there stops a burst of spins on return.
+      if (document.hidden) return;
       angle.current += 180;
       el.style.setProperty("--flip", `${angle.current}deg`);
       // The chips step aside during the turn, then pop back.
@@ -39,6 +41,17 @@ export default function HeroRise({ children }: { children: React.ReactNode }) {
   useGsapSection(root, ({ desktop }, { gsap }) => {
     const el = root.current;
     if (!desktop || !el) return;
+    if (free) {
+      if (!window.matchMedia("(pointer: fine)").matches) return;
+      const tilt = (e: PointerEvent) => {
+        if (e.pointerType !== "mouse") return;
+        const clamp = (v: number) => Math.max(-6, Math.min(6, v));
+        el.style.setProperty("--mx", `${clamp(((e.clientX / window.innerWidth) * 2 - 1) * 6)}deg`);
+        el.style.setProperty("--my", `${clamp((1 - (e.clientY / window.innerHeight) * 2) * 6)}deg`);
+      };
+      window.addEventListener("pointermove", tilt, { passive: true });
+      return () => window.removeEventListener("pointermove", tilt);
+    }
 
     // The CV is fully out by 65% of the hold. The rest keeps it on screen, so the page only moves on when the visitor scrolls again.
     const tl = gsap.timeline({
@@ -71,7 +84,7 @@ export default function HeroRise({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const el = root.current;
     const visual = el?.querySelector(".hs");
-    if (!el || !visual || window.innerWidth >= 1024) return;
+    if (!el || !visual || (!free && window.innerWidth >= 1024)) return;
     let timer = 0;
     const io = new IntersectionObserver(
       ([e]) => {
@@ -94,7 +107,7 @@ export default function HeroRise({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div ref={root} className="rise-track">
+    <div ref={root} className={`rise-track${free ? " rise-free" : ""}`}>
       <div className="rise-stage">{children}</div>
     </div>
   );

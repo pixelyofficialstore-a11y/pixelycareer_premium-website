@@ -274,3 +274,35 @@
     transition: none;
   }
 }
+
+.carousel { margin-top: 56px; }
+@media (max-width: 767px) { .carousel { margin-top: 36px; } }
+
+@media (min-width: 1024px) { .carousel { margin-top: 72px; } }
+
+/* Heading placement: no full-screen height or centering; the H2 sits 72px from the top and 72px above the carousel (48 / 48 on phones). */
+.section { display: block; min-height: 0; }
+.carousel { margin-top: 72px; }
+@media (min-width: 1024px) { .carousel { margin-top: 72px; } }
+@media (max-width: 767px) { .section { min-height: 0; } .carousel { margin-top: 48px; } }
+
+/* Polish pass */
+.section { min-height: 0; padding-block: 0; overflow-x: clip; overflow-y: visible; }
+.carousel { margin-top: 64px; }
+.dots { margin-top: 32px; }
+@media (max-width: 767px) {
+  .section { min-height: 0; }
+  .carousel { margin-top: 40px; }
+  .stage { --slide-height: calc(min(78vw, 325px) * 1.414); height: var(--slide-height); }
+  .dots { margin-top: 32px; }
+}
+
+/* Phones: active card 78% wide, neighbours 12px away peeking in at the sides, full height (no scaling, so nothing is cut) */
+@media (max-width: 767px) {
+  .carousel { margin-top: 32px; }
+  .stage { --slide-height: calc(78vw * 1.414); height: var(--slide-height); }
+  .slide { width: 78vw; max-width: none; height: var(--slide-height); }
+  .slide[data-position="left"] { transform: translate(-50%, -50%) translateX(calc(-100% - 12px)); }
+  .slide[data-position="right"] { transform: translate(-50%, -50%) translateX(calc(100% + 12px)); }
+  .dots { margin-top: 24px; }
+}

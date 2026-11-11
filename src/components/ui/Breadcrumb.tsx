@@ -1,8 +1,11 @@
 import Link from "next/link";
+import BackButton from "./BackButton";
 
 export default function Breadcrumb({ items }: { items: { label: string; href?: string }[] }) {
   return (
-    <nav aria-label="Breadcrumb">
+    <div className="crumbs-row">
+    <BackButton />
+    <nav aria-label="Breadcrumb" className="min-w-0">
       <ol className="flex flex-wrap items-center gap-x-2 text-sm text-navy/70">
         {items.map((i, n) => (
           <li key={i.label} className="flex items-center gap-x-2">
@@ -18,5 +21,6 @@ export default function Breadcrumb({ items }: { items: { label: string; href?: s
         ))}
       </ol>
     </nav>
+    </div>
   );
 }

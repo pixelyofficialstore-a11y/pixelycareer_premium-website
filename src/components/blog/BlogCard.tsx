@@ -36,7 +36,6 @@ export default function BlogCard({ post }: { post: PostMeta }) {
         <h3 className="blog-card-title">
           <Link href={`/blog/${post.slug}`}>{post.title}</Link>
         </h3>
-        <p className="blog-card-excerpt">{post.description}</p>
         <p className="blog-card-meta">{post.dateLabel} · {post.readingTime}</p>
       </div>
     </article>

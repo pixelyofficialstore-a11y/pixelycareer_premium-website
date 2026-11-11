@@ -3,12 +3,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { MARKETS, orderHref } from "@/config/markets";
-import { NAV } from "@/lib/site";
+import { CONTACT_EMAIL, NAV, WHATSAPP_URL } from "@/lib/site";
 import { useMarket } from "./useMarket";
 
 export default function Header() {
-  const homepage = usePathname() === "/";
+  const pathname = usePathname();
+  const homepage = Object.values(MARKETS).some((m) => m.path === pathname);
   const market = MARKETS[useMarket()];
+  // Home leads to the visitor's own market home; it is active on any market home.
+  const onHome = Object.values(MARKETS).some((m) => m.path === pathname);
+  const links = [{ label: "Home", href: market.path }, ...NAV];
+  const goHome = () => {
+    setOpen(false);
+    if (pathname !== market.path) return;
+    const lenis = (window as unknown as { __lenis?: { scrollTo: (y: number, o?: { immediate?: boolean }) => void } }).__lenis;
+    if (lenis) lenis.scrollTo(0, { immediate: true });
+    else window.scrollTo(0, 0);
+  };
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -63,9 +74,9 @@ export default function Header() {
 
           <nav aria-label="Main" className="hidden lg:block">
             <ul className="flex items-center gap-8">
-              {NAV.map((n) => (
-                <li key={n.href}>
-                  <Link href={n.href} className="font-head inline-flex min-h-11 items-center text-[0.9375rem] font-medium transition-colors hover:text-vivid">
+              {links.map((n, i) => (
+                <li key={n.label}>
+                  <Link href={n.href} onClick={i === 0 ? goHome : undefined} aria-current={i === 0 && onHome ? "page" : undefined} className={`font-head inline-flex min-h-11 items-center text-[0.9375rem] font-medium transition-colors hover:text-vivid${i === 0 && onHome ? " text-vivid" : ""}`}>
                     {n.label}
                   </Link>
                 </li>
@@ -74,9 +85,13 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center justify-end gap-2 lg:gap-4">
-            <Link href={orderHref(market)} className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta={homepage ? "home-header-order" : "header-order"}>
-              {homepage ? "Start your order" : "Start Your Order"}
-            </Link>
+            {pathname === "/partners" ? (
+              <a href="#agency-enquiry" className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta="agency-header-call">Book a 15 minute call →</a>
+            ) : (
+              <Link href={orderHref(market)} className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta={homepage ? "home-header-order" : "header-order"}>
+                Start your order
+              </Link>
+            )}
             <button
               ref={menuButton}
               type="button"
@@ -95,7 +110,7 @@ export default function Header() {
 
         {open && (
           <div ref={dialog} id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu" data-lenis-prevent className="fixed inset-0 z-50 flex flex-col overflow-y-auto bg-white lg:hidden">
-            <div className="wrap flex h-[72px] flex-none items-center justify-between">
+            <div className="wrap flex h-[72px] flex-none items-center justify-between border-b border-navy/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/brand/logo-dark.svg" alt="" width={136} height={40} className="h-9 w-auto" />
               <button type="button" className="-mr-2 inline-flex h-11 w-11 cursor-pointer items-center justify-center" aria-label="Close menu" onClick={() => setOpen(false)}>
@@ -104,24 +119,35 @@ export default function Header() {
                 </svg>
               </button>
             </div>
-            <nav aria-label="Mobile" className="wrap flex flex-1 flex-col py-8">
-              <ul className="my-auto flex flex-col gap-2">
-                {NAV.map((n, i) => (
-                  <li key={n.href}>
+            <nav aria-label="Mobile" className="wrap flex flex-1 flex-col pt-6 pb-8">
+              <ul className="mobile-menu-list flex flex-col">
+                {links.map((n, i) => (
+                  <li key={n.label}>
                     <Link
                       ref={i === 0 ? firstLink : undefined}
                       href={n.href}
-                      onClick={() => setOpen(false)}
-                      className="font-head inline-flex min-h-14 items-center text-[clamp(34px,10vw,56px)] leading-none font-semibold tracking-tight"
+                      onClick={i === 0 ? goHome : () => setOpen(false)}
+                      aria-current={i === 0 && onHome ? "page" : undefined}
+                      className={`font-head flex min-h-16 items-center justify-between border-b border-navy/10 text-[28px] leading-none font-semibold tracking-[-0.02em] transition-colors active:text-vivid ${i === 0 && onHome ? "text-vivid" : "text-navy"}`}
                     >
-                      {n.label}
+                      <span className="flex items-baseline gap-4">
+                        {i === 0
+                          ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="w-6 flex-none self-center text-navy/40"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" /></svg>
+                          : <span className="w-6 flex-none text-xs font-medium tracking-[0.08em] text-navy/40 tabular-nums">0{i}</span>}
+                        {n.label}
+                      </span>
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true" className="text-vivid"><path d="M3.5 10h12m-5-5 5 5-5 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </Link>
                   </li>
                 ))}
               </ul>
-              <Link href={orderHref(market)} onClick={() => setOpen(false)} className="btn btn-primary mt-10 w-full" data-cta={homepage ? "home-menu-order" : "menu-order"}>
-                {homepage ? "Start your order" : "Start Your Order"}
-              </Link>
+              <div className="mobile-menu-foot mt-auto pt-10">
+                <Link href={orderHref(market)} onClick={() => setOpen(false)} className="btn btn-primary min-h-14 w-full" data-cta={homepage ? "home-menu-order" : "menu-order"}>
+                  Start your order
+                </Link>
+                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn mt-3 min-h-14 w-full border border-navy/15 text-navy" data-cta="menu-whatsapp">Ask on WhatsApp</a>
+                <p className="mt-5 text-center text-sm text-navy/55"><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+              </div>
             </nav>
           </div>
         )}

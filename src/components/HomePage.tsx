@@ -5,69 +5,61 @@ import HeroRise from "@/components/hero/HeroRise";
 import Faq from "@/components/sections/Faq";
 import FinalCta from "@/components/sections/FinalCta";
 import Formats from "@/components/sections/Formats";
-import MarketFormats from "@/components/sections/MarketFormats";
 import Pricing from "@/components/sections/Pricing";
-import Problem, { ProblemNext } from "@/components/sections/Problem";
 import HomeProblem from "@/components/sections/HomeProblem";
-import Process from "@/components/sections/Process";
 import HomeProcess from "@/components/sections/HomeProcess";
 import HomeTestimonials from "@/components/sections/HomeTestimonials";
-import HomeWhatsApp from "@/components/ui/HomeWhatsApp";
-import Reviews from "@/components/sections/Reviews";
-import Services from "@/components/sections/Services";
 import HomeServices from "@/components/sections/HomeServices";
 import HomeTrustStrip from "@/components/sections/HomeTrustStrip";
 import MarketSync from "@/components/ui/MarketSync";
 import Reveal from "@/components/ui/Reveal";
-import StickyBar from "@/components/ui/StickyBar";
-import { getReviews, getTestimonials } from "@/lib/home-content";
+import { getTestimonials } from "@/lib/home-content";
 import { FACEBOOK_REVIEWS_URL } from "@/lib/site";
 import { JsonLd, breadcrumbJsonLd, faqJsonLd, homeJsonLd } from "@/lib/seo";
 
-/** One template for every market. Each boundary hydrates in its own task, so nothing visibly loads in. */
-export default function HomePage({ market, useHomeProblem = false }: { market: Market; useHomeProblem?: boolean }) {
-  const faq = getHomeFaq(market).map((item) => market.path === "/" ? {
+/**
+ * One homepage template for every market, in one fixed order:
+ * Hero, trust strip, Before/After, three layers, formats, how it works, testimonials, pricing, FAQ, final CTA.
+ * Only the content changes per market, and it comes from the market config.
+ */
+export default function HomePage({ market }: { market: Market }) {
+  const faq = getHomeFaq(market).map((item) => ({
     q: item.q.replace(/[-–—]/g, " "),
     a: (item.a.includes("[CONFIRM")
       ? "Place your order online. We confirm the details on WhatsApp and share available payment options there."
       : item.a).replace(/[-–—]/g, " "),
-  } : item);
+  }));
   return (
     <>
       <JsonLd data={faqJsonLd(faq)} />
       <JsonLd data={homeJsonLd(market)} />
       {market.path !== "/" && <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: market.areaServed, path: market.path }])} />}
       <MarketSync market={market.key} />
-      <HeroRise>
-        <Hero market={market} centerMobileHeadline={market.path === "/"} />
+      <HeroRise free>
+        <Hero market={market} centerMobileHeadline />
       </HeroRise>
-      {market.path === "/" && <HomeTrustStrip reviewsUrl={FACEBOOK_REVIEWS_URL} />}
-      {useHomeProblem ? <HomeProblem /> : (
-        <>
-          <Problem market={market} />
-          <ProblemNext market={market} />
-        </>
-      )}
+      {/* The Facebook page is the Pakistan page, so its links show on /pk only. */}
+      <HomeTrustStrip reviewsUrl={market.key === "pk" ? FACEBOOK_REVIEWS_URL : undefined} />
+      <HomeProblem marketKey={market.key} />
       <Suspense>
-        {market.path === "/" ? <HomeServices marketKey={market.key} /> : <Services market={market.key} />}
+        <HomeServices marketKey={market.key} />
       </Suspense>
       <Suspense>
-        {market.path === "/" ? <Formats market={market.key} /> : <MarketFormats market={market.key} />}
-      </Suspense>
-      {market.path !== "/" && <Reviews market={market} reviews={getReviews(market.key)} />}
-      <Suspense>
-        {market.path === "/" ? <HomeProcess /> : <Process market={market.key} />}
-      </Suspense>
-      {market.path === "/" && <HomeTestimonials items={getTestimonials(market.key)} />}
-      <Suspense>
-        <Pricing market={market.key} variant={market.path === "/" ? "compact" : "default"} />
+        <Formats market={market.key} />
       </Suspense>
       <Suspense>
-        <Faq items={faq} homepage={market.path === "/"} />
+        <HomeProcess marketKey={market.key} />
+      </Suspense>
+      {/* A market without approved screenshots of its own shows the shared ones. */}
+      <HomeTestimonials facebookLink={market.key === "pk"} items={getTestimonials(market.key).some((t) => t.screenshot) ? getTestimonials(market.key) : getTestimonials("us")} />
+      <Suspense>
+        <Pricing market={market.key} variant="compact" />
+      </Suspense>
+      <Suspense>
+        <Faq items={faq} homepage />
       </Suspense>
       <FinalCta market={market} />
       <Suspense>
-        {market.path === "/" ? <HomeWhatsApp /> : <StickyBar market={market.key} />}
       </Suspense>
       <Reveal />
     </>

@@ -7,7 +7,6 @@ export const MARKET_KEYS = ["us", "pk", "ae", "sa", "uk"] as const;
 export type MarketKey = (typeof MARKET_KEYS)[number];
 export type PackageId = "ats-career" | "international-pro" | "executive";
 
-const PAY_CONFIRM = { q: "How do I pay?", a: "After you place your order request, we confirm the details on WhatsApp and share payment options: [CONFIRM payment methods]." };
 const WHICH_FORMAT = { q: "Which CV format do I need?", a: "It depends on where you’re applying. Tell us your country and role, and we’ll use the right format." };
 
 export type Market = {
@@ -66,12 +65,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     ...INDEED,
     formatsIntro: "Formats for US employers and applications.",
     faq: [
-      { q: "Do you write US-style resumes?", a: "Yes. We use US resume conventions and keywords from US job postings." },
-      { q: "Which resume format do I need?", a: "It depends on where you’re applying. Tell us your country and role, and we’ll use the right format." },
-      PAY_CONFIRM,
+      { q: "Do you write US style resumes?", a: "Yes. One or two pages, no photo, and results first, the way US recruiters expect." },
+      { q: "What are the payment methods?", a: "After you order, we send you secure payment options on WhatsApp or email." },
+      { q: "Do you work with US time zones?", a: "Yes. We reply on WhatsApp and email throughout your day." },
     ],
     meta: {
-      title: "Pixely Careers | ATS Resume, LinkedIn & Portfolio Websites",
+      title: "Resume Writing for US Recruiters | Pixely Careers",
       description: "ATS resumes, LinkedIn profiles and portfolio websites, written for US job postings. Recruiters skim hundreds of resumes. We build the one they stop at.",
     },
   },
@@ -99,12 +98,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     ...NAUKRI,
     formatsIntro: "Formats for Pakistani employers and overseas applications.",
     faq: [
-      { q: "Can you make my CV for Gulf or overseas jobs?", a: "Yes. We build CVs for the UAE, Saudi Arabia, Qatar, the UK and Europe, as well as for Pakistani employers." },
-      { q: "How do I pay?", a: "After you place your order request, we confirm the details on WhatsApp and share payment options: [CONFIRM: JazzCash, Easypaisa, bank transfer]." },
-      { q: "Can I share my details in Urdu?", a: "Yes. You can send your details on WhatsApp in Urdu or English. Your final CV is in professional English." },
+      { q: "Can you make my CV for Gulf or Europe jobs?", a: "Yes. Gulf, UK, Europass and international formats." },
+      { q: "What are the payment methods?", a: "JazzCash, Easypaisa or bank transfer. Upload your payment screenshot with your order." },
+      { q: "How do I know my payment was received?", a: "We verify it manually and confirm on WhatsApp, usually within a few hours." },
     ],
     meta: {
-      title: "ATS CV Writing Service in Pakistan | Pixely Careers",
+      title: "CV Writing for Global Recruiters | Pixely Careers",
       description: "ATS-optimized CVs, cover letters and LinkedIn profiles for jobs in Pakistan and abroad. From PKR 2,999. First draft in 2 days. Order on WhatsApp.",
       ogDescription: "ATS-optimized CVs for jobs in Pakistan and abroad. From PKR 2,999.",
     },
@@ -133,12 +132,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     ...NAUKRI,
     formatsIntro: "Formats for UAE employers and Gulf applications.",
     faq: [
-      { q: "Do you know the UAE job market?", a: "Yes. We format for what UAE recruiters expect and optimize your Indeed and Naukrigulf profiles." },
-      WHICH_FORMAT,
-      PAY_CONFIRM,
+      { q: "Should my CV include a photo?", a: "Usually yes in the UAE. We add a professional one, or leave it out if the role requires that." },
+      { q: "Do you write Arabic CVs?", a: "Yes. We write Arabic CVs on request, alongside your English CV." },
+      { q: "What are the payment methods?", a: "After you order, we send you secure payment options on WhatsApp or email." },
     ],
     meta: {
-      title: "CV Writing Service in UAE | Pixely Careers",
+      title: "CV Writing for UAE Recruiters | Pixely Careers",
       description: "CVs for UAE roles, LinkedIn profiles and portfolio websites. Applying in the UAE? We build the CV recruiters stop at, with clear prices shown in AED.",
     },
   },
@@ -166,12 +165,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     ...NAUKRI,
     formatsIntro: "Formats for Saudi employers and Gulf applications.",
     faq: [
-      { q: "Do you know the Saudi job market?", a: "Yes. We format for what Saudi recruiters expect and optimize your Indeed and Naukrigulf profiles." },
-      WHICH_FORMAT,
-      PAY_CONFIRM,
+      { q: "Do you write CVs for Saudi nationals and expats?", a: "Yes. We write for both, matched to the roles you’re targeting." },
+      { q: "Do you write Arabic CVs?", a: "Yes. We write Arabic CVs on request, alongside your English CV." },
+      { q: "What are the payment methods?", a: "After you order, we send you secure payment options on WhatsApp or email." },
     ],
     meta: {
-      title: "CV Writing Service in Saudi Arabia | Pixely Careers",
+      title: "CV Writing for Saudi Recruiters | Pixely Careers",
       description: "CVs for Saudi roles, LinkedIn profiles and portfolio websites. Applying in Saudi Arabia? We build the CV recruiters stop at, with prices shown in SAR.",
     },
   },
@@ -200,12 +199,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     ...INDEED,
     formatsIntro: "Formats for UK employers and European applications.",
     faq: [
-      { q: "Do you write UK-style CVs?", a: "Yes. UK structure, UK spelling, and Europass if you’re applying in the EU." },
-      WHICH_FORMAT,
-      PAY_CONFIRM,
+      { q: "Do you write in UK English?", a: "Yes. UK spelling, a two page CV and no photo, as UK employers expect." },
+      { q: "Do I need a Europass CV?", a: "Only for EU applications. We can make one alongside your UK CV." },
+      { q: "What are the payment methods?", a: "After you order, we send you secure payment options on WhatsApp or email." },
     ],
     meta: {
-      title: "Professional CV Writing Service UK | Pixely Careers",
+      title: "CV Writing for UK Recruiters | Pixely Careers",
       description: "UK CVs, LinkedIn profiles and portfolio websites. Applying in the UK? We build the CV recruiters stop at, with UK structure, spelling and prices in GBP.",
     },
   },
@@ -304,48 +303,67 @@ export function getPackages(m: Market) {
 
 const Y = "✓";
 const N = "·";
+const X = "✕";
 /** Comparison table. Values are from the approved pricing preview. */
 export function getComparison(m: Market): [string, string, string, string][] {
+  const fee = (id: PackageId) => `+${formatPricingPrice(m, m.sameDay[id])}`;
+  const naukri = m.key === "ae" || m.key === "sa" || m.key === "pk";
   const rows: [string, string, string, string][] = [
-    ["ATS CV", "Standard", "International", "Premium executive"],
-    ["One page visual CV", N, N, Y],
+    [localize(m, "ATS CV"), "Standard", "International standard", "Premium executive"],
+    ["One page visual profile", X, X, Y],
     ["Cover letter", "Tailored", "Country specific", "Executive"],
-    ["LinkedIn", "Content rewrite", "Full makeover", "Makeover and 10 posts"],
-    ["Indeed profile", N, Y, Y],
-    ["Bio statement", N, Y, "Executive"],
-    ["Digital contact card", N, Y, "Premium"],
-    ["Interview guide", N, N, Y],
-    ["Revisions", "3", "3", "4"],
+    ["Bio statement", X, Y, "Executive"],
+    ["Keywords for your target job", Y, Y, Y],
+    ["PDF & editable Word files", Y, Y, Y],
+    ["LinkedIn", "Content optimization", "Complete optimization & makeover", "Makeover & 10 post content pack"],
+    ["Indeed profile", X, Y, Y],
+    ...(naukri ? [["Naukrigulf profile", X, Y, Y] as [string, string, string, string]] : []),
+    ["Digital contact card", X, Y, Y],
+    ["Interview preparation guide (PDF)", X, X, Y],
+    ["Revisions before delivery", "Unlimited", "Unlimited", "Unlimited"],
+    ["Free updates after delivery", "3", "3", "4"],
     ["WhatsApp support", "30 days", "3 months", "6 months"],
-    ["Delivery", "2 days", "2 days", "3 days, priority"],
-    ["Same day delivery", `+${formatPricingPrice(m, m.sameDay["ats-career"])}`, `+${formatPricingPrice(m, m.sameDay["international-pro"])}`, `+${formatPricingPrice(m, m.sameDay.executive)}`],
+    ["Delivery", "2 days", "2 days", "3 days"],
+    ["Same day delivery", fee("ats-career"), fee("international-pro"), fee("executive")],
   ];
   return rows;
 }
 
-const SHARED_FAQ = [
-  { q: "What exactly do I get?", a: "Everything listed in your package, delivered as PDF and editable Word files." },
-  { q: "How long does it take?", a: "Your first draft arrives in 2 days (3 days for Executive). Same-day delivery is available." },
-  { q: "Are revisions included?", a: "Yes. 3 revisions on ATS Career and International Pro, 4 on Executive." },
-  {
-    q: "Do you guarantee a job or interview?",
-    a: "No, and nobody honestly can. We make your application professional, ATS-optimized and right for your market. We don’t offer job placement or visa services.",
-  },
-];
-const PAY = { q: "How do I pay?", a: "Place your order request here. We confirm the details on WhatsApp and share payment options." };
+/** Row groups for the table, found by their first row. */
+export function getComparisonGroups(rows: [string, string, string, string][]) {
+  const at = (label: string) => rows.findIndex((r) => r[0] === label);
+  const starts = [["Documents", 0], ["Profiles", at("LinkedIn")], ["Extras", at("Interview preparation guide (PDF)")], ["Service", at("Revisions before delivery")]] as const;
+  return starts.map(([name, start], i) => ({ name, start, end: i + 1 < starts.length ? starts[i + 1][1] : rows.length }));
+}
 
-/** Market questions first, then the shared ones. Seven at most. */
-export const getHomeFaq = (m: Market) => [...m.faq, ...SHARED_FAQ.map((i) => ({ q: localize(m, i.q), a: localize(m, i.a) }))].slice(0, 7);
-// CONFIRM payment methods per market with the owner. Do not expose confirmation notes.
-export const getPricingFaq = (_m: Market) => [
-  { q: "What exactly do I get?", a: "Your documents as PDF and editable Word files, written for your target role and country. Each package lists exactly what's included above." },
-  { q: "How long does it take?", a: "Your first draft arrives in 2 days (3 days for Executive). Same day delivery is available for a small fee." },
-  { q: "Are revisions included?", a: "Yes. ATS Career and International Pro include 3 rounds, and Executive includes 4. We adjust until it reflects you properly." },
-  { q: "How do I pay?", a: "Place your order online. We confirm your details on WhatsApp and share payment options there." },
-  { q: "Which package should I choose?", a: "Applying locally for the first time: ATS Career. Applying abroad or for competitive roles: International Pro. Senior or leadership roles: Executive." },
-  { q: "Do you guarantee a job or interview?", a: "No one honestly can. We guarantee a clear, ATS ready CV written for your target role. Interviews depend on the market and your applications." },
-  { q: "Can I upgrade later?", a: "Yes. Pay the difference and we'll add the extra items to your order." },
+const SHARED_FAQ = [
+  { q: "How does it work after I order?", a: "We message you on WhatsApp or email, collect a few details, and send your first draft in 2 days." },
+  { q: "What if I don’t like the first draft?", a: "We revise it until you’re satisfied. After delivery, you also get free updates during your support period." },
+  { q: "How long does it take to get my CV?", a: "First draft in 2 days, 3 days for Executive. Same day delivery is available for a small fee." },
+  { q: "Do you guarantee a job or interview?", a: "No one honestly can. We guarantee a CV that passes ATS and is written for your target role." },
+  { q: "Can I get a refund?", a: "Yes. If you’re not satisfied with the first draft, request a refund within 7 days and we’ll return your payment." },
 ];
+
+/** Three market questions first, then the five shared ones. */
+export const getHomeFaq = (m: Market) => [...m.faq, ...SHARED_FAQ.map((i) => ({ q: localize(m, i.q), a: localize(m, i.a) }))];
+// CONFIRM payment methods per market with the owner. Do not expose confirmation notes.
+export const getPricingFaq = (m: Market) => {
+  const own = (q: string) => m.faq.find((i) => i.q === q);
+  const pay = own("What are the payment methods?");
+  const received = own("How do I know my payment was received?");
+  const list = [
+    pay ?? { q: "What are the payment methods?", a: "After you order, we send you secure payment options on WhatsApp or email." },
+    ...(received ? [received] : []),
+    { q: "Which package should I choose?", a: "Early career: ATS Career. 3+ years or applying abroad: International Pro. 7+ years or leadership roles: Executive." },
+    { q: "What exactly do I get?", a: "Your documents as PDF and editable Word files, written for your target role and country. Each package lists exactly what's included." },
+    { q: "What if I don't like the first draft?", a: "We revise it until you're satisfied. After delivery, you also get free updates during your support period." },
+    { q: "How long does it take to get my CV?", a: "First draft in 2 days, 3 days for Executive. Same day delivery is available for a small fee." },
+    { q: "Can I upgrade later?", a: "Yes. Pay the difference and we'll add the extra items to your order." },
+    { q: "Can I get a refund?", a: "Yes. If you’re not satisfied with the first draft, request a refund within 7 days and we’ll return your payment." },
+    { q: "Do you guarantee a job or interview?", a: "No one honestly can. We guarantee a CV that passes ATS and is written for your target role." },
+  ];
+  return list.map((i) => ({ q: localize(m, i.q), a: localize(m, i.a) }));
+};
 
 /** The label on a market's share image. Prices only once they are approved. */
 export const ogLabel = (m: Market) => (m.approved ? `From ${formatPrice(m, m.prices["ats-career"])}` : m.region);

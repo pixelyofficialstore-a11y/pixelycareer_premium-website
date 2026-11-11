@@ -1,28 +1,129 @@
-.section { padding-block: 96px; scroll-margin-top: 0; background: #010c28; color: #fff; }
-.title { margin: 0; text-align: center; font-family: var(--font-head); font-size: clamp(40px, 4.6vw, 60px); font-weight: 500; letter-spacing: -.035em; line-height: 1.1; }
+.section { padding-block: 112px; scroll-margin-top: 0; background: #010c28; color: #fff; }
+.title { margin: 0; text-align: center; font-family: var(--font-head); font-size: clamp(40px, 5vw, 64px); font-weight: 600; letter-spacing: -.02em; line-height: 1; text-wrap: balance; }
 .title em { color: #4576ff; font-style: normal; }
-.cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 0; margin: 48px 0 0; list-style: none; }
-.card { min-width: 0; padding: 16px 16px 26px; border: 1px solid rgb(255 255 255 / .1); border-radius: 20px; background: linear-gradient(180deg, rgb(255 255 255 / .06), rgb(255 255 255 / .015)); }
-.visual { height: 140px; }
-.number { display: block; margin: 22px 10px 0; font-size: 12px; color: #4576ff; letter-spacing: .08em; }
-.card h3 { margin: 6px 10px 0; font-family: var(--font-head); font-size: 24px; font-weight: 500; line-height: 1.2; }
-.card p { margin: 8px 10px 0; font-size: 15px; color: rgb(255 255 255 / .7); line-height: 1.5; }
-.formPreview { display: grid; width: 144px; gap: 5px; padding: 12px; border-radius: 12px; background: #fff; color: #6b7280; font-size: 9px; box-shadow: 0 16px 32px -14px rgb(0 0 0 / .6); }
+
+.track { position: relative; max-width: 1040px; margin: 64px auto 0; }
+.curve, .rail { position: absolute; top: 0; height: 100%; overflow: visible; pointer-events: none; }
+.curve { left: 50%; width: 200px; translate: -50% 0; }
+.rail { display: none; left: 19px; width: 2px; }
+.curveBase { fill: none; stroke: rgb(255 255 255 / .12); stroke-width: 2; }
+.curveLine { fill: none; stroke: #4576ff; stroke-width: 2; stroke-linecap: round; }
+
+.steps { position: relative; display: grid; gap: 40px; padding: 0; margin: 0; list-style: none; }
+.step { position: relative; display: grid; grid-template-columns: 1fr 1fr; align-items: center; min-height: 200px; }
+.dot {
+  position: absolute; top: 50%; left: 50%; z-index: 1; display: grid; place-items: center;
+  width: 40px; height: 40px; translate: -50% -50%; border: 1px solid rgb(255 255 255 / .2); border-radius: 50%;
+  background: #010c28; color: rgb(255 255 255 / .6); font-size: 12px; letter-spacing: .04em;
+  transition: background 300ms ease, border-color 300ms ease, color 300ms ease;
+}
+.section:not([data-motion="on"]) .dot, .step[data-reached] .dot { border-color: #4576ff; background: #0048ff; color: #fff; }
+
+.card {
+  display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 20px; max-width: 440px; padding: 16px 24px 16px 16px;
+  border: 1px solid rgb(255 255 255 / .1); border-radius: 20px; background: linear-gradient(180deg, rgb(255 255 255 / .06), rgb(255 255 255 / .015));
+  text-align: left;
+}
+.step:nth-child(odd) .card { grid-column: 1; justify-self: end; margin-right: 64px; }
+.step:nth-child(even) .card { grid-column: 2; justify-self: start; margin-left: 64px; }
+.visual { height: 120px; }
+.number { display: block; font-size: 12px; color: #4576ff; letter-spacing: .08em; }
+.card h3 { margin: 4px 0 0; font-family: var(--font-head); font-size: 24px; font-weight: 500; line-height: 1.2; }
+.card p { margin: 6px 0 0; font-size: 15px; color: rgb(255 255 255 / .7); line-height: 1.5; }
+.formPreview { display: grid; width: 128px; gap: 5px; padding: 12px; border-radius: 12px; background: #fff; color: #6b7280; font-size: 9px; box-shadow: 0 16px 32px -14px rgb(0 0 0 / .6); }
 .formPreview i { height: 7px; background: #eef1f6; border-radius: 3px; }
 .formButton { margin-top: 3px; padding: 5px; border-radius: 5px; background: #0048ff; color: #fff; text-align: center; font-size: 10px; }
-.dots { display: none; }
+
 @media (max-width: 1023px) {
-  .section { padding-block: 64px; }
-  .inner { padding-inline: 0; }
-  .title { padding-inline: 16px; }
-  .cards { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 0 16px; scroll-padding-inline: 16px; }
-  .cards::-webkit-scrollbar { display: none; }
-  .card { flex: 0 0 82%; max-width: 400px; scroll-snap-align: start; }
-  .dots { display: flex; justify-content: center; margin-top: 20px; }
-  .dots button { display: grid; place-items: center; width: 40px; height: 40px; border: 0; background: transparent; cursor: pointer; }
-  .dots span { width: 6px; height: 6px; border-radius: 999px; background: rgb(255 255 255 / .3); }
-  .dots button[aria-pressed="true"] span { width: 20px; background: #4576ff; }
+  .section { padding-block: 72px; }
+  .title { font-size: clamp(32px, 8.5vw, 42px); }
+  .track { margin-top: 40px; }
+  .curve { display: none; }
+  .rail { display: block; }
+  .steps { gap: 20px; }
+  .step { display: block; min-height: 0; padding-left: 56px; }
+  .dot { top: 24px; left: 20px; width: 32px; height: 32px; font-size: 11px; }
+  .step .card, .step:nth-child(odd) .card, .step:nth-child(even) .card { max-width: none; margin: 0; grid-template-columns: 1fr; gap: 12px; padding: 16px 16px 22px; }
+  .visual { height: 120px; }
 }
 @media (max-width: 767px) {
   .title em { display: block; }
+}
+
+@media (min-width: 1024px) { .track { margin-top: 80px; } }
+@media (max-width: 1023px) {
+  .step .card, .step:nth-child(odd) .card, .step:nth-child(even) .card { width: 100%; min-height: 268px; justify-self: stretch; align-content: start; }
+}
+
+.title em { color: var(--color-periwinkle); }
+
+/* Pay step: a white chat bubble with the payment link */
+.payBubble { display: grid; gap: 8px; width: 128px; padding: 12px; border-radius: 14px 14px 14px 3px; background: #fff; color: #010c28; font-size: 11px; font-weight: 500; box-shadow: 0 16px 32px -14px rgb(0 0 0 / .6); }
+.payButton { padding: 5px; border-radius: 5px; background: #0048ff; color: #fff; text-align: center; font-size: 10px; }
+
+/* Pakistan: payment methods and the screenshot upload in the order form */
+.payChips { display: flex; gap: 3px; margin-top: 2px; }
+.payChips b { flex: 1; padding: 3px 0; border-radius: 4px; background: #eef3ff; color: #0048ff; font-size: 7.5px; font-weight: 600; text-align: center; }
+.upload { margin-top: 2px; padding: 4px; border: 1px dashed #b7c2d6; border-radius: 4px; color: #6b7280; font-size: 8.5px; text-align: center; }
+.verified { background: #16a34a !important; }
+
+/* Polish pass */
+.section { padding-block: 96px; overflow-x: clip; }
+.track { margin-top: 64px; }
+.steps { gap: 24px; }
+.step { min-height: 160px; }
+.card { min-height: 140px; opacity: 1; visibility: visible; }
+.curve { top: 0; height: calc(100% - 80px); }
+@media (max-width: 1023px) {
+  .section { padding-block: 64px; }
+  .track { margin-top: 40px; }
+  .step { min-height: 0; }
+  .step .card, .step:nth-child(odd) .card, .step:nth-child(even) .card { min-height: 140px; }
+  .rail { top: 0; height: calc(100% - 40px); }
+}
+/* The curve and rail heights are set from the dot positions in HomeProcess.tsx */
+.curve, .rail { top: 0; bottom: auto; }
+
+/* S curve: one wide, smooth line through the dots, Vivid Blue with a soft glow; the undrawn part is a faint guide. */
+.curveBase { stroke: rgb(255 255 255 / .08); }
+.curveLine { stroke: #0048ff; filter: drop-shadow(0 0 8px rgb(0 72 255 / .6)); }
+.section:not([data-motion="on"]) .dot, .step[data-reached] .dot { border-color: #0048ff; background: #0048ff; color: #fff; }
+.step[data-reached] .dot { animation: dot-pulse 900ms ease-out 1; }
+@keyframes dot-pulse { from { box-shadow: 0 0 0 0 rgb(0 72 255 / .6); } to { box-shadow: 0 0 0 14px rgb(0 72 255 / 0); } }
+@media (min-width: 1024px) {
+  /* 140px from dot to dot; cards sit on alternate sides, so they can be a little taller than a row */
+  .steps { gap: 0; }
+  .step { height: 140px; min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .step[data-reached] .dot { animation: none; } }
+
+/* ===== How it works, earlier layout: centred track, wide stagger, 240px from step to step ===== */
+.section { padding-top: 96px; }
+.curveBase { stroke: rgb(255 255 255 / .1); stroke-width: 2; }
+.curveLine { stroke: #0048ff; stroke-width: 2; filter: drop-shadow(0 0 6px rgb(0 72 255 / .55)); }
+.dot { width: 40px; height: 40px; border: 1px solid rgb(255 255 255 / .2); background: #010c28; color: rgb(255 255 255 / .6); }
+.section:not([data-motion="on"]) .dot, .step[data-reached] .dot { border-color: #0048ff; background: #0048ff; color: #fff; }
+.card { max-width: 420px; padding: 24px; border-radius: 20px; border: 1px solid rgb(255 255 255 / .08); background: rgb(255 255 255 / .04); }
+@media (min-width: 1024px) {
+  .steps { gap: 0; }
+  .step { height: 240px; min-height: 0; }
+  .card { min-height: 0; grid-template-columns: 140px 1fr; }
+  .step:nth-child(odd) .card { margin-right: 64px; }
+  .step:nth-child(even) .card { margin-left: 64px; }
+}
+@media (max-width: 1023px) {
+  .step .card, .step:nth-child(odd) .card, .step:nth-child(even) .card { min-height: 0; padding: 20px; }
+}
+/* Compact: 150px from step to step; the cards alternate sides, so they never collide */
+@media (min-width: 1024px) { .step { height: 150px; } }
+@media (max-width: 1023px) { .steps { gap: 16px; } }
+/* Smooth scrolling: no blur filter on the animated line; the glow is a wider, faint copy of it. Cards on their own layer. */
+.curveLine { filter: none; }
+.curveGlow { fill: none; stroke: #0048ff; stroke-width: 8; stroke-linecap: round; opacity: .22; }
+.card { will-change: transform, opacity; backface-visibility: hidden; }
+.dot { transition: background 400ms ease, border-color 400ms ease, color 400ms ease; }
+/* Wave clearance: cards sit 116px from the centre, so the line and dots stay at least 48px from every card */
+@media (min-width: 1024px) {
+  .step:nth-child(odd) .card { margin-right: 116px; }
+  .step:nth-child(even) .card { margin-left: 116px; }
 }

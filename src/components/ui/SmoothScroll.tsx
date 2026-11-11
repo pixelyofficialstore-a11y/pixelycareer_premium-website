@@ -14,6 +14,7 @@ export default function SmoothScroll() {
         if (cancelled) return;
         const lenis = new Lenis({ anchors: true, lerp: 0.11 });
         lenis.on("scroll", ScrollTrigger.update);
+        (window as unknown as { __lenis?: unknown }).__lenis = lenis;
         const tick = (t: number) => lenis.raf(t * 1000);
         gsap.ticker.add(tick);
         gsap.ticker.lagSmoothing(0);

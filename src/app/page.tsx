@@ -5,5 +5,5 @@ import { homeMetadata } from "@/lib/seo";
 export const metadata = homeMetadata(MARKETS.us);
 
 export default function Page() {
-  return <HomePage market={MARKETS.us} useHomeProblem />;
+  return <HomePage market={MARKETS.us} />;
 }

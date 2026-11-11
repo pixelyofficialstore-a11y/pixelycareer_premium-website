@@ -4,11 +4,10 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { ArrowRight } from "@/components/ui/Icons";
 import type { PostMeta } from "@/lib/blog";
 import { scheduleMotion } from "@/lib/motion";
-import { whatsappMessage } from "@/lib/site";
 import BlogCard, { PostCover } from "./BlogCard";
 
 const ORDER = ["CV & Resume", "LinkedIn", "Gulf jobs", "UK & Europe"];
-const PER_PAGE = 9;
+const PER_PAGE = 12;
 
 export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
   const [category, setCategory] = useState<string | null>(null);
@@ -54,7 +53,6 @@ export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
     if (nextQuery) params.set("q", nextQuery);
     history.replaceState(history.state, "", params.size ? `/blog?${params}` : "/blog");
   };
-  const categories = ORDER.filter((name) => posts.some((post) => post.category === name));
   const needle = query.trim().toLowerCase();
   const filtering = Boolean(category || needle);
   const matches = useMemo(
@@ -68,49 +66,10 @@ export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
   const list = featured ? matches.filter((post) => post.slug !== featured.slug) : matches;
   const pages = Math.max(1, Math.ceil(list.length / PER_PAGE));
   const current = Math.min(page, pages);
-  const shown = list.slice((current - 1) * PER_PAGE, current * PER_PAGE);
-  const setFilter = (nextCategory: string | null) => {
-    setCategory(nextCategory);
-    setPage(1);
-    writeUrl(nextCategory, query.trim());
-  };
+  const shown = list.slice(0, current * PER_PAGE);
 
   return (
     <>
-      <div className="blog-toolbar">
-      <nav className="blog-filter-scroll" aria-label="Filter by category">
-        <ul className="blog-filters">
-          {[null, ...categories].map((name) => {
-            const count = name ? posts.filter((post) => post.category === name).length : posts.length;
-            return (
-              <li key={name ?? "all"}>
-                <button type="button" className="blog-filter" aria-pressed={category === name} onClick={() => setFilter(name)}>
-                  {name ?? "All"} <span className="blog-filter-count">{count}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-      <div className="blog-search">
-        <label htmlFor="blog-search" className="sr-only">Search posts</label>
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="10.8" cy="10.8" r="6.4" stroke="currentColor" strokeWidth="1.8" />
-          <path d="m15.5 15.5 4.2 4.2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-        <input
-          id="blog-search"
-          type="search"
-          placeholder="Search posts"
-          value={query}
-          onChange={(event) => {
-            setQuery(event.target.value);
-            setPage(1);
-            writeUrl(category, event.target.value.trim());
-          }}
-        />
-      </div>
-      </div>
 
       {featured && (
         <article className="blog-feature">
@@ -129,6 +88,7 @@ export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
         </article>
       )}
 
+      {featured && <div className="blog-divider" role="separator"><span>More articles</span></div>}
       <h2 className="sr-only">Posts</h2>
       {shown.length ? (
         <ul className="blog-grid">
@@ -142,38 +102,12 @@ export default function BlogIndex({ posts }: { posts: PostMeta[] }) {
         <p className="blog-empty" role="status">No posts found. Try another word.</p>
       )}
 
-      {pages > 1 && (
-        <nav className="blog-pagination" aria-label="Pagination">
-          {Array.from({ length: pages }, (_, index) => index + 1).map((number) => (
-            <button
-              key={number}
-              type="button"
-              className="blog-page-number"
-              aria-current={number === current ? "page" : undefined}
-              aria-label={`Page ${number}`}
-              onClick={() => {
-                setPage(number);
-                window.scrollTo({ top: 0, behavior: "auto" });
-              }}
-            >
-              {number}
-            </button>
-          ))}
-        </nav>
-      )}
-      {shown.length > 0 && (
-        <aside className="blog-review-strip" aria-label="Free CV review">
-          <p><strong>Not sure your CV passes ATS?</strong> Send it on WhatsApp for a free review.</p>
-          <a
-            href={whatsappMessage("Hi, I'd like a free CV review. I'll send my CV here.")}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="btn btn-primary"
-            data-cta="blog-grid-review"
-          >
-            Message on WhatsApp <ArrowRight />
-          </a>
-        </aside>
+      {list.length > shown.length && (
+        <div className="blog-more">
+          <button type="button" className="blog-more-button" onClick={() => setPage((value) => value + 1)}>
+            Load more
+          </button>
+        </div>
       )}
     </>
   );

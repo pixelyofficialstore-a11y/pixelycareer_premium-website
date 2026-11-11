@@ -4,15 +4,16 @@ import { notFound } from "next/navigation";
 import { compileMDX } from "next-mdx-remote/rsc";
 import type { ReactNode } from "react";
 import remarkGfm from "remark-gfm";
-import { getService } from "@/config/services";
 import BeforeAfter from "@/components/blog/BeforeAfter";
 import BlogCard from "@/components/blog/BlogCard";
 import BlogCoverFallback from "@/components/blog/BlogCoverFallback";
 import BlogFaq from "@/components/blog/BlogFaq";
+import BlogPostMarket from "@/components/blog/BlogPostMarket";
+import BackButton from "@/components/ui/BackButton";
 import MarketFinalCta from "@/components/blog/MarketFinalCta";
+import MidCta from "@/components/blog/MidCta";
 import { PostToc, ReadingProgress, ShareRow } from "@/components/blog/PostTools";
 import { headingSlug } from "@/components/blog/slug";
-import { ArrowRight } from "@/components/ui/Icons";
 import Reveal from "@/components/ui/Reveal";
 import { getHeadings, getPost, getPosts } from "@/lib/blog";
 import { JsonLd, SITE, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props) {
   const image = meta.cover ? `${SITE}${meta.cover}` : undefined;
   const images = image ? [{ url: image, width: 1600, height: 1000, alt: meta.coverAlt || meta.title }] : undefined;
   return {
-    title: { absolute: meta.title.length + 18 <= 60 ? `${meta.title} | Pixely Careers` : meta.title },
+    title: { absolute: `${seoTitle(meta.title, meta.keyword)} | Pixely Careers` },
     description: meta.description,
     keywords: meta.keywords,
     alternates: { canonical: `/blog/${meta.slug}` },
@@ -47,6 +48,48 @@ export async function generateMetadata({ params }: Props) {
     },
     twitter: { card: "summary_large_image", title: meta.title, description: meta.description, ...(images ? { images } : {}) },
   };
+}
+
+/** The post title, or when it is over 60 characters, a shorter one that leads with the target keyword. */
+function seoTitle(title: string, keyword?: string) {
+  if (title.length <= 60) return title;
+  const cap = (s: string) => s.replace(/\b\w/g, (ch) => ch.toUpperCase());
+  if (keyword) {
+    const escaped = keyword.replace(/[.*+?^$(){}|[\]\\]/g, "\\$&");
+    const rest = title.replace(new RegExp(escaped, "i"), "").replace(/^[\s:,.]+|[\s:,.]+$/g, "");
+    const lead = cap(keyword);
+    const both = rest ? lead + ": " + rest : lead;
+    if (both.length <= 60) return both;
+    return lead.slice(0, 60);
+  }
+  return title.slice(0, 60).replace(/\s+\S*$/, "");
+}
+
+/** Links the first mention of a few key terms to their guide: at most 3 per post, never to itself. */
+const INTERNAL_LINKS: [RegExp, string][] = [
+  [/\bATS\b/, "/blog/ats-friendly-resume-checklist"],
+  [/\bLinkedIn profile\b/i, "/blog/linkedin-profile-optimization"],
+  [/\bresume format\b/i, "/blog/resume-format-2026"],
+  [/\bkeywords\b/i, "/blog/resume-keywords"],
+  [/\bcover letter\b/i, "/blog/cover-letter-guide"],
+];
+function addInternalLinks(source: string, slug: string) {
+  const lines = source.split("\n");
+  let added = 0;
+  for (const [term, href] of INTERNAL_LINKS) {
+    if (added >= 3 || href === "/blog/" + slug) continue;
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      // Body text only: no headings, tables, components, quotes or lines that already hold links.
+      if (/^\s*(#|\||<|>|\[|!|-{3})/.test(line) || line.includes("](")) continue;
+      const match = line.match(term);
+      if (!match || match.index === undefined) continue;
+      lines[i] = line.slice(0, match.index) + "[" + match[0] + "](" + href + ")" + line.slice(match.index + match[0].length);
+      added++;
+      break;
+    }
+  }
+  return lines.join("\n");
 }
 
 function textOf(children: ReactNode): string {
@@ -66,25 +109,6 @@ function Callout({ type = "note", title, children }: Kids & { type?: "tip" | "no
   );
 }
 
-function Cta() {
-  const offering = getService("ats-cv");
-  if (!offering) return null;
-  return (
-    <aside className="post-cta">
-      <p className="post-cta-title">Want an ATS CV like this?</p>
-      <p className="post-cta-copy">{offering.line}</p>
-      <div className="post-cta-actions">
-        <Link href="/pricing" className="btn btn-primary" data-cta={`post-${offering.slug}-packages`}>
-          See packages <ArrowRight />
-        </Link>
-        <Link href={`/services/${offering.slug}`} className="link-u font-head font-medium text-white">
-          Learn about ATS CV <ArrowRight />
-        </Link>
-      </div>
-    </aside>
-  );
-}
-
 function addMidCta(source: string) {
   const matches = [...source.matchAll(/^## .+$/gm)];
   if (matches.length < 2) return source;
@@ -92,8 +116,10 @@ function addMidCta(source: string) {
   return `${source.slice(0, insertion)}\n<MidArticleCTA />\n${source.slice(insertion)}`;
 }
 
-function Avatar({ large = false }: { large?: boolean }) {
-  return <span className="post-avatar" aria-hidden="true">{large ? "P" : "P"}</span>;
+/** The brand mark (the favicon) next to "Pixely Careers Team". */
+function Avatar() {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src="/icon.png" alt="Pixely Careers" width={24} height={24} className="post-avatar-img" />;
 }
 
 export default async function Page({ params }: Props) {
@@ -101,7 +127,7 @@ export default async function Page({ params }: Props) {
   if (!loaded) notFound();
   const meta = loaded.meta;
   const { content: originalSource } = loaded;
-  const source = addMidCta(originalSource);
+  const source = addMidCta(addInternalLinks(originalSource, meta.slug));
   const readingTime = meta.readingTime;
   const { content } = await compileMDX({
     source,
@@ -116,7 +142,7 @@ export default async function Page({ params }: Props) {
       BeforeAfter,
       Callout,
       CTA: () => null,
-      MidArticleCTA: Cta,
+      MidArticleCTA: MidCta,
     },
   });
   const headings = getHeadings(originalSource);
@@ -126,12 +152,8 @@ export default async function Page({ params }: Props) {
     ...others.filter((post) => post.category === meta.category),
     ...others.filter((post) => post.category !== meta.category),
   ].slice(0, 3);
-  const index = all.findIndex((post) => post.slug === meta.slug);
-  const previous = all.length > 1 ? all[(index - 1 + all.length) % all.length] : undefined;
-  const next = all.length > 1 ? all[(index + 1) % all.length] : undefined;
   const url = `${SITE}/blog/${meta.slug}`;
   const coverAbsolute = meta.cover ? `${SITE}${meta.cover}` : `${url}/opengraph-image`;
-  const authorDescription = "We write ATS CVs, Europass profiles and LinkedIn profiles for professionals in the US, UK, Gulf and Pakistan.";
 
   return (
     <>
@@ -151,20 +173,24 @@ export default async function Page({ params }: Props) {
       <JsonLd data={breadcrumbJsonLd([
         { name: "Home", path: "/" },
         { name: "Blog", path: "/blog" },
-        { name: meta.title, path: `/blog/${meta.slug}` },
+        { name: meta.category, path: "/blog" },
       ])} />
       {meta.faq?.length ? <JsonLd data={faqJsonLd(meta.faq)} /> : null}
       <ReadingProgress />
+      <BlogPostMarket market={meta.market} />
 
       <div className="post-page">
         <div className="post-page-top">
           <div className="post-layout">
             <article className="post-article" data-post-body>
-              <nav className="post-breadcrumbs" aria-label="Breadcrumb">
-                <Link href="/">Home</Link><span aria-hidden="true">/</span>
-                <Link href="/blog">Blog</Link><span aria-hidden="true">/</span>
-                <Link href={`/blog?category=${encodeURIComponent(meta.category)}`}>{meta.category}</Link>
-              </nav>
+              <div className="crumbs-row">
+                <BackButton fallback="/blog" />
+                <nav className="post-breadcrumbs" aria-label="Breadcrumb">
+                  <Link href="/">Home</Link><span aria-hidden="true">/</span>
+                  <Link href="/blog">Blog</Link><span aria-hidden="true">/</span>
+                  <span>{meta.category}</span>
+                </nav>
+              </div>
               <p className="post-category">{meta.category}</p>
               <h1 className="post-title">{meta.title}</h1>
               <p className="post-subtitle">{meta.description}</p>
@@ -172,8 +198,8 @@ export default async function Page({ params }: Props) {
                 <Avatar />
                 <span>Pixely Careers Team</span>
                 <span aria-hidden="true">·</span>
-                <span>{meta.dateLabel}</span>
-                {meta.updatedLabel && <><span aria-hidden="true">·</span><span>Updated {meta.updatedLabel}</span></>}
+                <span><span className="date-long">{meta.dateLabel}</span><span className="date-short">{new Date(`${meta.date}T00:00:00Z`).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}</span></span>
+                {meta.updatedLabel && <span className="date-long"><span aria-hidden="true">· </span>Updated {meta.updatedLabel}</span>}
                 <span aria-hidden="true">·</span>
                 <span>{readingTime}</span>
               </div>
@@ -229,30 +255,8 @@ export default async function Page({ params }: Props) {
                 </section>
               ) : null}
 
-              <section className="post-author" aria-label="About the author">
-                <Avatar large />
-                <div>
-                  <h2 className="post-author-name">Pixely Careers Team</h2>
-                  <p>{authorDescription}</p>
-                  <Link href="/about">About us <span aria-hidden="true">→</span></Link>
-                </div>
-              </section>
+              <p className="post-by"><Avatar /> By Pixely Careers Team <span aria-hidden="true">·</span> <Link href="/about">About us <span aria-hidden="true">→</span></Link></p>
               <ShareRow title={meta.title} url={url} />
-
-              <nav aria-label="More posts" className="post-pager">
-                {previous ? (
-                  <Link href={`/blog/${previous.slug}`} className="post-pager-card">
-                    <span className="post-pager-direction">← Previous</span>
-                    <span className="post-pager-title">{previous.title}</span>
-                  </Link>
-                ) : <span className="post-pager-card post-pager-empty" aria-hidden="true" />}
-                {next ? (
-                  <Link href={`/blog/${next.slug}`} className="post-pager-card">
-                    <span className="post-pager-direction">Next →</span>
-                    <span className="post-pager-title">{next.title}</span>
-                  </Link>
-                ) : <span className="post-pager-card post-pager-empty" aria-hidden="true" />}
-              </nav>
             </article>
             {headings.length > 0 ? <PostToc headings={headings} /> : <div />}
           </div>

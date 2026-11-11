@@ -16,7 +16,7 @@ export default function HeroStack({ persona }: { persona: HeroPersona }) {
       <div className="hs-pile">
         {SHEETS.map((s, i) => (
           <div key={i} className={`hs-sheet ${i < 2 ? "hs-plain" : ""}`} style={{ "--a": s.a, "--dx": s.dx, "--dy": s.dy } as React.CSSProperties}>
-            {i === 2 && <CvSheet image={heroBad} eager />}
+            {i === 2 && <CvSheet image={heroBad} eager={!heroBad.hd} />}
           </div>
         ))}
       </div>
@@ -25,10 +25,10 @@ export default function HeroStack({ persona }: { persona: HeroPersona }) {
         <div className="hs-paper">
           <div className="hs-flip">
             <div className="hs-face">
-              <CvSheet image={good} eager />
+              <CvSheet image={good} eager priority={good.hd} />
             </div>
             <div className="hs-face hs-face-back">
-              <CvSheet image={heroFlip} eager />
+              <CvSheet image={heroFlip} eager={!heroFlip.hd} />
             </div>
           </div>
         </div>

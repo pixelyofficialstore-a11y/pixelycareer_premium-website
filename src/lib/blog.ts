@@ -12,6 +12,7 @@ export type PostMeta = {
   updated?: string;
   category: string;
   market?: string;
+  keyword?: string;
   author: string;
   keywords: string[];
   relatedService: string;
@@ -36,13 +37,16 @@ function read(file: string) {
   const updated = data.updated ? asDate(data.updated) : undefined;
   const words = content.trim().split(/\s+/).length;
   const meta = {
+    author: "Pixely Careers Team",
+    keywords: data.keyword ? [data.keyword] : [],
+    relatedService: "ats-cv",
     ...data,
     slug: file.replace(/\.mdx$/, ""),
     date,
     updated,
     dateLabel: label(date),
     updatedLabel: updated && updated !== date ? label(updated) : undefined,
-    readingTime: `${Math.max(3, Math.ceil(words / 220))} min read`,
+    readingTime: `${Math.max(1, Math.ceil(words / 220))} min read`,
   } as PostMeta;
   return { meta, content };
 }

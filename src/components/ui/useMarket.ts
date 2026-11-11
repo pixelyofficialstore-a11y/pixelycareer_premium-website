@@ -2,6 +2,7 @@
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
 import { isMarketKey, type MarketKey } from "@/config/markets";
+import { getBlogMarket, getPostMarket } from "@/lib/blog-market";
 
 const EVENT = "pixely-market";
 
@@ -45,5 +46,12 @@ export function useMarket(): MarketKey {
     () => marketFromQuery(path) ?? readCookie(),
     () => null,
   );
+  const blogMarket = useSyncExternalStore(
+    subscribe,
+    () => (path === "/blog" || path.startsWith("/blog/") ? getBlogMarket(getPostMarket(), { saved: readCookie(), country: document.cookie.match(/(?:^|; )pc_geo=([^;]+)/)?.[1] }) : null),
+    () => null,
+  );
+  // Blog pages route by the post, then the visitor (see getBlogMarket).
+  if (blogMarket) return blogMarket;
   return marketFromPath(path) ?? saved ?? "us";
 }

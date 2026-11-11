@@ -11,10 +11,11 @@ export default function CtaCvImage({ image, fallback }: { image: CvPicture; fall
     <div className="cv-sheet">
       <Image
         src={src}
-        alt=""
+        alt={image.alt ?? ""}
         width={image.width}
         height={image.height}
-        sizes="(min-width: 1024px) 30vw, 58vw"
+        sizes={image.sizes ?? "(min-width: 1024px) 760px, 640px"}
+        quality={image.quality}
         loading="lazy"
         className="cv-image"
         onError={() => {

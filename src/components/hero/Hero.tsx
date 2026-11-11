@@ -33,11 +33,11 @@ export default function Hero({ market, centerMobileHeadline = false }: { market:
               <span className="lg:block">{sub[0]}</span> <span className="lg:block">{sub[1]}</span>
             </p>
             <div className="hero-actions">
-              <a href={market.path === "/" ? orderHref(market) : "#pricing"} className="btn btn-primary min-h-14 px-8 text-[1.0625rem]" data-cta={market.path === "/" ? "home-hero-order" : "hero-see-packages"}>
-                {market.path === "/" ? "Start your order" : "See Packages"}
+              <a href={true ? orderHref(market) : "#pricing"} className="btn btn-primary min-h-14 px-8 text-[1.0625rem]" data-cta={true ? "home-hero-order" : "hero-see-packages"}>
+                {true ? "Start your order" : "See Packages"}
                 <ArrowRight />
               </a>
-              {market.path === "/" ? <a href="/free-cv-review" className={styles.reviewLink} data-cta="home-hero-review">Free CV review <ArrowRight /></a> : <a href="#process" className="btn btn-outline min-h-14 px-8 text-[1.0625rem]" data-cta="hero-how-it-works">
+              {market.key === "pk" ? <a href="/pricing?m=pk" className={styles.reviewLink} data-cta="home-hero-packages">See packages <ArrowRight /></a> : true ? <a href="/free-cv-review" className={styles.reviewLink} data-cta="home-hero-review">{market.key === "us" ? "Free resume review" : "Free CV review"} <ArrowRight /></a> : <a href="#process" className="btn btn-outline min-h-14 px-8 text-[1.0625rem]" data-cta="hero-how-it-works">
                 How it works
                 <ArrowDown />
               </a>}

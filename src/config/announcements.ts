@@ -1,4 +1,4 @@
-import { formatPrice, homeHref, localize, type Market } from "@/config/markets";
+import { formatPrice, homeHref, localize, orderHref, type Market } from "@/config/markets";
 import { WHATSAPP_URL } from "@/lib/site";
 
 /**
@@ -25,10 +25,10 @@ const PAGES: { match: (path: string) => boolean; message: Announcement }[] = [
   { match: (p) => p === "/ae", message: { key: "ae", text: GULF, href: PRICING } },
   { match: (p) => p === "/sa", message: { key: "sa", text: GULF, href: PRICING } },
   { match: (p) => p === "/uk", message: { key: "uk", text: "UK CVs, plus Europass for EU applications →", href: PRICING } },
-  { match: (p) => p === "/", message: { key: "us", text: "ATS resumes in 2 days. Same-day available →", href: PRICING } },
+  { match: (p) => p === "/", message: { key: "us", text: "Get a free resume review →", href: "/free-cv-review?market=us" } },
   { match: (p) => p.startsWith("/services/"), message: { key: "services", text: BUNDLE, href: PRICING } },
   { match: (p) => p === "/pricing", message: { key: "pricing", text: "Not sure which package? Ask us on WhatsApp →", href: WHATSAPP_URL } },
-  { match: (p) => p.startsWith("/blog/"), message: { key: "blog", text: "Want your CV fixed for you? Get a free review →", href: "/free-cv-review" } },
+  { match: (p) => p === "/blog" || p.startsWith("/blog/"), message: { key: "blog", text: "We know what gets shortlisted. Let us build your CV →", href: "{pricing}" } },
   { match: (p) => p === "/partners", message: { key: "partners", text: "Partner rates on a 15 minute call. No minimum volume →", href: "#agency-enquiry" } },
 ];
 
@@ -41,12 +41,15 @@ function fill(m: Market, message: Announcement, path: string): Announcement {
   const lowest = Math.min(...Object.values(m.prices));
   const text = localize(m, message.text).replaceAll("{price}", formatPrice(m, lowest)).replaceAll("{currency}", m.currency);
   // On this market's own home, stay on the page. Anywhere else, go to its home first.
-  const href = message.href === PRICING ? (path === m.path ? PRICING : homeHref(m, PRICING)) : message.href;
+  const href = message.href === "{pricing}" ? `/pricing?m=${m.key}` : message.href === PRICING ? (path === m.path ? PRICING : homeHref(m, PRICING)) : message.href;
   return { ...message, text, href };
 }
 
 /** Priority: campaign, then page rule, then fallback. */
 export function getAnnouncement(m: Market, path: string, campaign?: string | null): Announcement {
+  if (m.key === "pk" && !isBarHidden(path)) {
+    return { key: "pk-pay", text: "Pay easily with JazzCash, Easypaisa or bank transfer →", href: orderHref(m) };
+  }
   if (path === "/pricing") {
     return { key: "pricing", text: "Not sure which package? Ask us on WhatsApp →", href: WHATSAPP_URL };
   }

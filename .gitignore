@@ -45,3 +45,4 @@ next-env.d.ts
 
 # copied from content/samples by scripts/sync-samples.mjs
 /public/samples/
+.orders/

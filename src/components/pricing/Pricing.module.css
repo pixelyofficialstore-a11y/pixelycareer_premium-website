@@ -705,8 +705,6 @@
   .heroChips li { padding: .48rem .65rem; font-size: .74rem; }
   .packages { padding: 2.8rem 1.1rem 3rem; }
   .priceGrid { grid-template-columns: 1fr; grid-auto-rows: 1fr; gap: 24px; padding-top: .75rem; }
-  .cardSlot { order: 2; }
-  .recommendedSlot { order: 1; }
   .compare { padding: 4rem 1.1rem 2.5rem; }
   .desktopCompare { display: none; }
   .mobileCompare { display: block; }
@@ -894,9 +892,19 @@
   line-height: 1.5;
 }
 
-.compact .supportRow {
-  display: none;
+.compareBack {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 40px 0;
+  color: #8994a5;
 }
+.compareBack .choose { width: auto; margin: 0; padding-inline: 24px; }
+.compareBack > a:last-child { color: var(--price-blue); font-weight: 500; text-decoration: none; }
+.compareBack > a:last-child:hover { text-decoration: underline; text-underline-offset: 4px; }
+.compare { scroll-margin-top: 88px; }
 
 .compactSupportRow {
   display: flex;
@@ -980,3 +988,113 @@
     display: none;
   }
 }
+
+/* Old and new price at one size; the old one grey and struck through */
+.pricePair { align-items: baseline; gap: 14px; margin-bottom: 24px; }
+.pricePair .compareAt .price,
+.compact .pricePair .compareAt .price { display: inline-flex; align-items: baseline; gap: 4px; font-size: 44px; font-weight: 600; letter-spacing: -.04em; line-height: 1; color: #b5bdca; }
+.pricePair .compareAt .priceUnit,
+.compact .pricePair .compareAt .priceUnit { align-self: flex-start; padding-top: 4px; font-size: 18px; line-height: 1.1; }
+.pricePair .compareAt .priceNumber,
+.compact .pricePair .compareAt .priceNumber { text-decoration: line-through; text-decoration-thickness: 2px; text-decoration-color: #b5bdca; }
+.pricePair .compareAt .priceUnit,
+.compact .pricePair .compareAt .priceUnit { text-decoration: none; }
+.compact .audience { margin: 6px 0 20px; }
+/* A soft lift on hover */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .page .card { transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease; }
+  .page .card:hover { transform: translateY(-6px); box-shadow: 0 28px 56px -32px rgb(1 12 40 / 0.35); }
+}
+
+@media (min-width: 1024px) { .compactPackages { padding-top: 64px; } }
+
+@media (min-width: 1024px) { .compactPackages { padding-top: 88px; } }
+
+/* Three equal columns with equal 24px gaps; the Recommended card sits exactly in the middle. */
+.compactPriceGrid { gap: 24px; }
+.recommendedSlot, .page .cardRecommended { margin: 0; translate: none; scale: none; }
+
+/* Bottom row: each value centred in its own third, the number on top and its label under it, between the dividers. */
+.supportBlock, .supportBlock:first-child { align-items: center; padding: 0 6px; text-align: center; }
+
+/* The guarantee sits under the H2 as its subtext; only "Compare all features" stays under the cards, 32px below. */
+.guaranteeSub { margin: 16px auto 0; color: #6b7280; font-size: 17px; font-weight: 400; line-height: 1.5; text-align: center; }
+.compactCta { margin-top: 32px; }
+/* /pricing: the same 56px from the guarantee subtext to the cards. */
+.standalone .hero { padding-bottom: 0; }
+.standalone .packages { padding-top: 0; }
+.standalone .guaranteeSub { margin-bottom: 56px; }
+
+/* Guarantee subtext: a soft blue shield badge before the text, more air under the H2 and above the cards. */
+.guaranteeSub { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 24px; color: #4a5568; font-weight: 500; }
+.guaranteeIcon { display: inline-grid; flex: none; width: 30px; height: 30px; place-items: center; border-radius: 50%; background: #e8efff; color: #0048ff; }
+.standalone .guaranteeSub { margin-bottom: 64px; }
+@media (max-width: 767px) { .guaranteeSub { gap: 8px; margin-top: 20px; font-size: 15px; } .guaranteeIcon { width: 26px; height: 26px; } }
+
+/* Polish pass: equal height cards, the support rows on one line, 32px to "Compare all features". */
+.compactPriceGrid { align-items: stretch; }
+.compactPriceGrid > .cardSlot { display: flex; height: auto; }
+.compactPriceGrid .card { display: flex; flex-direction: column; width: 100%; height: 100%; }
+.compactPriceGrid .includedContent { flex: 1 1 auto; }
+.compactPriceGrid .supportRow { margin-top: auto; }
+.compactCta { margin-top: 32px; }
+
+/* ===== /pricing ===== */
+.standalone, .standalone .hero, .standalone .packages, .standalone .heroInner { background: #f6f8fc; }
+.notIncludedIcon { color: #b8c1d1; vertical-align: middle; }
+.ctaRow td { padding-top: 24px; border-bottom: 0; }
+.ctaRow .choose { width: 100%; justify-content: center; white-space: nowrap; }
+.mobileChoose { width: 100%; margin-top: 20px; justify-content: center; }
+.customStripGap { margin-top: 32px; }
+
+/* /pricing polish */
+.standalone .hero { padding-top: 96px; }
+.standalone .heroTitle { font-weight: 600; letter-spacing: -0.02em; line-height: 1; font-size: clamp(40px, 5vw, 64px); }
+.standalone .guaranteeSub { margin-top: 24px; }
+.compare .sectionTitle { margin-bottom: 64px; }
+.table td svg, .table td .notIncludedIcon { display: block; margin-inline: auto; }
+.table td { text-align: center; }
+
+/* ===== Spacing, prices and card tops (homepage and /pricing) ===== */
+.page.standalone .hero { min-height: 0; height: auto; padding: 72px 0 0; }
+.page.standalone .heroInner { min-height: 0; padding: 0; }
+.page.standalone .guaranteeSub { margin: 16px auto 56px; }
+.page.standalone .packages { min-height: 0; padding: 0 0 96px; }
+.page.standalone .compare { min-height: 0; padding-top: 0; }
+.page.standalone .compare .sectionTitle { margin-top: 0; margin-bottom: 48px; }
+
+/* Old and new price on one baseline */
+.page .pricePair { display: flex; align-items: baseline; gap: 10px; margin: 0 0 24px; }
+.page .pricePair .compareAt .price { display: inline-flex; align-items: baseline; gap: 2px; color: #b8c1d1; font-size: 22px; font-weight: 400; letter-spacing: 0; line-height: 1; }
+.page .pricePair .compareAt .priceUnit { align-self: auto; padding: 0; font-size: 22px; text-decoration: line-through; text-decoration-color: #b8c1d1; }
+.page .pricePair .compareAt .priceNumber { font-size: 22px; font-weight: 400; text-decoration-color: #b8c1d1; }
+.page .pricePair > .price { display: inline-flex; align-items: flex-start; gap: 3px; margin: 0; color: #010c28; font-size: 48px; font-weight: 600; letter-spacing: -.03em; line-height: 1; }
+.page .pricePair > .price .priceUnit { align-self: flex-start; padding: 6px 0 0; font-size: 20px; font-weight: 600; line-height: 1; }
+
+/* All three cards start and end on the same lines */
+.page .cardSlot, .page .cardSlot:nth-child(2) { margin: 0; translate: none; scale: none; transform: none; }
+.page .cardRecommended { margin: 0; translate: none; scale: none; transform: none; }
+.page .priceGrid { align-items: stretch; }
+
+/* Final: 64px above and below the compare heading */
+.page.standalone .packages { padding-bottom: 64px; }
+.page.standalone .compare, .page.standalone .compare > * { margin-top: 0; }
+.page.standalone .compare { padding-top: 0; }
+.page.standalone .compare .sectionTitle { margin: 0 0 64px; }
+.page.standalone .priceGrid { padding-top: 0; }
+
+/* Custom package strip */
+.customBox { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 1000px; margin: 32px auto 0; padding: 24px; border: 1px solid #e6ecf5; border-radius: 20px; background: #fff; text-align: left; }
+.customBox h3 { margin: 0; color: #010c28; font-family: var(--font-head); font-size: 17px; font-weight: 600; }
+.customBox a { color: #0048ff; font-size: 15px; font-weight: 500; text-decoration: none; }
+.customBox a:hover { text-decoration: underline; }
+@media (max-width: 767px) { .customBox { flex-direction: column; align-items: flex-start; gap: 8px; } }
+
+/* Custom package: a plain centred line */
+.page .customBox { display: block; max-width: none; margin: 28px 0 0; padding: 0; border: 0; border-radius: 0; background: none; text-align: center; color: #6b7280; font-size: 15px; }
+.page .customBox span { color: #6b7280; font-size: 15px; font-weight: 400; margin-right: 6px; }
+.page .customBox a { color: #0048ff; font-size: 15px; font-weight: 500; }
+.page.standalone .compare { padding-bottom: 72px; }
+@media (max-width: 767px) { .page.standalone .compare { padding-bottom: 40px; } .page .customBox a { display: inline-block; } .page .customBox span { margin-right: 0; display: block; } }
+.page .customBox a { white-space: nowrap; display: inline-block; max-width: none; width: auto; }
+.page .customBox a span { display: inline; margin: 0; color: inherit; font-size: inherit; font-weight: inherit; }

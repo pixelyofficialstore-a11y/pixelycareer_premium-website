@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import { FORMATS, FORMAT_LABELS } from "@/config/formats";
 import type { MarketKey } from "@/config/markets";
@@ -29,6 +28,7 @@ export default function Formats({ market }: { market: MarketKey }) {
   const [hovered, setHovered] = useState(false);
   const [touching, setTouching] = useState(false);
   const [stopped, setStopped] = useState(false);
+  const resume = useRef(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const pointerStart = useRef<number | null>(null);
   const swiped = useRef(false);
@@ -45,14 +45,18 @@ export default function Formats({ market }: { market: MarketKey }) {
     if (reducedMotion || stopped || hovered || touching || items.length < 2) return;
     const timer = window.setInterval(() => {
       setActive((current) => (current + 1) % items.length);
-    }, 4000);
+    }, 2500);
     return () => window.clearInterval(timer);
   }, [hovered, items.length, reducedMotion, stopped, touching]);
 
+  // A pick pauses the loop; it picks up again 2s later, so it never stays stuck.
   const select = (index: number) => {
     setStopped(true);
     setActive(index);
+    window.clearTimeout(resume.current);
+    resume.current = window.setTimeout(() => setStopped(false), 2000);
   };
+  useEffect(() => () => window.clearTimeout(resume.current), []);
 
   const step = (direction: number) => {
     select((active + direction + items.length) % items.length);
@@ -102,16 +106,16 @@ export default function Formats({ market }: { market: MarketKey }) {
       data-reduced={reducedMotion}
     >
       <div className={`wrap ${styles.container}`}>
-        <header className={styles.heading}>
+        <header className={styles.heading} data-reveal>
           <h2 id="formats-title" className={`h1 ${heroStyles.centerMobileHeadline} ${styles.title}`}>
-            Formats for <em>every market.</em>
+            Built for where <em>you&apos;re applying.</em>
           </h2>
         </header>
 
         <div
           className={styles.carousel}
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
+          onMouseEnter={() => { if (!window.matchMedia("(hover: hover)").matches) return; window.clearTimeout(resume.current); setHovered(true); }}
+          onMouseLeave={() => { window.clearTimeout(resume.current); resume.current = window.setTimeout(() => { setHovered(false); setStopped(false); }, 2000); }}
         >
           <div
             className={styles.stage}
@@ -147,11 +151,12 @@ export default function Formats({ market }: { market: MarketKey }) {
                 >
                   <Image
                     src={format.src}
-                    alt={`${label.name} ${resumeWord} sample`}
+                    alt={format.label ? `${label.name} sample resume` : `${label.name} ${resumeWord} sample`}
                     width={format.width}
                     height={format.height}
-                    sizes="(max-width: 767px) 78vw, 368px"
-                    priority={index === active}
+                    sizes={format.sizes ?? "(max-width: 767px) 78vw, 368px"}
+                    quality={format.quality}
+                    {...(format.label ? { loading: "lazy" as const } : { priority: index === active })}
                   />
                 </button>
               );
@@ -179,11 +184,6 @@ export default function Formats({ market }: { market: MarketKey }) {
           </div>
 
         </div>
-        <nav className={styles.serviceLinks} aria-label="Explore document services">
-          <Link href="/services/ats-cv" data-cta="home-formats-cv">ATS CVs <span aria-hidden="true">→</span></Link>
-          <Link href="/services/cover-letter" data-cta="home-formats-cover">Cover letters <span aria-hidden="true">→</span></Link>
-          <Link href="/services/linkedin" data-cta="home-formats-linkedin">LinkedIn <span aria-hidden="true">→</span></Link>
-        </nav>
       </div>
     </section>
   );

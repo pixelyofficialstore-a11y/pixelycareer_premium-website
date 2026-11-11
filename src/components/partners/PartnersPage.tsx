@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import HomeTrustStrip from "@/components/sections/HomeTrustStrip";
 import type { CSSProperties, KeyboardEvent, PointerEvent } from "react";
 import gsap from "gsap";
 import { MotionPathPlugin } from "gsap/MotionPathPlugin";
@@ -11,6 +12,24 @@ import PartnersCarousel from "./PartnersCarousel";
 import type { AgencySample } from "./types";
 import "./partners.css";
 
+const STATS = [
+  { value: 20, suffix: "+", label: "Partner agencies", short: "Partner agencies" },
+  { value: 1800, suffix: "+", label: "CVs delivered", short: "CVs delivered" },
+  { value: 3, suffix: "+", label: "Years in overseas recruitment", short: "Years in recruitment" },
+];
+const WHO = [
+  { icon: "team", title: "Recruitment agencies", line: "One CV standard for every candidate" },
+  { icon: "growth", title: "OEPs", line: "Gulf and Europe ready CVs" },
+  { icon: "document", title: "Career coaches", line: "Hand off the writing" },
+  { icon: "team", title: "Employers and HR", line: "Uniform CVs for bulk hiring" },
+  { icon: "document", title: "Training institutes", line: "CVs for every graduating batch" },
+];
+const PROCESS = [
+  { title: "Send candidate details", line: "An old CV, form or notes on WhatsApp or email." },
+  { title: "We write and optimize", line: "An ATS CV for the role and country, within 48 hours." },
+  { title: "Review and brand check", line: "Word and PDF files with your agency header." },
+  { title: "Deliver and place", line: "Send a polished CV to the employer." },
+];
 const AUDIENCES = [
   { label: "Recruitment agencies", text: "One consistent CV standard for every candidate you submit." },
   { label: "OEPs", text: "Gulf and Europe ready CVs for Pakistani workers going abroad." },
@@ -20,9 +39,9 @@ const AUDIENCES = [
 ];
 
 const WHY = [
-  { title: "No hiring needed.", text: "Skip full time writers. Scale up or down with your candidate flow.", icon: "team" },
-  { title: "48 hour turnaround.", text: "Fast, steady delivery that keeps your pipeline moving.", icon: "growth" },
-  { title: "Built for every market.", text: "Formats for the Gulf, UK, Europe (Europass) and North America.", icon: "document" },
+  { title: "No hiring needed.", text: "Scale up or down with your candidate flow.", icon: "team" },
+  { title: "48 hour turnaround.", text: "Full batches without delays.", icon: "growth" },
+  { title: "Every market covered.", text: "Gulf, UK, Europe and North America formats.", icon: "document" },
 ];
 
 const MODELS = {
@@ -124,7 +143,6 @@ function HeroStack() {
       </div>
       <span className="agency-logo-placeholder">Your logo here</span>
       <div className="agency-float-chip agency-float-chip-one"><span className="agency-chip-dot" />Delivered under your brand</div>
-      <div className="agency-float-chip agency-float-chip-two"><span className="agency-chip-spark" aria-hidden="true" />Gulf, UK and Europe formats</div>
       <div className="agency-float-chip agency-float-chip-three"><span className="agency-chip-dot" />Full batches in 48 hours</div>
     </div>
   );
@@ -279,7 +297,7 @@ function WaysSection({ onBecomePartner }: { onBecomePartner: (model: keyof typeo
           <h3>{data.title}</h3>
           <ul>{data.points.map((point) => <li key={point}><span className="agency-check" aria-hidden="true">✓</span>{point}</li>)}</ul>
           <p className="agency-model-best"><b>Best for:</b> {data.best.replace(/^Best for: /, "")}</p>
-          <a className="btn btn-primary agency-model-cta" href="#agency-enquiry" data-cta={`agency-become-partner-${model === "White label" ? "white-label" : "referral"}`} onClick={() => onBecomePartner(model)}>Become a partner <ArrowIcon /></a>
+          <a className="btn btn-primary agency-model-cta" href="#agency-enquiry" data-cta={`agency-become-partner-${model === "White label" ? "white-label" : "referral"}`} onClick={() => onBecomePartner(model)}>Book a 15 minute call →<ArrowIcon /></a>
         </div>
         <div className="agency-model-flow-panel"><ModelFlow model={model} /></div>
       </div>
@@ -388,13 +406,16 @@ export default function PartnersPage({ samples }: { samples: AgencySample[] }) {
       if (node.getBoundingClientRect().top <= window.innerHeight * 0.92) node.classList.add("is-visible");
       else { node.classList.add("agency-reveal-pending"); observer.observe(node); }
     });
-    return () => observer.disconnect();
+    const steps = document.querySelector<HTMLElement>("[data-agency-steps]");
+    const stepIo = steps ? new IntersectionObserver(([e]) => { if (e.isIntersecting) { steps.classList.add("play"); stepIo?.disconnect(); } }, { threshold: 0.3 }) : null;
+    if (steps && stepIo) stepIo.observe(steps);
+    return () => { observer.disconnect(); stepIo?.disconnect(); };
   }, []);
   return <div className="agency-page">
     <section className="agency-hero" aria-labelledby="agency-hero-title">
       <div className="agency-wrap agency-hero-grid">
         <div className="agency-hero-copy" data-agency-reveal>
-          <h1 id="agency-hero-title">Your agency&apos;s <em>CV department.</em></h1>
+          <h1 id="agency-hero-title"><span className="ag-line"><span>Your agency&apos;s</span></span> <em className="ag-line"><span>CV department.</span></em></h1>
           <p className="agency-hero-sub">A dependable outsourced CV and documentation team for recruitment agencies.</p>
           <div className="agency-hero-actions">
             <a className="btn btn-primary agency-hero-primary" href="#agency-enquiry" data-cta="agency-hero-call">Book a 15 minute call <ArrowIcon /></a>
@@ -404,28 +425,40 @@ export default function PartnersPage({ samples }: { samples: AgencySample[] }) {
         <HeroStack />
       </div>
     </section>
-    <ProofBand />
+    <div className="agency-stats"><HomeTrustStrip stats={STATS} /></div>
     <WhySection />
-    <WhoItsFor />
+    <section className="agency-section agency-who" aria-labelledby="agency-who-title" data-agency-reveal>
+      <div className="agency-wrap">
+        <h2 className="agency-title" id="agency-who-title">Who it&apos;s <em>for.</em></h2>
+        <div className="agency-tiles">
+          {WHO.map((w) => <div key={w.title} className="agency-tile" data-ag-card><span className="ag-icon"><FeatureIcon type={w.icon} /></span><b>{w.title}</b><span>{w.line}</span></div>)}
+        </div>
+      </div>
+    </section>
     <WaysSection onBecomePartner={chooseModelForEnquiry} />
     <section className="agency-section agency-samples" id="samples" aria-labelledby="agency-samples-title" data-agency-reveal>
       <div className="agency-wrap">
         <h2 className="agency-title" id="agency-samples-title">Every format your <em>candidates need.</em></h2>
-        <p className="agency-samples-sub">ATS CVs, Gulf CVs with photo, Europass, cover letters and LinkedIn profiles, all matched to your agency&apos;s standard.</p>
+        
         <PartnersCarousel samples={samples} />
-        <div className="agency-template-strip">
-          <p>Want CVs in your own agency template?</p>
-          <a className="btn btn-primary" href="#agency-enquiry" data-cta="agency-sample-pack">Request a sample pack <ArrowIcon /></a>
-        </div>
+        <p className="agency-sample-line">Want CVs in your agency template? <a href="#agency-enquiry" data-cta="agency-sample-pack" onClick={() => window.dispatchEvent(new Event("agency-sample-pack"))}>Request a sample pack →</a></p>
       </div>
     </section>
-    <AgencyProcess />
+    <section className="agency-section agency-steps-section" aria-labelledby="agency-process-title">
+      <div className="agency-wrap">
+        <h2 className="agency-title" id="agency-process-title">A simple <em>process.</em></h2>
+        <ol className="agency-steps" data-agency-steps>
+          <span className="agency-steps-line" aria-hidden="true"><i /></span>
+          {PROCESS.map((s, i) => <li key={s.title} style={{ "--i": i } as React.CSSProperties}><span className="agency-num">{String(i + 1).padStart(2, "0")}</span><div><b>{s.title}</b><p>{s.line}</p></div></li>)}
+        </ol>
+      </div>
+    </section>
     <div className="agency-faq-reveal" data-agency-reveal><AgencyFAQ /></div>
     <section className="agency-section agency-final" id="agency-enquiry" aria-labelledby="agency-final-title" data-agency-reveal>
       <div className="agency-wrap agency-final-grid">
         <div className="agency-final-copy">
           <h2 className="agency-title" id="agency-final-title">Let&apos;s talk for <em>15 minutes.</em></h2>
-          <p>No hard pitch. Tell us your volume and workflow. We&apos;ll send a partner rate card and a free test sample.</p>
+          <p>No hard pitch. We&apos;ll send a partner rate card and a free test sample.</p>
         </div>
         <AgencyEnquiryForm preferredModel={preferredModel} />
       </div>

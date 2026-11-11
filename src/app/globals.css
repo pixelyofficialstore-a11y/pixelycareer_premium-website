@@ -438,7 +438,8 @@ html[data-intro="on"] .hs-pile {
 }
 /* Once out, the CV floats gently */
 @media (prefers-reduced-motion: no-preference) {
-  .chips-on .hs-paper {
+  /* The whole CV (paper, shadow and frame) floats as one, so nothing behind it peeks out. */
+  .chips-on .hs-good {
     animation: hs-idle 4.5s ease-in-out infinite alternate;
   }
 }
@@ -2294,3 +2295,337 @@ html[data-intro] #intro {
     transition-duration: 1ms !important;
   }
 }
+
+/* Outside the components layer on purpose: section modules are unlayered, and layered rules always lose to them. */
+/* Section headline token: the hero H1's type at section size */
+.display {
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--color-navy);
+}
+.display em { font-style: normal; color: var(--color-vivid); }
+.on-dark .display em { color: var(--color-periwinkle); }
+@media (max-width: 767px) { .display { font-size: clamp(32px, 8.5vw, 42px); } }
+
+/* US homepage. It is the only page with the Before and After comparison, which is how these rules find it. */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(#services-title, #formats-title, #testimonials-title, #faq-title, #pricing h2) {
+  margin-top: 0;
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--color-navy);
+}
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(#services-title, #formats-title, #testimonials-title, #faq-title, #pricing h2) em { font-style: normal; color: var(--color-vivid); }
+#main:is(:has(#home-problem-title), :has(#final-cta)) #cta-title { font-size: clamp(40px, 5vw, 64px); color: #fff; }
+#main:is(:has(#home-problem-title), :has(#final-cta)) #cta-title em { color: #00eafe; }
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) :is(#services-title, #formats-title, #process-title, #testimonials-title, #faq-title, #pricing h2, #cta-title) { font-size: clamp(32px, 8.5vw, 42px); }
+}
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(#services, #formats, #testimonials, #pricing) header { text-align: center; }
+
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(#services, #formats, #process, #testimonials, #pricing, #faq) {
+  margin-block: 0;
+  padding-block: 72px;
+}
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #formats,
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #pricing {
+  background: #f6f8fc;
+}
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #services,
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #testimonials,
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq {
+  background: #fff;
+}
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #pricing > header {
+  padding-top: 0;
+  background: transparent;
+}
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #pricing [aria-label="Pricing packages"] {
+  padding-bottom: 0;
+  background: transparent;
+}
+@media (min-width: 1024px) {
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(#services, #formats, #process, #testimonials, #pricing, #faq) {
+    padding-block: 112px;
+  }
+}
+
+/* FAQ questions: navy, blue only on hover or when open */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq h3 button { color: var(--color-navy); }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq h3 button:hover,
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq h3 button[aria-expanded="true"] { color: var(--color-vivid); }
+
+/* Final CTA */
+#main:is(:has(#home-problem-title), :has(#final-cta)) #final-cta { padding-block: 64px 0; }
+#main:is(:has(#home-problem-title), :has(#final-cta)) .final-grid { padding-top: 0; }
+.final-sub { margin: 16px 0 0; color: rgb(255 255 255 / 0.8); font-size: 18px; line-height: 1.5; }
+.final-wa { gap: 8px; border: 1px solid rgb(255 255 255 / 0.7); background: transparent; color: #fff; }
+.final-wa:hover { background: rgb(255 255 255 / 0.1); border-color: #fff; }
+@media (max-width: 1023.98px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { width: 70%; max-width: 320px; }
+}
+@media (min-width: 1024px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) #final-cta { padding-block: 96px 0; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-grid { min-height: 0; }
+}
+
+/* Hero on the homepage: no scroll hold, the trust strip starts right below */
+.rise-track.rise-free { height: auto; }
+.rise-free .rise-stage { position: relative; height: auto; overflow: visible; }
+@media (prefers-reduced-motion: no-preference) {
+  .rise-track.rise-free { transition: --rise 900ms cubic-bezier(0.22, 1, 0.36, 1), --mx 400ms ease-out, --my 400ms ease-out; }
+  .rise-track.rise-free.is-out { --rise: 1; }
+}
+.rise-free .hero-cue { display: none; }
+
+/* Footer folds */
+.footer-fold summary::-webkit-details-marker { display: none; }
+.footer-fold[open] .footer-fold-icon { rotate: 45deg; }
+.footer-fold-icon { font-size: 20px; transition: rotate 200ms ease; }
+
+/* Final CTA: copy and CV centred top to bottom, with equal space above and below */
+@media (min-width: 1024px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) #final-cta { padding-block: 96px; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-grid { align-items: center; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { height: 420px; margin: 0 4% 0 0; border-radius: 4px; }
+}
+@media (max-width: 1023.98px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) #final-cta { padding-block: 64px; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { margin-bottom: 0; border-radius: 4px; }
+}
+
+/* Final CTA: the whole CV, top to bottom, not a cropped top half */
+#main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { height: auto; overflow: visible; }
+#main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv :is(.cv-sheet, .cv-image) { height: auto !important; max-height: none; }
+#main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv .cv-image { display: block; width: 100%; object-fit: contain; }
+@media (min-width: 1024px) { #main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { width: 360px; } }
+
+/* Final CTA, compact: the top part of the CV, slipping off the bottom edge */
+#main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { overflow: hidden; border-radius: 4px 4px 0 0; }
+#main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv :is(.cv-sheet, .cv-image) { height: auto !important; }
+@media (min-width: 1024px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) #final-cta { padding-block: 72px 0; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-grid { align-items: flex-end; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-copy { align-self: center; padding-bottom: 72px; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { width: 340px; height: 300px; margin: 0 4% 0 0; }
+}
+@media (max-width: 1023.98px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) #final-cta { padding-block: 48px 0; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-grid { gap: 32px; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { width: 64%; max-width: 260px; height: 170px; }
+}
+
+/* Phones: section headlines at the hero headline's size; a tighter hero */
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) :is(#services-title, #formats-title, #process-title, #testimonials-title, #faq-title, #pricing h2, #cta-title) {
+    font-size: clamp(40px, 11vw, 48px); line-height: 1.08; letter-spacing: -0.035em;
+  }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free .hero-copy { padding-top: 84px; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free .hero-visual { margin-top: -24px; margin-bottom: -32px; }
+}
+
+/* Final CTA CV: straight and sharp, so the bottom edge crops cleanly */
+#main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { rotate: 0deg; box-shadow: 0 24px 60px -16px rgb(1 12 40 / 0.55); }
+#main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv :is(.cv-sheet, .cv-image) { rotate: 0deg; transform: none; }
+
+/* Final CTA CV: tilted again, running off the bottom of the section so the edge cuts straight */
+#main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { rotate: -3deg; height: auto; overflow: hidden; border-radius: 4px; }
+@media (min-width: 1024px) { #main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { width: 340px; height: auto; margin: 0 4% -190px 0; } }
+@media (max-width: 1023.98px) { #main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { width: 64%; max-width: 260px; height: auto; margin-bottom: -150px; } }
+
+/* Phones: hero headline, text, buttons and CV stack in one screen */
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free .hero-copy { padding-top: 92px; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free .hero-visual { zoom: 0.84; margin-top: -20px; margin-bottom: -40px; }
+}
+
+/* Mobile menu: rows slide in one after another */
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-menu-list li, .mobile-menu-foot { animation: menu-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .mobile-menu-list li:nth-child(2) { animation-delay: 40ms; }
+  .mobile-menu-list li:nth-child(3) { animation-delay: 80ms; }
+  .mobile-menu-list li:nth-child(4) { animation-delay: 120ms; }
+  .mobile-menu-list li:nth-child(5) { animation-delay: 160ms; }
+  .mobile-menu-foot { animation-delay: 220ms; }
+}
+@keyframes menu-in { from { opacity: 0; translate: 0 12px; } }
+
+/* Homepage hero H1: two fixed lines, line 2 in blue. */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy { container-type: inline-size; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .h1 { font-size: min(clamp(52px, 6.4vw, 92px), 13.5cqi); line-height: 1; letter-spacing: -0.04em; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .h1 > span { white-space: nowrap; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .hero-sub { margin-top: 28px; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .hero-actions { margin-top: 40px; }
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .h1 { font-size: min(clamp(40px, 11vw, 54px), 10.4cqi); text-align: left; margin-inline: 0; }
+}
+
+/* "One story" section: the H2 sits midway, 72px above and 72px below it, 112px at the bottom (48 / 48 / 72 on phones). */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) section#services { padding: 72px 0 112px; }
+@media (max-width: 767px) { #main:is(:has(#home-problem-title), :has([data-pricing-page])) section#services { padding: 48px 0 72px; } }
+/* Formats section: same spacing as "One story" (72 / 72 / 112, phones 48 / 48 / 72). */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) section#formats { padding: 72px 0 112px; }
+@media (max-width: 767px) { #main:is(:has(#home-problem-title), :has([data-pricing-page])) section#formats { padding: 48px 0 72px; } }
+/* Testimonials: same spacing as the other sections (72 / 72 / 112, phones 48 / 48 / 72). */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) section#testimonials { padding: 72px 0 112px; }
+@media (max-width: 767px) { #main:is(:has(#home-problem-title), :has([data-pricing-page])) section#testimonials { padding: 48px 0 72px; } }
+/* Pricing: same spacing as the other sections (72 / 72 / 112, phones 48 / 48 / 72). */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing { padding: 72px 0 112px; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing > header { padding-top: 0; margin-top: 0; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing > header h2 { margin-top: 0; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing [aria-label="Pricing packages"] { padding-top: 72px; padding-bottom: 0; }
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing { padding: 48px 0 72px; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing [aria-label="Pricing packages"] { padding-top: 48px; }
+}
+/* Pricing: 56px from the guarantee subtext to the cards. */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing [aria-label="Pricing packages"] { padding-top: 64px; }
+@media (max-width: 767px) { #main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing [aria-label="Pricing packages"] { padding-top: 56px; } }
+
+/* ===== Polish pass: one spacing system and one container on every market homepage ===== */
+body:is(:has(#home-problem-title), :has([data-pricing-page])) .wrap { max-width: 1264px; padding-inline: 32px; }
+@media (max-width: 767px) { body:is(:has(#home-problem-title), :has([data-pricing-page])) .wrap { padding-inline: 20px; } }
+html:has(#home-problem-title), body:has(#home-problem-title) { overflow-x: clip; }
+
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(section#services, section#formats, section#process, section#testimonials, div#pricing, section#faq) { min-height: 0; height: auto; margin-block: 0; padding: 96px 0; }
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(section#services, section#formats, section#process, section#testimonials, div#pricing, section#faq) { padding: 64px 0; }
+}
+/* Alternating backgrounds: mist, white, mist, navy, white, mist, white, blue */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) section#services { background: #fff; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) section#formats { background: #f6f8fc; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) section#testimonials { background: #fff; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing { background: #f6f8fc; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) section#faq { background: #fff; }
+
+/* H2 to content: 64px, 40px on phones */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing [aria-label="Pricing packages"] { padding-top: 64px; }
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) div#pricing [aria-label="Pricing packages"] { padding-top: 40px; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq .grid12 { row-gap: 40px; }
+}
+
+/* One H2 style for every section */
+#main:is(:has(#home-problem-title), :has(#final-cta)) :is(#services-title, #formats-title, #process-title, #testimonials-title, #faq-title, #pricing h2, #cta-title) {
+  margin-top: 0; font-family: var(--font-head); font-weight: 600; font-size: clamp(40px, 5vw, 64px); line-height: 1; letter-spacing: -0.02em;
+}
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) :is(#services-title, #formats-title, #process-title, #testimonials-title, #faq-title, #pricing h2, #cta-title) {
+    font-size: clamp(40px, 11vw, 48px); line-height: 1.08; letter-spacing: -0.035em;
+  }
+}
+
+/* FAQ: navy questions; blue only on hover (real hover devices) or when open */
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq h3 button,
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq h3 button:is(:hover, :focus, :focus-visible, :active) { color: var(--color-navy); }
+@media (hover: hover) { #main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq h3 button:hover { color: var(--color-vivid); } }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq h3 button[aria-expanded="true"] { color: var(--color-vivid); }
+@media (min-width: 1024px) {
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq .grid12 { align-items: stretch; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq [class*="sticky"] { position: sticky; top: 112px; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) section#faq h2#faq-title { white-space: nowrap; font-size: clamp(40px, 3.9vw, 56px); }
+}
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq { overflow: visible; }
+#main:is(:has(#home-problem-title), :has([data-pricing-page])) #faq h3 button:not([aria-expanded="true"]):not(:hover) { color: var(--color-navy); }
+
+/* Final CTA: 96px above (64px on phones), the CV runs into the footer with no strip between */
+#main:is(:has(#home-problem-title), :has(#final-cta)) #final-cta { padding-top: 96px; margin-bottom: 0; }
+@media (min-width: 1024px) { #main:is(:has(#home-problem-title), :has(#final-cta)) .final-copy { padding-bottom: 96px; } }
+@media (max-width: 1023.98px) { #main:is(:has(#home-problem-title), :has(#final-cta)) #final-cta { padding-top: 64px; } }
+body footer { margin-top: 0; }
+
+/* Hero: one full screen, on its own wider container as before (the H1 size depends on it) */
+body:has(#home-problem-title) #top .wrap { max-width: 1760px; padding-inline: clamp(20px, 4vw, 64px); }
+@media (max-width: 1023.98px) { #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free #top { min-height: 100svh; } }
+/* Phones: stacked buttons run full width */
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-actions { flex-direction: column; align-items: stretch; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-actions > a { width: 100%; justify-content: center; }
+}
+
+
+/* ===== Phones only (under 768px): market homepages ===== */
+@media (max-width: 1023px) { html.has-sticky-bar body { padding-bottom: 80px; } }
+@media (max-width: 767px) {
+  /* Hero: centred, 32px under the header, no forced full screen */
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free #top,
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free :is(.hero-inner, .hero-grid) { min-height: 0; height: auto; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free .hero-copy { padding-top: 145px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .h1 { font-size: min(clamp(38px, 10.5vw, 46px), 10.4cqi); line-height: 1.05; text-align: center; margin-inline: auto; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .hero-sub { max-width: 320px; margin: 16px auto 0; font-size: 16px; line-height: 1.55; text-align: center; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .hero-actions { width: 100%; margin-top: 28px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .hero-actions > .btn { width: 100%; justify-content: center; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free .hero-visual { margin: 32px auto 0; }
+
+  /* Trust strip: 40px above and below; full labels on up to two lines */
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] { padding-block: 40px; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] [class*="_full"] { display: inline; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] [class*="_short"] { display: none; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] [class*="_label"] { font-size: 11px; letter-spacing: .06em; line-height: 1.35; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+  /* Section headlines: one size, balanced, second phrase on its own line */
+  #main:is(:has(#home-problem-title), :has(#final-cta)) :is(#home-problem-title, #services-title, #formats-title, #process-title, #testimonials-title, #faq-title, #pricing h2, #cta-title) {
+    font-size: clamp(30px, 8.4vw, 38px); line-height: 1.1; letter-spacing: -0.025em; text-align: center; text-wrap: balance; margin-inline: auto;
+  }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) :is(#services-title, #formats-title, #process-title, #pricing h2, #cta-title) em,
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) #home-problem-title span { display: block; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) section#faq h2#faq-title { white-space: nowrap; }
+
+  /* Final CTA: two-line H2 and subtext, full width buttons, the whole CV below */
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-copy { text-align: center; padding-bottom: 0; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-sub span { display: block; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-actions { flex-direction: column; align-items: stretch; gap: 12px; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-actions > a { width: 100%; justify-content: center; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) #final-cta { padding-bottom: 48px; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-grid { align-items: center; }
+  #main:is(:has(#home-problem-title), :has(#final-cta)) .final-cv { width: 70%; max-width: none; height: auto; margin: 32px auto 0; overflow: hidden; }
+
+  /* Every section: 64px top and bottom */
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(section#problem, section#services, section#formats, section#process, section#testimonials, div#pricing, section#faq) { padding-top: 64px; padding-bottom: 64px; }
+
+  /* Footer: one divider, tighter padding, small legal text */
+  body footer { padding-top: 48px; padding-bottom: 32px; }
+  body footer .border-t { border-top: 0; margin-top: 16px; padding-top: 0; gap: 16px; font-size: 12px; line-height: 1.6; }
+  body footer .border-t * { font-size: 12px; line-height: 1.6; }
+}
+@media (max-width: 767px) {
+  /* Each phrase on one line: slightly smaller than 30px only where the longest phrase needs it (375px screens) */
+  #main:is(:has(#home-problem-title), :has(#final-cta)) :is(#home-problem-title, #services-title, #formats-title, #process-title, #testimonials-title, #faq-title, #pricing h2, #cta-title) {
+    font-size: min(clamp(30px, 8.4vw, 38px), 7.6vw); white-space: nowrap;
+  }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) #testimonials-title em { display: inline; }
+}
+
+/* One footer everywhere: the homepage container on every page; blog final CTA on the homepage container too */
+footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 32px; }
+@media (max-width: 767px) { footer .wrap, #final-cta[data-blog] .wrap { padding-inline: 20px; } }
+
+/* Back control above the breadcrumb (posts, services, pricing, about, agencies) */
+.back-button { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 0; border: 0; background: none; color: #6b7280; font-size: 14px; cursor: pointer; }
+.back-button-icon { display: inline-grid; place-items: center; width: 36px; height: 36px; border: 1px solid #e6ecf5; border-radius: 50%; background: #fff; color: #010c28; font-size: 16px; transition: border-color 200ms ease, color 200ms ease; }
+.back-button:hover .back-button-icon { border-color: #0048ff; color: #0048ff; }
+@media (max-width: 767px) { .back-button-label { display: none; } }
+
+/* Final CTA on phones (every page): the top of the CV, 78% wide, cut off by the bottom of the blue section */
+@media (max-width: 767px) {
+  #final-cta { padding-bottom: 0 !important; overflow: hidden; }
+  #final-cta .final-cv { width: 78% !important; max-width: none !important; height: 200px !important; margin: 32px auto 0 !important; overflow: hidden !important; rotate: 0deg !important; border-radius: 4px 4px 0 0 !important; }
+  #final-cta .final-cv :is(.cv-sheet, .cv-image) { height: auto !important; }
+}
+
+
+/* /pricing: the packages section carries no padding of its own (root cause of the 180px gap: the shared #pricing rule) */
+#main#main#main:has([data-pricing-page]) section#pricing[aria-label="Pricing packages"] { padding: 0 1.25rem 64px; min-height: 0; height: auto; }
+#main#main#main:has([data-pricing-page]) section#compare { padding-top: 0; margin-top: 0; min-height: 0; }
+@media (max-width: 767px) { #main#main#main:has([data-pricing-page]) section#pricing[aria-label="Pricing packages"] { padding: 0 1.25rem 48px; } }
+
+/* Footer: accepted payment logos */
+.pay-logos { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: rgb(255 255 255 / 0.7); }
+.pay-logos img { height: 20px; width: auto; filter: grayscale(1) brightness(1.8); opacity: 0.8; transition: filter 200ms ease, opacity 200ms ease; }
+.pay-logos img:hover { filter: none; opacity: 1; }

@@ -42,17 +42,17 @@ export default function HeroBrandStack() {
         };
         gsap.fromTo(cards, {
           opacity: 0.6,
-          x: (index) => [68, -20, 0][index],
-          y: (index) => [42, 28, 0][index],
+          x: (index) => [90, -90, 0][index],
+          y: 0,
           rotation: 0,
-          scale: 0.76,
+          scale: 0.96,
         }, {
           opacity: 1,
           x: 0,
           y: 0,
-          rotation: (index) => [-9, 7, 1.5][index],
-          scale: (index) => [0.94, 0.96, 0.98][index],
-          duration: 0.9,
+          rotation: (index) => [-6, 6, 0][index],
+          scale: 1,
+          duration: 0.7,
           ease: "power3.out",
           onComplete: () => {
             ready = true;
@@ -121,7 +121,6 @@ export default function HeroBrandStack() {
           <span className="cv-tag">ATS READY</span>
         </div>
       </div>
-      <div className="stack-pill">CV · LinkedIn · Portfolio</div>
       <style jsx>{`
         .brand-stage {
           position: relative;
@@ -271,6 +270,21 @@ export default function HeroBrandStack() {
         @keyframes idle-left { 0%,100% { translate: 0 0; } 50% { translate: 0 -5px; } }
         @keyframes idle-right { 0%,100% { translate: 0 0; } 50% { translate: 0 -6px; } }
         @keyframes idle-front { 0%,100% { translate: 0 0; } 50% { translate: 0 -4px; } }
+        /* Equal cards, a slight fan, no pill */
+        .brand-stack .brand-layer { width: 240px !important; height: 320px !important; top: 60px !important; bottom: auto !important; }
+        .brand-stack .portfolio-card { left: calc(50% - 300px) !important; right: auto !important; transform: rotate(-6deg); }
+        .brand-stack .linkedin-card { left: calc(50% + 60px) !important; right: auto !important; transform: rotate(6deg); }
+        .brand-stack .cv-card { left: calc(50% - 120px) !important; right: auto !important; transform: rotate(0deg); z-index: 3; }
+        .linkedin-card { display: flex; flex-direction: column; }
+        .linkedin-card .profile-bottom { margin-top: auto; }
+        @media (max-width: 767px) {
+          .brand-stage { width: 80%; height: 300px; margin-inline: auto; }
+          .brand-stack .brand-layer { width: 150px !important; height: 200px !important; top: 40px !important; }
+          .brand-stack .portfolio-card { left: calc(50% - 175px) !important; }
+          .brand-stack .linkedin-card { left: calc(50% + 25px) !important; padding: 10px !important; }
+          .brand-stack .cv-card { left: calc(50% - 75px) !important; }
+          .linkedin-card .profile-about, .linkedin-card .profile-bottom { display: none; }
+        }
         @media (max-width: 767px) {
           .brand-stage { height: 390px; max-width: 440px; margin-top: 12px; }
           .portfolio-card { width: 210px; height: 282px; left: 4%; top: 26px; }

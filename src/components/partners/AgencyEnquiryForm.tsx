@@ -68,6 +68,11 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
   useEffect(() => {
     if (preferredModel) setForm((current) => ({ ...current, model: preferredModel.model }));
   }, [preferredModel]);
+  useEffect(() => {
+    const onSample = () => setForm((current) => ({ ...current, notes: current.notes.includes("Sample pack") ? current.notes : `Sample pack${current.notes ? `. ${current.notes}` : ""}` }));
+    window.addEventListener("agency-sample-pack", onSample);
+    return () => window.removeEventListener("agency-sample-pack", onSample);
+  }, []);
 
   const update = <K extends keyof Enquiry>(field: K, value: Enquiry[K]) => {
     setForm((current) => ({ ...current, [field]: value }));

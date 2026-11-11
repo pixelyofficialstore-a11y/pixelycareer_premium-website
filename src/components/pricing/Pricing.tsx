@@ -1,51 +1,58 @@
 "use client";
 
 import Link from "next/link";
+import BackButton from "@/components/ui/BackButton";
 import { useEffect, useState } from "react";
 import { saveMarket } from "@/components/ui/useMarket";
-import { MARKETS, getComparison, getPackages, orderHref, type MarketKey } from "@/config/markets";
-import { WHATSAPP_URL } from "@/lib/site";
+import Faq from "@/components/sections/Faq";
+import { MARKETS, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
+import { WHATSAPP_URL , whatsappMessage } from "@/lib/site";
 import styles from "./Pricing.module.css";
 
-const GROUPS = [
-  { name: "Documents", start: 0, end: 3 },
-  { name: "Profiles", start: 3, end: 7 },
-  { name: "Extras", start: 7, end: 8 },
-  { name: "Service", start: 8, end: 12 },
-];
 
-const CARD_CONTENT = {
-  "ats-career": {
-    audience: "For beginners",
-    name: "ATS Career",
-    button: "Choose ATS Career",
-    lead: "",
-    items: ["ATS CV, 1 to 2 pages", "Tailored cover letter", "LinkedIn profile content", "Keywords for your target job", "PDF and editable Word files"],
-    support: "30 days",
-    delivery: "2 days",
-    revisions: "3 revisions",
-  },
-  "international-pro": {
-    audience: "For professionals",
-    name: "International Career Pro",
-    button: "Choose International Pro",
-    lead: "Everything in ATS Career, plus:",
-    items: ["International standard CV", "Country specific cover letter", "Full LinkedIn makeover", "Indeed and Naukrigulf profiles", "Bio statement and digital contact card"],
-    support: "3 months",
-    delivery: "2 days",
-    revisions: "3 revisions",
-  },
-  executive: {
-    audience: "For executives",
-    name: "Executive Career Branding",
-    button: "Choose Executive",
-    lead: "Everything in International Pro, plus:",
-    items: ["Premium executive CV", "One page visual CV", "Executive cover letter and bio", "LinkedIn content pack (10 posts)", "Interview preparation guide"],
-    support: "6 months",
-    delivery: "3 days",
-    revisions: "4 revisions",
-  },
-} as const;
+/** Card copy. The US says "resume" where the others say "CV"; Naukrigulf only for the Gulf and Pakistan. */
+function getCardContent(market: MarketKey) {
+  const doc = market === "us" ? "resume" : "CV";
+  const gulf = market === "ae" || market === "sa" || market === "pk";
+  return {
+    "ats-career": {
+      audience: "For beginners and early careers",
+      name: "ATS Career",
+      button: "Choose ATS Career",
+      lead: "",
+      items: [`ATS ${doc}, 1 to 2 pages`, "Tailored cover letter", "LinkedIn content optimization", "Keywords for your target job", "PDF & editable Word files", "Unlimited revisions until satisfied"],
+      support: "30 days",
+      delivery: "2 days",
+      updates: "3",
+    },
+    "international-pro": {
+      audience: "For 3+ years of experience",
+      name: "International Career Pro",
+      button: "Choose International Pro",
+      lead: "Everything in ATS Career, plus:",
+      items: [
+        gulf ? "Gulf & international standard CV" : `International standard ${doc}`,
+        "Country specific cover letter",
+        "Complete LinkedIn optimization & makeover",
+        gulf ? "Indeed & Naukrigulf profile optimization" : "Indeed profile optimization",
+        "Bio statement & digital contact card",
+      ],
+      support: "3 months",
+      delivery: "2 days",
+      updates: "3",
+    },
+    executive: {
+      audience: "For 7+ years of experience",
+      name: "Executive Career Branding",
+      button: "Choose Executive",
+      lead: "Everything in International Pro, plus:",
+      items: [`Premium executive ${doc}`, "One page executive visual profile", "Executive cover letter & bio statement", "LinkedIn content pack (10 posts)", "Interview preparation guide (PDF)"],
+      support: "6 months",
+      delivery: "3 days",
+      updates: "4",
+    },
+  };
+}
 
 function CheckIcon({ className = "" }: { className?: string }) {
   return (
@@ -76,7 +83,7 @@ function PriceAmount({ label }: { label: string }) {
 
 function CellValue({ value }: { value: string }) {
   if (value === "✓") return <span className={styles.includedMark} aria-label="Included">✓</span>;
-  if (value === "·") return <span className={styles.notIncluded} aria-label="Not included" />;
+  if (value === "·" || value === "✕") return <svg className={styles.notIncludedIcon} viewBox="0 0 14 14" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" role="img" aria-label="Not included"><path d="m3 3 8 8M11 3l-8 8" /></svg>;
   return <>{value}</>;
 }
 
@@ -95,9 +102,10 @@ export default function Pricing({
   const m = MARKETS[market];
   const packages = getPackages(m);
   const comparison = getComparison(m);
+  const GROUPS = getComparisonGroups(comparison);
+  const cardContent = getCardContent(market);
   const HeroHeading = standalone ? "h1" : "h2";
   const [selectedPackage, setSelectedPackage] = useState(1);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => saveMarket(market), [market]);
 
@@ -106,15 +114,20 @@ export default function Pricing({
       id={compact ? "pricing" : undefined}
       className={`${styles.page} ${standalone ? styles.standalone : ""} ${compact ? styles.compact : ""}`}
       data-pricing-surface
+      data-pricing-page={standalone || undefined}
       data-pricing-variant={compact ? "compact" : undefined}
     >
       <header className={`${styles.hero} ${compact ? styles.compactHero : ""}`}>
-        <div className={styles.heroInner}>
+        <div className={styles.heroInner} data-reveal>
           {!standalone && !compact && <p className={styles.eyebrow}>Pricing</p>}
-          <HeroHeading className={`${styles.heroTitle} ${compact ? styles.compactHeroTitle : ""}`}>
-            {compact ? <>Simple pricing. <em>Real results.</em></> : <>One price. <em>No surprises.</em></>}
+          <HeroHeading className={`${styles.heroTitle} ${compact || standalone ? styles.compactHeroTitle : ""}${standalone ? " display" : ""}`}>
+            {compact || standalone ? <>Invest once. <em>Apply with confidence.</em></> : <>One price. <em>No surprises.</em></>}
           </HeroHeading>
-          {compact && <p className={styles.compactHeroText}>One time payment. PDF and Word files included.</p>}
+          {(compact || standalone) && (
+            <p className={styles.guaranteeSub}>
+              100% money back guarantee. Zero risk.
+            </p>
+          )}
           {!standalone && !compact && (
             <>
               <p className={styles.heroText}>Pick a package, pay once, and get a CV written for your role and your country.</p>
@@ -133,9 +146,9 @@ export default function Pricing({
           <ul className={`${styles.priceGrid} ${compact ? styles.compactPriceGrid : ""}`}>
             {packages.map((p) => {
               const recommended = p.id === "international-pro";
-              const content = CARD_CONTENT[p.id];
+              const content = getCardContent(market)[p.id];
               return (
-                <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`}>
+                <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`} data-reveal>
                   <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
                     {recommended && <span className={styles.badge}>Recommended</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
@@ -144,17 +157,10 @@ export default function Pricing({
                       {p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}
                       <PriceAmount label={p.priceLabel} />
                     </div>
-                    <p className={styles.resultLine}><ArrowIcon className={styles.resultArrow} /><span>{m.pricingResults[p.id]}</span></p>
-                    <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended || compact ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`} aria-label={compact ? `Start your order for ${content.name}` : undefined}>
-                      {compact ? "Start your order" : content.button}<ArrowIcon />
+                    <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`}>
+                      {content.button}<ArrowIcon />
                     </Link>
-                    {compact ? (
-                      <div className={styles.compactSupportRow}>
-                        <span>{content.support} Support</span><span aria-hidden="true">·</span>
-                        <span>{content.delivery} Delivery</span><span aria-hidden="true">·</span>
-                        <span>{content.revisions}</span>
-                      </div>
-                    ) : (
+                    {(
                       <>
                         <hr className={styles.divider} />
                         <div className={styles.includedContent}>
@@ -173,8 +179,8 @@ export default function Pricing({
                             <span>Delivery</span>
                           </div>
                           <div className={styles.supportBlock}>
-                            <strong>{content.revisions}</strong>
-                            <span>Revisions</span>
+                            <strong>{content.updates}</strong>
+                            <span>Free updates</span>
                           </div>
                         </div>
                       </>
@@ -185,21 +191,16 @@ export default function Pricing({
             })}
           </ul>
           {compact && (
-            <nav className={styles.compactCta} aria-label="Pricing details and questions">
-              <Link href={`/pricing?m=${market}`} data-cta="home-pricing-compare">
-                Compare every feature <ArrowIcon />
+            <nav className={styles.compactCta} aria-label="Pricing details">
+              <Link href={`/pricing?m=${market}#compare`} data-cta="home-pricing-compare">
+                Compare all features <ArrowIcon />
               </Link>
-              <span className={styles.compactCtaDivider} aria-hidden="true">·</span>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" data-cta="home-pricing-whatsapp">
-                Not sure? Ask on WhatsApp
-              </a>
             </nav>
           )}
-          {compact && <p className={styles.singleServiceLine}>Need just one service? <Link href={`/services?m=${market}`} data-cta="home-pricing-services">See single services <ArrowIcon /></Link></p>}
         </div>
       </section>
 
-      {!compact && <section className={styles.compare} aria-labelledby="compare-heading">
+      {!compact && <section id="compare" className={styles.compare} aria-labelledby="compare-heading">
         <div className={styles.sectionInner}>
           <h2 className={styles.sectionTitle} id="compare-heading">Compare <em>every detail.</em></h2>
           <div className={`${styles.compareCard} ${styles.desktopCompare}`}>
@@ -217,12 +218,23 @@ export default function Pricing({
                 {comparison.map(([label, ...values], index) => (
                   <FragmentRow
                     key={label}
+                    groups={GROUPS}
                     label={label}
                     values={values}
                     index={index}
                   />
                 ))}
               </tbody>
+              <tfoot>
+                <tr className={styles.ctaRow}>
+                  <td />
+                  {packages.map((p, i) => (
+                    <td className={i === 1 ? styles.recommendedCol : ""} key={p.id}>
+                      <Link href={orderHref(m, p.id)} className={`${styles.choose} ${i === 1 ? styles.choosePrimary : ""}`} data-cta={`pricing-table-${p.id}`}>{cardContent[p.id].button}</Link>
+                    </td>
+                  ))}
+                </tr>
+              </tfoot>
             </table>
           </div>
           <div className={styles.mobileCompare}>
@@ -257,58 +269,26 @@ export default function Pricing({
                   ))}
                 </div>
               ))}
+              <Link href={orderHref(m, packages[selectedPackage].id)} className={`${styles.choose} ${selectedPackage === 1 ? styles.choosePrimary : ""} ${styles.mobileChoose}`} data-cta={`pricing-mobile-${packages[selectedPackage].id}`}>{cardContent[packages[selectedPackage].id].button}</Link>
             </div>
           </div>
 
-          <aside className={styles.customStrip}>
-            <p><strong>Need something different?</strong> Europass CV, a portfolio website, or a package for your team. We&apos;ll build it around you.</p>
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={styles.whatsAppLink} data-cta="pricing-custom-whatsapp">
-              Ask on WhatsApp <ArrowIcon />
+          <aside className={styles.customBox}>
+            <span>Need a custom package?</span>
+            <a href={whatsappMessage("Hi Pixely, I'd like a custom package.")} target="_blank" rel="noopener noreferrer" data-cta="pricing-custom-whatsapp">
+              Message us on WhatsApp <span aria-hidden="true">→</span>
             </a>
           </aside>
         </div>
       </section>}
 
-      {!compact && faqItems.length > 0 && (
-        <section className={styles.faq} aria-labelledby="faq-heading">
-          <div className={`${styles.sectionInner} ${styles.faqLayout}`}>
-            <div className={styles.faqIntro}>
-              <h2 className={styles.sectionTitle} id="faq-heading">Fair <em>questions.</em></h2>
-              <p className={styles.faqContact}>Still unsure? <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">Ask us on WhatsApp <span aria-hidden="true">→</span></a></p>
-            </div>
-            <div className={styles.faqList}>
-              {faqItems.map(({ q, a }, index) => {
-                const open = openFaq === index;
-                const answerId = `pricing-faq-answer-${index}`;
-                return (
-                  <article className={styles.faqItem} key={q}>
-                    <h3>
-                      <button
-                        type="button"
-                        className={styles.faqQuestion}
-                        aria-expanded={open}
-                        aria-controls={answerId}
-                        onClick={() => setOpenFaq(open ? null : index)}
-                      >
-                        {q}<span className={styles.faqPlus} aria-hidden="true">+</span>
-                      </button>
-                    </h3>
-                    <div id={answerId} className={`${styles.faqAnswer} ${open ? styles.faqAnswerOpen : ""}`} aria-hidden={!open} inert={!open}>
-                      <div className={styles.faqAnswerInner}><p>{a}</p></div>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-      )}
+      {!compact && faqItems.length > 0 && <Faq items={faqItems} homepage />}
     </div>
   );
 }
 
-function FragmentRow({ label, values, index }: { label: string; values: string[]; index: number }) {
-  const group = GROUPS.find((item) => item.start === index);
+function FragmentRow({ label, values, index, groups }: { label: string; values: string[]; index: number; groups: { name: string; start: number; end: number }[] }) {
+  const group = groups.find((item) => item.start === index);
   return (
     <>
       {group && <tr className={styles.groupRow}><th colSpan={4}>{group.name}</th></tr>}
