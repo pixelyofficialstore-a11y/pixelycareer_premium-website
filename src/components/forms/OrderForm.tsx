@@ -8,9 +8,10 @@ import { MARKETS, formatPricingPrice, getPackages, localize, type MarketKey, typ
 import { PAYMENTS } from "@/config/payments";
 import { cartId, setCartId, trackFunnel, type Commerce } from "@/lib/analytics";
 import { useCountdown, useOffer } from "@/components/offer/useOffer";
-import { Flame, inline } from "@/components/offer/Offer";
-import { TARGET_COUNTRIES } from "@/lib/site";
+import { inline } from "@/components/offer/Offer";
+import { TARGET_COUNTRIES, whatsappMessage } from "@/lib/site";
 import { CODES } from "./Fields";
+import Turnstile from "./Turnstile";
 import styles from "./OrderForm.module.css";
 
 const STEPS = ["Package", "Your details", "Payment", "Review"];
@@ -28,7 +29,8 @@ const AUDIENCE: Record<PackageId, string> = {
   "international-pro": "For 3+ years of experience or applying abroad",
   executive: "For senior and leadership roles",
 };
-const MAX = 10 * 1024 * 1024;
+const CV_MAX = 5 * 1024 * 1024;
+const SHOT_MAX = 4 * 1024 * 1024;
 type Errors = Record<string, string | undefined>;
 
 const I = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" } as const;
@@ -50,7 +52,8 @@ function Field({ id, label, error, children }: { id: string; label: string; erro
   );
 }
 
-function Dropzone({ id, label, title, note, accept, file, onFile, error, small }: { id: string; label: string; title: string; note: string; accept: string; file: File | null; onFile: (f: File | null) => void; error?: string; small?: boolean }) {
+type UpState = "idle" | "uploading" | "done" | "error";
+function Dropzone({ id, label, title, note, accept, file, onFile, error, small, state }: { id: string; label: string; title: string; note: string; accept: string; file: File | null; onFile: (f: File | null) => void; error?: string; small?: boolean; state?: UpState }) {
   return (
     <div className={styles.field}>
       <span className={styles.label}>{label}</span>
@@ -58,7 +61,7 @@ function Dropzone({ id, label, title, note, accept, file, onFile, error, small }
         <div className={`${styles.fileChip} ${small ? styles.dropSmall : ""}`}>
           <FileIcon />
           <span className={styles.fileName}>{file.name}</span>
-          <span className={styles.fileSize}>{size(file.size)}</span>
+          <span className={`${styles.fileSize} ${state === "done" ? styles.upOk : state === "error" ? styles.upErr : ""}`} aria-live="polite">{state === "uploading" ? <><span className={styles.spinnerDark} aria-hidden="true" /> Uploading</> : state === "done" ? "Uploaded ✓" : state === "error" ? "Failed" : size(file.size)}</span>
           <button type="button" onClick={() => onFile(null)} aria-label={`Remove ${file.name}`}>✕</button>
         </div>
       ) : (
@@ -125,8 +128,9 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const [step, setStep] = useState(1);
   const [packageId, setPackageId] = useState<PackageId>(initial ?? "international-pro");
   const [sameDay, setSameDay] = useState(restore?.sameDay ?? false);
+  // Add-ons the visitor picked themselves. The bundled website lives in bundleOn, never in here.
   const [addons, setAddons] = useState<Selection>(initialAddons ?? {});
-  const [viewOpen, setViewOpen] = useState<PackageId[]>([]);
+  const [bundleOn, setBundleOn] = useState(offerParam);
   const [v, setV] = useState(() => {
     // A restored cart stores the number with its country code; the form keeps them apart.
     const code = restore?.whatsapp ? CODES.filter((x) => restore.whatsapp.startsWith(x)).sort((a, b) => b.length - a.length)[0] ?? m.phoneCode : m.phoneCode;
@@ -137,8 +141,15 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const [method, setMethod] = useState<"easypaisa" | "ubl">("easypaisa");
   const [txn, setTxn] = useState("");
   const [shot, setShot] = useState<File | null>(null);
+  // The screenshot uploads as soon as it is picked; submit only sends its URL.
+  const [shotUp, setShotUp] = useState<{ secure_url: string; public_id: string } | null>(null);
+  const [shotState, setShotState] = useState<UpState>("idle");
+  const shotSeq = useRef(0);
+  const [noteOpen, setNoteOpen] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [qrOk, setQrOk] = useState(hasQr);
   const [terms, setTerms] = useState(false);
+  const [tsToken, setTsToken] = useState("");
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const [sheet, setSheet] = useState(false);
@@ -165,34 +176,63 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   }, [sheet]);
 
   const set = (k: keyof typeof v, value: string) => setV((s) => ({ ...s, [k]: value }));
-  const { pkg, list, total } = calcOrder(m, packageId, sameDay, addons);
   // Personal Brand Bundle (pk): Executive + portfolio at the normal add-on price, shown as one line.
   const { offer, open: offerOpenNow } = useOffer(market);
   const offerClock = useCountdown();
   const offerLive = offerOpenNow && !offerClock.done;
-  // An offer link wins over every default: applied last, once, on load.
+  // An offer link wins over every default: applied once, on load (URL beats anything restored).
   useEffect(() => {
     if (!offerParam) return;
     setPackageId(offer.packageId);
-    setAddons((a) => ({ ...a, [offer.addonId]: 1 }));
+    setBundleOn(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offerParam]);
-  const bundle = offerLive && packageId === offer.packageId && (addons[offer.addonId] ?? 0) > 0;
+  const bundle = offerLive && bundleOn && packageId === offer.packageId;
+  // What is priced and sent: the visitor's add-ons, plus the website while the bundle is ticked.
+  const eff: Selection = bundle ? { ...addons, [offer.addonId]: 1 } : addons;
+  const { pkg, list, total } = calcOrder(m, packageId, sameDay, eff);
   const bundleSave = offer.compareAt - offer.price;
   const shownList = bundle ? list.filter((a) => a.id !== offer.addonId) : list;
   const bundleLine = bundle ? pkg.price + (list.find((a) => a.id === offer.addonId)?.total ?? 0) : 0;
   const money = (n: number) => formatPricingPrice(m, n);
-  const options = availableAddons(m, packageId);
+  const options = availableAddons(m, packageId).filter((o) => !(bundle && o.id === offer.addonId));
+  const toggleBundle = (on: boolean) => {
+    setBundleOn(on);
+    if (on) trackFunnel("cart", { name: "11.11 Bundle", ids: [offer.packageId, offer.addonId], value: offer.price, currency: m.currency, items: 1 });
+  };
+  const put = async (kind: "cv" | "payment", file: File, signal?: AbortSignal) => {
+    const d = new FormData();
+    d.append("kind", kind);
+    d.append("file", file);
+    const res = await fetch("/api/upload", { method: "POST", body: d, signal });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "The upload failed. Please try again.");
+    return data as { secure_url: string; public_id: string };
+  };
+  const onShot = (f: File | null) => {
+    const n = ++shotSeq.current;
+    setShot(f);
+    setShotUp(null);
+    if (!f || f.size > SHOT_MAX || !/\.(jpe?g|png|webp|pdf)$/i.test(f.name)) { setShotState("idle"); return; }
+    setShotState("uploading");
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 30000);
+    put("payment", f, ctl.signal)
+      .then((u) => { if (n === shotSeq.current) { setShotUp(u); setShotState("done"); } })
+      .catch(() => { if (n === shotSeq.current) setShotState("error"); })
+      .finally(() => clearTimeout(t));
+  };
   const payNow = pk && !later;
   // Paying now on the 11.11 offer saves the pay now discount. It shows from the payment step on.
   const payOff = bundle ? offer.payNowDiscount : 0;
   const due = total - (payNow && step >= 3 ? payOff : 0);
   const item: Commerce = { name: bundle ? offer.title : pkg.name, ids: [packageId, ...list.map((a) => a.id)], value: due, currency: m.currency, items: 1 + list.length };
-  const byEmail = v.contact === "email";
+  const byEmail = !pk && v.contact === "email";
   const channel = byEmail ? "email" : "WhatsApp";
 
   const choosePackage = (id: PackageId) => {
     setPackageId(id);
+    if (id !== offer.packageId) setBundleOn(false);
     const ok = new Set(availableAddons(m, id).map((a) => a.id));
     setAddons((a) => Object.fromEntries(Object.entries(a).filter(([k]) => ok.has(k))));
   };
@@ -203,6 +243,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     const e: Errors = {};
     if (s === 2) {
       if (!v.name.trim()) e.name = "Enter your full name.";
+      if (pk && v.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email.trim())) e.email = "Enter a valid email or leave it empty.";
       if (byEmail) {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email.trim())) e.email = "Enter a valid email.";
       } else {
@@ -212,11 +253,13 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       }
       if (!v.country) e.country = "Choose your target country.";
       if (!v.role.trim()) e.role = "Enter your target role.";
-      if (cv && (cv.size > MAX || !/\.(pdf|docx?)$/i.test(cv.name))) e.cv = "Upload a PDF, DOC or DOCX under 10 MB.";
+      if (!pk && cv && (cv.size > CV_MAX || !/\.(pdf|docx?)$/i.test(cv.name))) e.cv = "Upload a PDF, DOC or DOCX under 5 MB.";
     }
     if (s === 3 && payNow) {
       if (!shot) e.shot = "Upload your payment screenshot.";
-      else if (shot.size > MAX || !shot.type.startsWith("image/")) e.shot = "Upload an image under 10 MB.";
+      else if (shot.size > SHOT_MAX || !/\.(jpe?g|png|webp|pdf)$/i.test(shot.name)) e.shot = "Upload a JPG, PNG, WEBP or PDF under 4 MB.";
+      else if (shotState === "uploading") e.shot = "Wait a moment, your screenshot is still uploading.";
+      else if (shotState === "error") e.shot = "The upload failed. Remove the file and try again.";
     }
     if (s === 4 && !terms) e.terms = "Please agree to continue.";
     return e;
@@ -233,7 +276,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       return Object.keys(nextErr).length === keys.length && keys.every((k) => nextErr[k] === cur[k]) ? cur : nextErr;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [v, cv, shot, terms, later, byEmail]);
+  }, [v, cv, shot, shotState, terms, later, byEmail]);
 
   const validate = (s: number) => {
     const e = check(s);
@@ -267,57 +310,69 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   useEffect(() => { if (step === 2) trackFunnel("checkout", item); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [step]);
   useEffect(() => { if (payNow && shot) trackFunnel("payment", item); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [shot, payNow]);
 
-  // Cart: saved once a valid WhatsApp number or email is in, then updated on every change (debounced).
-  useEffect(() => { if (restore?.id) setCartId(restore.id); }, [restore?.id]);
+  // Draft: the open order is saved on every package, bundle, add-on, step or contact change (debounced). The server prices it.
+  useEffect(() => { if (restore?.id) setCartId(restore.id.replace(/-/g, "").slice(0, 20)); }, [restore?.id]);
+  const orderPayload = () => {
+    const u = readUtm();
+    return {
+      market, package: packageId, addons, sameDay, bundle, payChoice: pk ? (payNow ? "now" : "later") : null, step,
+      name: v.name || null, code: v.code, whatsapp: v.whatsapp || null, email: v.email.trim() || null,
+      targetCountry: v.country || null, targetRole: v.role || null, notes: v.notes || null,
+      fbp: u.fbp || null, fbc: u.fbc || null, eventId: cartId() || undefined, resume: restore?.id ?? null,
+    };
+  };
   useEffect(() => {
-    if (step < 2) return;
-    const phone = v.whatsapp.replace(/[\s-]/g, "").replace(/^0/, "");
-    const phoneOk = !byEmail && /^\d+$/.test(phone) && (v.code === "+92" ? phone.length === 10 : phone.length >= 7 && phone.length <= 15);
-    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email.trim());
-    if (!phoneOk && !emailOk) return;
-    const id = cartId();
-    if (!id) return;
     const t = setTimeout(() => {
-      fetch("/api/carts", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify({
-        id, market, package: packageId, addons, same_day: sameDay, offer_id: bundle ? offer.id : "", name: v.name, preferred_contact: v.contact,
-        whatsapp: phoneOk ? `${v.code}${phone}` : "", email: emailOk ? v.email.trim() : "", country: v.country, role: v.role, ...readUtm(),
-      }) }).catch(() => {});
+      fetch("/api/orders/draft", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify(orderPayload()) }).catch(() => {});
     }, 900);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, v.whatsapp, v.code, v.email, v.name, v.contact, v.country, v.role, packageId, JSON.stringify(addons), sameDay, bundle]);
+  }, [step, v.whatsapp, v.code, v.email, v.name, v.country, v.role, packageId, JSON.stringify(addons), sameDay, bundle, later]);
   const cont = () => { if (validate(step)) go(step + 1); };
 
   const submit = async () => {
     if (busy || !validate(4)) return;
     setBusy(true);
+    setFailed(false);
     setSheet(false);
-    const d = new FormData();
-    const f: Record<string, string> = {
-      market, package: packageId, same_day: sameDay ? "yes" : "no", addons: JSON.stringify(addons), name: v.name, code: v.code, whatsapp: v.whatsapp, email: v.email,
-      preferred_contact: v.contact, country: v.country, role: v.role, notes: v.notes, terms: "yes",
-      payment_choice: payNow ? "now" : "later", payment_method: payNow ? method : "", transaction_id: txn,
-      offer_id: bundle ? offer.id : "", cart_id: cartId(), ...readUtm(),
-    };
-    Object.entries(f).forEach(([k, val]) => d.append(k, val));
-    if (cv) d.append("cv", cv);
-    if (payNow && shot) d.append("screenshot", shot);
+    // Never spin forever: the CV upload and the order together get 20 seconds.
+    const ctl = new AbortController();
+    const timer = setTimeout(() => ctl.abort(), 20000);
     try {
-      const res = await fetch("/api/orders", { method: "POST", body: d });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
-      trackFunnel("lead", { ...item, value: data.total ?? due, orderId: data.id });
+      const cvUp = !pk && cv ? await put("cv", cv, ctl.signal) : null;
+      const res = await fetch("/api/orders/submit", { method: "POST", headers: { "Content-Type": "application/json" }, signal: ctl.signal, body: JSON.stringify({
+        ...orderPayload(), step: 4, terms: true, turnstile: tsToken,
+        cvUrl: cvUp?.secure_url ?? null, cvPublicId: cvUp?.public_id ?? null,
+        paymentMethod: payNow ? method : null, screenshotUrl: payNow ? shotUp?.secure_url ?? null : null, screenshotPublicId: payNow ? shotUp?.public_id ?? null : null, transactionId: payNow ? txn || null : null,
+      }) });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ref) throw new Error(data.error || "failed");
+      clearTimeout(timer);
+      trackFunnel("lead", { ...item, value: data.total ?? due });
       try { sessionStorage.removeItem("pixely-cart-id"); } catch {}
-      const q = new URLSearchParams({ id: data.id, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1" } : {}) });
+      const q = new URLSearchParams({ id: data.ref, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1" } : {}) });
       router.push(`/order/success?${q}`);
     } catch (err) {
-      setErrors({ submit: err instanceof Error ? err.message : "Something went wrong." });
+      clearTimeout(timer);
+      const msg = err instanceof Error && err.message !== "failed" && err.name !== "AbortError" && !/fetch|network/i.test(err.message) ? err.message : "";
+      setErrors({ submit: msg || "Couldn\u2019t send. Try again or message us on WhatsApp." });
+      setFailed(true);
       setBusy(false);
     }
   };
+  const waOrder = whatsappMessage([
+    "Hi Pixely Careers, I want to place an order.",
+    `Package: ${bundle ? offer.headline : pkg.name}`,
+    ...shownList.map((a) => `Extra: ${a.name}${a.qty > 1 ? ` x ${a.qty}` : ""}`),
+    ...(sameDay ? ["Same day delivery"] : []),
+    `Total: ${money(due)}`,
+    v.name && `Name: ${v.name}`,
+    v.role && `Role: ${v.role}, ${v.country}`,
+    pk ? (payNow ? `Paid by ${method === "ubl" ? "UBL Bank" : "Easypaisa / JazzCash"}${txn ? `, ID ${txn}` : ""}` : "Pay later") : "",
+  ].filter(Boolean).join("\n"));
 
   const last = step === 4;
-  const label = last ? (payNow ? "Place order →" : "Send order request →") : "Continue →";
+  const label = last ? "Place order →" : "Continue →";
   const continueBtn = (cls: string) => (
     <button type="button" className={`btn btn-primary ${styles.continue} ${cls}`} onClick={last ? submit : cont} disabled={busy} aria-busy={busy || undefined} data-cta={last ? "order-send-request" : "order-continue"}>
       {busy ? <><span className={styles.spinner} aria-hidden="true" /> Sending</> : label}
@@ -328,7 +383,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     <>
       <dl className={styles.sumList}>
         {bundle ? (
-          <div className={styles.sumBundle}><dt><b>{offer.title}</b><span>{offer.headline}</span></dt><dd><s>{money(offer.compareAt)}</s>{money(bundleLine)}<em>Save {money(bundleSave)}</em></dd></div>
+          <div className={styles.sumBundle}><dt><b>{offer.headline}</b></dt><dd><s>{money(offer.compareAt)}</s>{money(bundleLine)}<em>Save {money(bundleSave)}</em></dd></div>
         ) : <div><dt>{pkg.name}</dt><dd>{money(pkg.price)}</dd></div>}
         {shownList.map((a) => (
           <div key={a.id} className={styles.sumLine}>
@@ -337,6 +392,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
           </div>
         ))}
         {sameDay && <div className={styles.sumLine}><dt>Same day delivery</dt><dd>{pkg.sameDayLabel}</dd></div>}
+        {payNow && step >= 3 && payOff > 0 && <div className={styles.sumLine}><dt>Pay now discount</dt><dd className={styles.sumSave}>−{money(payOff)}</dd></div>}
         <div className={styles.sumMuted}><dt>Delivery</dt><dd>{sameDay ? "Same day" : pkg.deliveryDays}</dd></div>
       </dl>
       <div className={styles.sumTotal}>
@@ -347,12 +403,23 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     </>
   );
   const extrasCount = list.length + (sameDay ? 1 : 0);
+  const finish = (
+    <>
+      <label className={styles.terms}>
+        <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} aria-invalid={errors.terms ? true : undefined} />
+        <span>I agree to the <Link href="/terms" target="_blank">Terms</Link>, <Link href="/privacy" target="_blank">Privacy Policy</Link> and <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
+      </label>
+      {errors.terms && <p className={styles.error}>{errors.terms}</p>}
+      {errors.submit && <p className={styles.error} role="alert">{errors.submit}</p>}
+      {failed && <a href={waOrder} target="_blank" rel="noopener noreferrer" className={styles.waFallback} data-cta="order-fail-whatsapp"><WaIcon /> Message us on WhatsApp</a>}
+    </>
+  );
 
   return (
     <div className={`${styles.page} ${step > 1 ? styles.inner : ""}`}>
       <div className={styles.head}>
         <h1 className={`display ${styles.title}`}>Let&apos;s get you <em>shortlisted.</em></h1>
-        <p className={styles.sub}>Tell us about yourself. We&apos;ll contact you on your preferred channel.</p>
+        <p className={styles.sub}>Tell us about yourself. {pk ? "We\u2019ll contact you on WhatsApp." : "We\u2019ll contact you on your preferred channel."}</p>
         <div className={styles.stepRow}>
           {step > 1 && <button type="button" className={styles.roundBack} onClick={() => go(step - 1)} aria-label="Back">←</button>}
           <ol className={styles.steps} aria-label="Order steps">
@@ -379,39 +446,51 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 </div>
               )}
               {pk && offerLive && !bundle && (
-                <div className={styles.offerSwitch}>
-                  <span className={styles.offerFlame} aria-hidden="true"><Flame size={16} /></span>
-                  <p><b>11.11 Sale · {offer.headline} for {money(offer.price)}</b><small suppressHydrationWarning>Ends in {inline(offerClock)}</small></p>
-                  <button type="button" onClick={() => { choosePackage(offer.packageId); setAddons((a) => ({ ...a, [offer.addonId]: 1 })); }} data-cta="offer-order-switch">Switch to offer</button>
+                <div className={styles.offerStrip}>
+                  <i aria-hidden="true" />
+                  <p>11.11: {offer.headline}, {money(offer.price)}</p>
+                  <button type="button" onClick={() => { choosePackage(offer.packageId); toggleBundle(true); setTimeout(() => document.getElementById("pk-executive")?.scrollIntoView({ behavior: "smooth", block: "center" }), 60); }} data-cta="offer-order-switch">Switch →</button>
                 </div>
               )}
               {offerParam && !offerLive && <p className={styles.offerEnded}>This offer has ended. You can continue at normal prices.</p>}
               <div className={styles.packs} role="radiogroup" aria-label="Package">
                 {PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => {
                   const sel = p.id === packageId;
-                  const open = sel || viewOpen.includes(p.id);
                   const items = CHECKLIST(m.key, p.id);
                   return (
-                    <div key={p.id} className={`${styles.card} ${styles.pcard} ${sel ? styles.cardOn : ""} ${p.id === "international-pro" ? styles.hasBadge : ""}`}>
+                    <div key={p.id} id={`pk-${p.id}`} className={`${styles.card} ${styles.pcard} ${sel ? styles.cardOn : styles.prow} ${p.id === "international-pro" ? styles.hasBadge : ""}`}>
                       {p.id === "international-pro" && <span className={styles.pbadge}>Recommended</span>}
                       <label className={styles.ptop}>
                         <input type="radio" name="package" checked={sel} onChange={() => choosePackage(p.id)} />
                         <b className={styles.pname}>{p.name}</b>
                         <strong className={styles.pprice}>{p.priceLabel}</strong>
                         <small className={styles.paud}>{AUDIENCE[p.id]}</small>
-                        {p.id === "executive" && offerLive ? <small className={styles.ptagSale}>11.11 offer</small> : p.id === "executive" && addons.portfolio ? <small className={styles.ptag}>Best value with a website</small> : null}
+                        {p.id === "executive" && !offerLive && addons.portfolio ? <small className={styles.ptag}>Best value with a website</small> : null}
                       </label>
-                      <div className={`${styles.collapse} ${open ? styles.collapseOpen : ""}`}>
+                      <div className={`${styles.collapse} ${sel ? styles.collapseOpen : ""}`}>
                         <div className={styles.collapseIn}>
                           <ul className={styles.checks}>
                             {items.map((x) => <li key={x}>{localize(m, x)}</li>)}
                           </ul>
                         </div>
                       </div>
-                      {!open && (
-                        <p className={styles.pmore}>
-                          Includes {items.length} items · <button type="button" onClick={() => setViewOpen((s) => [...s, p.id])}>View</button>
-                        </p>
+                      {p.id === offer.packageId && pk && offerLive && (
+                        <div className={`${styles.collapse} ${sel ? styles.collapseOpen : ""}`}>
+                          <div className={styles.collapseIn}>
+                            <label className={`${styles.up} ${bundle ? styles.upOn : ""}`}>
+                              <input type="checkbox" checked={bundle} onChange={(e) => toggleBundle(e.target.checked)} data-cta="order-bundle-toggle" />
+                              <span className={styles.upBox} aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg></span>
+                              <span className={styles.upBody}>
+                                <span className={styles.upHead}><span className={styles.upTag}>11.11 Bundle</span><span className={styles.upPill}>Save {money(bundleSave)}</span></span>
+                                <span className={styles.upMain}>
+                                  <b className={styles.upTitle}>{offer.headline}</b>
+                                  <span className={styles.upPrice}><s>{money(offer.compareAt)}</s><strong>{money(offer.price)}</strong></span>
+                                </span>
+                                <span className={styles.upFoot}><span className={styles.upInc}><span><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg>Everything in Executive</span><span><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg>Personal portfolio website</span></span><span className={styles.upEnds} suppressHydrationWarning>Ends in {inline(offerClock)}</span></span>
+                              </span>
+                            </label>
+                          </div>
+                        </div>
                       )}
                     </div>
                   );
@@ -425,7 +504,6 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   <span className={styles.toggleText}>Same day delivery</span>
                   <span className={styles.toggleFee}>{pkg.sameDayLabel}</span>
                 </label>
-                <p className={styles.help}>Package documents only.</p>
               </div>
 
               <section className={styles.group} aria-labelledby="extras-title">
@@ -451,7 +529,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                         </div>
                         <div className={styles.actrl}>
                           {!on ? (
-                            <button type="button" className={styles.addBtn} onClick={() => set1(1)} aria-label={`Add ${o.name}`}>+ Add</button>
+                            <button type="button" className={`${styles.addBtn} ${styles.ghost}`} onClick={() => set1(1)} aria-label={`Add ${o.name}`}>+ Add</button>
                           ) : o.qty ? (
                             <span className={styles.stepper}>
                               <button type="button" onClick={() => set1(qty - 1)} aria-label={`Fewer ${o.name}`}>–</button>
@@ -473,7 +551,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
           {step === 2 && (
             <section aria-labelledby="details-title">
               <h2 id="details-title" className={styles.stepTitle}>Your details</h2>
-              <div className={styles.field}>
+              {!pk && (<div className={styles.field}>
                 <span className={styles.label}>How should we contact you?</span>
                 <div className={styles.contactCards} role="radiogroup" aria-label="How should we contact you?">
                   {([["whatsapp", "WhatsApp", <WaIcon key="w" />], ["email", "Email", <MailIcon key="m" />]] as const).map(([c, name, icon]) => (
@@ -483,8 +561,11 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                     </button>
                   ))}
                 </div>
-              </div>
-              <div key={v.contact} className={styles.swap}>
+              </div>)}
+              <div className={styles.grid2}>
+                <Field id="name" label="Full name *" error={errors.name}>
+                  <input id="name" className={styles.input} value={v.name} onChange={(e) => set("name", e.target.value)} autoComplete="name" aria-invalid={errors.name ? true : undefined} />
+                </Field>
                 {byEmail ? (
                   <Field id="email" label="Email *" error={errors.email}>
                     <input id="email" className={styles.input} type="email" value={v.email} onChange={(e) => set("email", e.target.value)} autoComplete="email" aria-invalid={errors.email ? true : undefined} />
@@ -497,23 +578,28 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                     </div>
                   </Field>
                 )}
+                <Field id="country" label="Target country *" error={errors.country}>
+                  <select id="country" className={styles.input} value={v.country} onChange={(e) => set("country", e.target.value)} aria-invalid={errors.country ? true : undefined}>
+                    {TARGET_COUNTRIES.map((c) => <option key={c}>{c}</option>)}
+                  </select>
+                </Field>
+                <Field id="role" label="Target role *" error={errors.role}>
+                  <input id="role" className={styles.input} placeholder="Project Manager" value={v.role} onChange={(e) => set("role", e.target.value)} aria-invalid={errors.role ? true : undefined} />
+                </Field>
               </div>
-              <p className={styles.contactNote}>We&apos;ll only use this to contact you about your order.</p>
-              <Field id="name" label="Full name *" error={errors.name}>
-                <input id="name" className={styles.input} value={v.name} onChange={(e) => set("name", e.target.value)} autoComplete="name" aria-invalid={errors.name ? true : undefined} />
-              </Field>
-              <Field id="country" label="Target country *" error={errors.country}>
-                <select id="country" className={styles.input} value={v.country} onChange={(e) => set("country", e.target.value)} aria-invalid={errors.country ? true : undefined}>
-                  {TARGET_COUNTRIES.map((c) => <option key={c}>{c}</option>)}
-                </select>
-              </Field>
-              <Field id="role" label="Target role *" error={errors.role}>
-                <input id="role" className={styles.input} placeholder="Project Manager" value={v.role} onChange={(e) => set("role", e.target.value)} aria-invalid={errors.role ? true : undefined} />
-              </Field>
-              <Dropzone id="cv" label={localize(m, "Current CV (optional)")} title={localize(m, "Upload your CV")} note="PDF, DOC or DOCX · max 10 MB" accept=".pdf,.doc,.docx" file={cv} onFile={setCv} error={errors.cv} />
-              <Field id="notes" label="Notes (optional)">
-                <textarea id="notes" className={`${styles.input} ${styles.textarea}`} maxLength={500} placeholder="Anything we should know?" value={v.notes} onChange={(e) => set("notes", e.target.value)} />
-              </Field>
+              {pk && (
+                <Field id="email" label="Email (optional)" error={errors.email}>
+                  <input id="email" className={styles.input} type="email" value={v.email} onChange={(e) => set("email", e.target.value)} autoComplete="email" aria-invalid={errors.email ? true : undefined} />
+                </Field>
+              )}
+              {!pk && <Dropzone id="cv" label={localize(m, "Current CV (optional)")} title={localize(m, "Upload your CV")} note="PDF, DOC or DOCX · max 5 MB" accept=".pdf,.doc,.docx" file={cv} onFile={setCv} error={errors.cv} small />}
+              {noteOpen || v.notes ? (
+                <Field id="notes" label="Note">
+                  <textarea id="notes" className={`${styles.input} ${styles.textarea}`} maxLength={500} placeholder="Anything we should know?" value={v.notes} onChange={(e) => set("notes", e.target.value)} autoFocus={noteOpen && !v.notes} />
+                </Field>
+              ) : (
+                <button type="button" className={styles.linkBtn} onClick={() => setNoteOpen(true)}>+ Add a note</button>
+              )}
             </section>
           )}
 
@@ -523,7 +609,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
               {!pk ? (
                 <div className={`${styles.card} ${styles.info}`}>
                   <Shield />
-                  <p>No payment needed now. We&apos;ll send a secure payment link on your preferred channel.</p>
+                  <p>No payment needed now. We&apos;ll send a secure payment link on WhatsApp.</p>
                 </div>
               ) : (
                 <>
@@ -540,10 +626,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   </button>
                 </div>
                 {later ? (
-                <div className={`${styles.card} ${styles.info}`}>
-                  <Shield />
-                  <p>We&apos;ll message you on {channel} to confirm your order and share payment details.</p>
-                </div>
+                  <p className={styles.laterLine}>We&apos;ll confirm on WhatsApp and share payment details.</p>
                 ) : (
                 <div className={`${styles.card} ${styles.payCard}`}>
                   <div className={styles.due}>
@@ -560,8 +643,8 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                       <img src={PAYMENTS.easypaisa.qr} alt="Easypaisa QR code" width={150} height={150} onError={() => setQrOk(false)} />
                     </figure>
                   )}
-                  <div className={styles.payRows}>
-                    <PayRow label="Account title" value="Muhammad Hamza" />
+                  <div className={styles.acct}>
+                    <PayRow label="Account title" value="Muhammad Hamza" copy="Muhammad Hamza" />
                     {method === "easypaisa" ? (
                       <PayRow label="Account number" value={PAYMENTS.easypaisa.number} copy={PAYMENTS.easypaisa.copy} />
                     ) : (
@@ -572,13 +655,10 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                     )}
                   </div>
                   <div className={styles.payUpload}>
-                    <Dropzone id="shot" label="Payment screenshot *" title="Upload screenshot" note="PNG or JPG · max 10 MB" accept="image/*" file={shot} onFile={setShot} error={errors.shot} small />
+                    <Dropzone id="shot" label="Payment screenshot *" title="Upload screenshot" note="JPG, PNG, WEBP or PDF · max 4 MB" accept="image/jpeg,image/png,image/webp,application/pdf" file={shot} onFile={onShot} error={errors.shot} state={shotState} small />
                     <Field id="txn" label="Transaction ID (optional)">
                       <input id="txn" className={styles.input} value={txn} onChange={(e) => setTxn(e.target.value)} />
                     </Field>
-                  </div>
-                  <div className={styles.payFoot}>
-                    <p><Shield /> Your payment is safe. Confirmed on WhatsApp within a few hours.</p>
                   </div>
                 </div>
                 )}
@@ -590,48 +670,41 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
           {step === 4 && (
             <section aria-labelledby="review-title">
               <h2 id="review-title" className={styles.stepTitle}>Review your order</h2>
-              <div className={styles.review}>
-                <div className={styles.card}>
+              <div className={`${styles.card} ${styles.review}`}>
+                <div className={styles.rSec}>
                   <div className={styles.rHead}><h3>Package</h3><button type="button" onClick={() => go(1)}>Edit</button></div>
                   <dl className={styles.rList}>
-                    {bundle ? <div className={styles.sumBundle}><dt><b>{offer.title}</b><span>{offer.headline}</span></dt><dd><s>{money(offer.compareAt)}</s>{money(bundleLine)}<em>Save {money(bundleSave)}</em></dd></div> : <div><dt>{pkg.name}</dt><dd>{money(pkg.price)}</dd></div>}
-                    {shownList.map((a) => <div key={a.id}><dt>{a.name}{a.qty > 1 && <span className={styles.sumQty}> × {a.qty}</span>}</dt><dd>{money(a.total)}</dd></div>)}
-                    {sameDay && <div><dt>Same day delivery</dt><dd>{pkg.sameDayLabel}</dd></div>}
+                    <div><dt>Package</dt><dd>{bundle ? offer.headline : pkg.name}</dd></div>
+                    {shownList.map((a) => <div key={a.id}><dt>Extra</dt><dd>{a.name}{a.qty > 1 ? ` × ${a.qty}` : ""}</dd></div>)}
+                    <div><dt>Delivery</dt><dd>{sameDay ? "Same day" : pkg.deliveryDays}</dd></div>
                   </dl>
                 </div>
-                <div className={styles.card}>
-                  <div className={styles.rHead}><h3>Your details</h3><button type="button" onClick={() => go(2)}>Edit</button></div>
-                  <ul className={styles.rText}>
-                    <li>{byEmail ? `Email · ${v.email}` : `WhatsApp · ${v.code} ${v.whatsapp}`}</li>
-                    <li>{v.name}</li>
-                    <li>{v.country} · {v.role}</li>
-                    {cv && <li>{cv.name}</li>}
-                  </ul>
+                <div className={styles.rSec}>
+                  <div className={styles.rHead}><h3>Details</h3><button type="button" onClick={() => go(2)}>Edit</button></div>
+                  <dl className={styles.rList}>
+                    {byEmail ? <div><dt>Email</dt><dd>{v.email}</dd></div> : <div><dt>WhatsApp</dt><dd>{v.code} {v.whatsapp}</dd></div>}
+                    <div><dt>Name</dt><dd>{v.name}</dd></div>
+                    <div><dt>Country</dt><dd>{v.country}</dd></div>
+                    <div><dt>Role</dt><dd>{v.role}</dd></div>
+                    {pk && v.email && <div><dt>Email</dt><dd>{v.email}</dd></div>}
+                    {cv && <div><dt>CV</dt><dd>{cv.name}</dd></div>}
+                  </dl>
                 </div>
-                <div className={styles.card}>
+                <div className={styles.rSec}>
                   <div className={styles.rHead}><h3>Payment</h3><button type="button" onClick={() => go(3)}>Edit</button></div>
-                  <ul className={styles.rText}>
-                    {!pk ? <li>Payment link on {channel}</li> : later ? <li>Pay after confirmation</li> : (
+                  <dl className={styles.rList}>
+                    {!pk ? <div><dt>Method</dt><dd>Payment link on {channel}</dd></div> : later ? <div><dt>Method</dt><dd>Pay after confirmation</dd></div> : (
                       <>
-                        <li>{method === "ubl" ? "UBL Bank" : "Easypaisa / JazzCash"}</li>
-                        {shot && <li className={styles.ok}>Screenshot uploaded ✓</li>}
-                        {txn && <li>Transaction ID · {txn}</li>}
+                        <div><dt>Method</dt><dd>{method === "ubl" ? "UBL Bank" : "Easypaisa / JazzCash"}</dd></div>
+                        {shot && <div><dt>Screenshot</dt><dd className={styles.ok}>✓</dd></div>}
+                        {txn && <div><dt>Transaction ID</dt><dd>{txn}</dd></div>}
                       </>
                     )}
-                  </ul>
+                  </dl>
                 </div>
               </div>
-              <div className={styles.totalBox}>
-                <div><span>Total</span><strong key={due} className={styles.totalNum}>{money(due)}</strong></div>
-                <p><Shield /> 100% money back guarantee</p>
-              </div>
-              <label className={styles.terms}>
-                <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} aria-invalid={errors.terms ? true : undefined} />
-                <span>I agree to the <Link href="/terms" target="_blank">Terms</Link>, <Link href="/privacy" target="_blank">Privacy Policy</Link> and <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
-              </label>
-              {errors.terms && <p className={styles.error}>{errors.terms}</p>}
-              {errors.submit && <p className={styles.error} role="alert">{errors.submit}</p>}
-              {continueBtn(styles.finalBtn)}
+              <div className={styles.mOnly}>{finish}</div>
+              <Turnstile onToken={setTsToken} />
             </section>
           )}
         </form>
@@ -639,6 +712,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         <aside className={`${styles.card} ${styles.summary}`} aria-label="Order summary">
           <h2>Order summary</h2>
           {summaryLines}
+          {last && <div className={styles.sumFinish}>{finish}</div>}
           {continueBtn(styles.summaryContinue)}
         </aside>
       </div>

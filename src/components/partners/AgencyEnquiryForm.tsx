@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { whatsappMessage } from "@/lib/site";
 import { trackEvent } from "@/lib/analytics";
+import Turnstile from "@/components/forms/Turnstile";
 import "./enquiry-form.css";
 
 const ORGANIZATIONS = ["Recruitment agency", "OEP", "Career coach", "Employer or HR", "Training institute", "Other"];
@@ -58,6 +59,8 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
   const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
   const [handoffUrl, setHandoffUrl] = useState("");
+  const [ts, setTs] = useState("");
+  const hp = useRef<HTMLInputElement>(null);
   const [storageUnavailable, setStorageUnavailable] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const firstRender = useRef(true);
@@ -92,6 +95,12 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
     const message = messageFor(form);
     const url = whatsappMessage(message);
     setHandoffUrl(url);
+    // Saved for the CRM in the background; the WhatsApp handoff never waits for it.
+    const ck = (n: string) => document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? null;
+    fetch("/api/partners", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify({
+      turnstile: ts, name: form.name, orgName: form.organization, orgType: form.organizationType || null, code: form.code, whatsapp: form.phone, email: form.email || null,
+      countryHq: form.country || null, monthlyVolume: form.volume || null, model: form.model || null, notes: form.notes || null, website: hp.current?.value ?? "", fbp: ck("_fbp"), fbc: ck("_fbc"),
+    }) }).catch(() => {});
     try {
       localStorage.setItem("pixely:agency-enquiry", JSON.stringify({ ...form, message, createdAt: new Date().toISOString() }));
     } catch { setStorageUnavailable(true); }
@@ -167,6 +176,7 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
           )}
           <div className="agency-form-navigation">
             {step === 2 && <button type="button" className="agency-form-back" onClick={() => { setErrors({}); setStep(1); }}>Back</button>}
+            {step === 2 && <><input ref={hp} type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1 }} /><Turnstile onToken={setTs} /></>}
             <button className="agency-form-submit" type="submit" data-cta={step === 1 ? "agency-form-next" : "agency-form-schedule"}>{step === 1 ? "Next" : "Schedule my call"} <span className="agency-button-arrow">→</span></button>
           </div>
         </div>

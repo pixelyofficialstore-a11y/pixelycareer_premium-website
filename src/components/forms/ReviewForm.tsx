@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 import { MARKETS, localize, type MarketKey } from "@/config/markets";
 import { ArrowRight } from "@/components/ui/Icons";
 import { TARGET_COUNTRIES, whatsappMessage } from "@/lib/site";
+import Turnstile from "./Turnstile";
 import { CODES, Field, Handoff, focusFirstError, inputProps, validPhone, type Errors } from "./Fields";
 
 export default function ReviewForm({ market }: { market: MarketKey }) {
@@ -10,6 +11,7 @@ export default function ReviewForm({ market }: { market: MarketKey }) {
   const form = useRef<HTMLFormElement>(null);
   const [errors, setErrors] = useState<Errors>({});
   const [url, setUrl] = useState<string | null>(null);
+  const [ts, setTs] = useState("");
 
   const submit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,6 +28,11 @@ export default function ReviewForm({ market }: { market: MarketKey }) {
       return;
     }
     const link = whatsappMessage(localize(m, `Hi, I'd like a free CV review.\nName: ${v("name")}\nTarget: ${v("role")}, ${v("country")}\nI'll attach my CV here.`));
+    // Saved for the CRM in the background; the WhatsApp handoff never waits for it.
+    const ck = (n: string) => document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? null;
+    fetch("/api/cv-review", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify({
+      turnstile: ts, market, name: v("name"), code: v("code"), whatsapp: v("whatsapp"), targetRole: v("role"), targetCountry: v("country"), website: v("website"), fbp: ck("_fbp"), fbc: ck("_fbc"),
+    }) }).catch(() => {});
     setUrl(link);
     window.open(link, "_blank", "noopener,noreferrer");
   };
@@ -63,6 +70,8 @@ export default function ReviewForm({ market }: { market: MarketKey }) {
         <Field id="role" label="Target role" required error={errors.role}>
           <input {...inputProps("role", errors.role, true)} type="text" />
         </Field>
+        <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1 }} />
+        <Turnstile onToken={setTs} />
         <button type="submit" className="btn btn-primary mt-3 min-h-14 w-full cursor-pointer text-[1.0625rem]" data-cta="review-send-request">
           Request my free review
           <ArrowRight />

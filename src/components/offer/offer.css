@@ -205,4 +205,4 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
 /* Compact: no checklist; stats sit right under the subtext */
 #final-cta:has(.of-fcard) { padding-block: 56px !important; }
 .of-fstats { margin-top: 28px; }
-.final-grid:has(.of-fcard) { grid-template-columns: minmax(0, 1fr) 380px; }
+@media (min-width: 901px) { .final-grid:has(.of-fcard) { grid-template-columns: minmax(0, 1fr) 380px; } }

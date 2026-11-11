@@ -100,7 +100,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     faq: [
       { q: "Can you make my CV for Gulf or Europe jobs?", a: "Yes. Gulf, UK, Europass and international formats." },
       { q: "What are the payment methods?", a: "JazzCash, Easypaisa or bank transfer. Upload your payment screenshot with your order." },
-      { q: "How do I know my payment was received?", a: "We verify it manually and confirm on WhatsApp, usually within a few hours." },
+      { q: "How do I know my payment was received?", a: "We verify it manually and confirm on WhatsApp, usually within a few minutes." },
     ],
     meta: {
       title: "CV Writing for Global Recruiters | Pixely Careers",

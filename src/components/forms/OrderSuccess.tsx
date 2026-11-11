@@ -8,7 +8,7 @@ import styles from "./OrderForm.module.css";
 export default function OrderSuccess({ id, contact, market, paid }: { id: string; contact: string; market?: string; paid: boolean }) {
   const [copied, setCopied] = useState(false);
   const m = MARKETS[isMarketKey(market) ? market : "us"];
-  const orderId = /^PC-\d{6}$/.test(id) ? id : "";
+  const orderId = /^[A-F0-9]{8}$/.test(id) ? id : "";
   const url = whatsappMessage(orderId ? `Hi Pixely Careers, I just placed order ${orderId}.` : "Hi Pixely Careers, I just placed an order.");
   return (
     <div className={styles.success}>
@@ -16,7 +16,7 @@ export default function OrderSuccess({ id, contact, market, paid }: { id: string
         <circle cx="28" cy="28" r="25" />
         <path d="m18 29 7 7 13-14" />
       </svg>
-      <h1 className="display">You&apos;re all set.</h1>
+      <h1 className="display">Order received</h1>
       {orderId && (
         <button
           type="button"
@@ -29,8 +29,7 @@ export default function OrderSuccess({ id, contact, market, paid }: { id: string
         </button>
       )}
       <p className={styles.successText}>
-        We&apos;ll contact you on {contact === "email" ? "email" : "WhatsApp"} shortly.
-        {paid && <><br />We&apos;ll confirm your payment within a few hours.</>}
+        {contact === "email" ? "We\u2019ll confirm your payment by email within a few minutes." : "We\u2019ll confirm your payment on WhatsApp within a few minutes."}
       </p>
       <ol className={styles.timeline}>
         <li><span>1</span>We confirm your order</li>

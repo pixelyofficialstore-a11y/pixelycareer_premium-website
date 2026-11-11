@@ -1,33 +1,26 @@
-import { readdir, readFile } from "node:fs/promises";
-import path from "node:path";
+import "server-only";
+import { and, count, eq, gte, inArray } from "drizzle-orm";
 import { getOffer, offerOpen, type Offer, type OfferState } from "@/config/offers";
+import { db, orders } from "@/lib/db";
 
 const TTL = 60_000;
 const cache = new Map<string, { at: number; used: number }>();
 
-type OrderRecord = { package?: string; addons?: { id: string }[]; offer_id?: string; status?: string; payment_choice?: string; created_at?: string };
-
-/**
- * Slots used: paid or confirmed orders with the package and add-on since the offer started.
- * "Paid" means a payment screenshot came with the order (payment_choice "now"); a status of
- * "paid" or "confirmed" set by the team also counts. Cached for 60 seconds.
- */
+/** Slots used: offer orders since the offer started that came with a payment or were marked paid by the team. Cached for 60 seconds. */
 async function usedSlots(o: Offer) {
   const hit = cache.get(o.id);
   if (hit && Date.now() - hit.at < TTL) return hit.used;
-  const dir = process.env.ORDERS_DIR ?? path.join(process.cwd(), ".orders");
   let used = 0;
-  try {
-    const files = (await readdir(dir)).filter((f) => f.endsWith(".json"));
-    for (const f of files) {
-      try {
-        const r = JSON.parse(await readFile(path.join(dir, f), "utf8")) as OrderRecord;
-        const match = r.offer_id === o.id || (r.package === o.packageId && r.addons?.some((a) => a.id === o.addonId));
-        const paid = r.status === "paid" || r.status === "confirmed" || r.payment_choice === "now";
-        if (match && paid && r.created_at && Date.parse(r.created_at) >= Date.parse(o.startsAt)) used++;
-      } catch {}
-    }
-  } catch {}
+  if (process.env.DATABASE_URL) {
+    try {
+      const [r] = await db().select({ n: count() }).from(orders).where(and(
+        eq(orders.offer, o.id),
+        inArray(orders.status, ["payment_submitted", "paid", "in_progress", "delivered"]),
+        gte(orders.createdAt, new Date(o.startsAt)),
+      ));
+      used = Number(r?.n ?? 0);
+    } catch { /* the offer stays open if the database is briefly unreachable */ }
+  }
   cache.set(o.id, { at: Date.now(), used });
   return used;
 }
