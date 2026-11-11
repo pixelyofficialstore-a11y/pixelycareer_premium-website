@@ -2626,10 +2626,11 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
 @media (max-width: 767px) { #main#main#main:has([data-pricing-page]) section#pricing[aria-label="Pricing packages"] { padding: 0 1.25rem 48px; } }
 
 /* Footer: accepted payment logos */
-.pay-logos { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; white-space: nowrap; font-size: 13px; color: rgb(255 255 255 / 0.7); }
-.pay-logo { display: inline-flex; align-items: center; height: 30px; padding: 0 10px; border-radius: 8px; background: #fff; }
-.pay-logo img { display: block; width: auto; height: 18px; }
-@media (max-width: 767px) { .pay-logos { gap: 6px; font-size: 12px; } .pay-logo { height: 26px; padding: 0 7px; } .pay-logo img { height: 14px; } }
+.pay-logos { display: flex; flex-wrap: nowrap; align-items: center; gap: 18px; white-space: nowrap; font-size: 13px; color: rgb(255 255 255 / 0.7); }
+.pay-logo { display: inline-flex; align-items: center; height: 24px; }
+.pay-logo img { display: block; width: auto; height: 18px; filter: brightness(0) invert(1); opacity: 0.75; transition: opacity 200ms ease; }
+.pay-logo:hover img { opacity: 1; }
+@media (max-width: 767px) { .pay-logos { gap: 14px; font-size: 12px; } .pay-logo { height: 22px; } .pay-logo img { height: 14px; } }
 
 /* Footer: contact list with icons, payment chips (pk) */
 .foot-contact { display: flex; align-items: center; gap: 12px; min-height: 36px; color: rgb(255 255 255 / 0.75); font-size: 14px; text-decoration: none; transition: color 150ms ease; }
