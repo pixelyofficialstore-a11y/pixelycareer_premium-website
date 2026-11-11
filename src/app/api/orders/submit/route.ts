@@ -7,7 +7,10 @@ import { ownUpload } from "@/lib/server/cloudinary";
 import { and, eq, notInArray } from "drizzle-orm";
 import { db, orders } from "@/lib/db";
 import { ORDER_COOKIE, orderBody, saveOrder } from "@/lib/server/orders";
-import { fail, limited, normalizePhone, opt, readJson, turnstileOk } from "@/lib/server/request";
+import { cookies } from "next/headers";
+import { MARKETS } from "@/config/markets";
+import { sendCapi } from "@/lib/server/capi";
+import { attribution, fail, limited, normalizePhone, opt, readJson, turnstileOk } from "@/lib/server/request";
 
 export const runtime = "nodejs";
 
@@ -55,6 +58,11 @@ export async function POST(req: Request) {
     });
     if (!row) return fail();
     clearOfferCache();
+    // Conversions API Lead with the order total; the browser Pixel fires the same event_id. Fire and forget.
+    const attr = await attribution(req, { fbp: b.fbp, fbc: b.fbc, market: b.market });
+    const vid = (await cookies()).get("px_vid")?.value ?? null;
+    void sendCapi("Lead", `Lead_${row.eventId}`, { phone: normalizePhone(b.whatsapp, b.code ?? ""), email: b.email, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, row.id] },
+      { value: row.total, currency: MARKETS[b.market as keyof typeof MARKETS]?.currency ?? "PKR", content_ids: [b.package], content_name: b.package, content_type: "product" }, req.headers.get("referer"));
     const res = NextResponse.json({ ref: row.id.slice(0, 8).toUpperCase(), eventId: row.eventId, total: row.total });
     res.cookies.delete(ORDER_COOKIE);
     return res;

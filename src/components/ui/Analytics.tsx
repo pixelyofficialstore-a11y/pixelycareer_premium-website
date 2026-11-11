@@ -1,13 +1,32 @@
 "use client";
 import Script from "next/script";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import { enableMeta, track, visitorId } from "@/lib/meta";
 import { GA4_ID, META_PIXEL_ID, trackFunnel } from "@/lib/analytics";
 
 /** Renders and does nothing until NEXT_PUBLIC_GA4_ID or NEXT_PUBLIC_META_PIXEL_ID is set. */
-export default function Analytics() {
+export default function Analytics({ allowLocal = false }: { allowLocal?: boolean }) {
   const path = usePathname();
   const enabled = !!(GA4_ID || META_PIXEL_ID);
+  // Meta: never on localhost unless META_TEST_EVENT_CODE is set (then events show in Test events).
+  const [pixel, setPixel] = useState<{ vid: string } | null>(null);
+  useEffect(() => {
+    if (!META_PIXEL_ID || (!allowLocal && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname))) return;
+    enableMeta();
+    setPixel({ vid: visitorId() });
+  }, [allowLocal]);
+  // PageView on first load and on every route change, once per page.
+  const lastPage = useRef("");
+  useEffect(() => {
+    if (!pixel || path.startsWith("/api") || lastPage.current === path) return;
+    lastPage.current = path;
+    track("PageView");
+    if (/^\/services\/[^/]+/.test(path)) {
+      const slug = path.split("/")[2];
+      track("ViewContent", { content_name: document.title.split("|")[0].trim(), content_ids: [slug], content_type: "product" });
+    }
+  }, [pixel, path]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -49,8 +68,12 @@ export default function Analytics() {
           <Script id="ga4" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config','${GA4_ID}');`}</Script>
         </>
       )}
+      {META_PIXEL_ID && pixel && (
+        <Script id="meta-pixel" strategy="afterInteractive">{`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}',{external_id:'${pixel.vid}'});`}</Script>
+      )}
       {META_PIXEL_ID && (
-        <Script id="meta-pixel" strategy="afterInteractive">{`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}');fbq('track','PageView');`}</Script>
+        // eslint-disable-next-line @next/next/no-img-element
+        <noscript><img height="1" width="1" style={{ display: "none" }} alt="" src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`} /></noscript>
       )}
     </>
   );

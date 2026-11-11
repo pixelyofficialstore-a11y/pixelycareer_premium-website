@@ -4,9 +4,10 @@
  * Purchase is never sent from the browser: it goes through the Conversions API when an order is marked paid.
  */
 export const GA4_ID = process.env.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA4_ID;
-export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+import { track } from "./meta";
+export { META_PIXEL_ID } from "./meta";
 
-type Win = Window & { gtag?: (...a: unknown[]) => void; fbq?: (...a: unknown[]) => void };
+type Win = Window & { gtag?: (...a: unknown[]) => void };
 
 /** GA4 only: the site's own events (view_promotion, select_promotion, ...). */
 export function trackEvent(name: string, params: Record<string, unknown> = {}) {
@@ -53,19 +54,10 @@ export function trackFunnel(step: keyof typeof FUNNEL, c: Commerce) {
   const w = window as Win;
   const [meta, ga] = FUNNEL[step];
   const eventId = c.orderId ?? cartId();
-  w.fbq?.("track", meta, {
-    content_name: c.name, content_ids: c.ids, content_type: "product", value: c.value, currency: c.currency,
-    ...(c.items ? { num_items: c.items } : {}), ...(c.orderId ? { order_id: c.orderId } : {}),
-  }, { eventID: `${meta}_${eventId}` });
-  // Mirror to the server: stored in website.events and sent to the Conversions API with the same event id.
-  const NAMES = { view: "view_content", cart: "add_to_cart", checkout: "initiate_checkout", payment: "add_payment_info", lead: "lead" } as const;
-  const cookie = (n: string) => document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? null;
-  try {
-    fetch("/api/track", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify({
-      name: NAMES[step], eventId: `${meta}_${eventId}`, sessionId: cartId() || null,
-      value: c.value, currency: c.currency, page: location.href.slice(0, 500), meta: { content_name: c.name, content_ids: c.ids }, fbp: cookie("_fbp"), fbc: cookie("_fbc"),
-    }) }).catch(() => {});
-  } catch {}
+  // Lead: the server sends the Conversions API event itself (with the contact details), so the browser only fires the Pixel.
+  track(meta, {
+    content_name: c.name, content_ids: c.ids, content_type: "product", value: c.value, currency: c.currency, ...(c.items ? { num_items: c.items } : {}),
+  }, { eventId: `${meta}_${eventId}`, server: step !== "lead" });
   w.gtag?.("event", ga, {
     value: c.value, currency: c.currency, ...(c.orderId ? { transaction_id: c.orderId } : {}), event_id: `${ga}_${eventId}`,
     items: c.ids.map((id) => ({ item_id: id, item_name: c.name })),

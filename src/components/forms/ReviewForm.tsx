@@ -1,4 +1,5 @@
 "use client";
+import { newEventId, track } from "@/lib/meta";
 import { useRef, useState } from "react";
 import { MARKETS, localize, type MarketKey } from "@/config/markets";
 import { ArrowRight } from "@/components/ui/Icons";
@@ -30,8 +31,10 @@ export default function ReviewForm({ market }: { market: MarketKey }) {
     const link = whatsappMessage(localize(m, `Hi, I'd like a free CV review.\nName: ${v("name")}\nTarget: ${v("role")}, ${v("country")}\nI'll attach my CV here.`));
     // Saved for the CRM in the background; the WhatsApp handoff never waits for it.
     const ck = (n: string) => document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? null;
+    const leadId = newEventId("Lead");
+    track("Lead", { content_name: "cv_review", content_ids: ["cv_review"], content_type: "product", value: 0, currency: "PKR" }, { eventId: leadId, server: false });
     fetch("/api/cv-review", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify({
-      turnstile: ts, market, name: v("name"), code: v("code"), whatsapp: v("whatsapp"), targetRole: v("role"), targetCountry: v("country"), website: v("website"), fbp: ck("_fbp"), fbc: ck("_fbc"),
+      turnstile: ts, market, name: v("name"), code: v("code"), whatsapp: v("whatsapp"), targetRole: v("role"), targetCountry: v("country"), website: v("website"), fbp: ck("_fbp"), fbc: ck("_fbc"), eventId: leadId,
     }) }).catch(() => {});
     setUrl(link);
     window.open(link, "_blank", "noopener,noreferrer");

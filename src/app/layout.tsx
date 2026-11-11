@@ -74,7 +74,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main">{children}</main>
         <Footer />
         <StickyBar />
-        <Analytics />
+        <Analytics allowLocal={!!process.env.META_TEST_EVENT_CODE} />
       </body>
     </html>
   );
