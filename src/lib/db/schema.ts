@@ -38,7 +38,7 @@ export const orders = website.table("orders", {
   total: integer("total").notNull(),
   currency: text("currency").notNull(),
   name: text("name"), whatsapp: text("whatsapp"), email: text("email"),
-  targetCountry: text("target_country"), targetRole: text("target_role"), notes: text("notes"),
+  targetCountry: text("target_country"), targetCountries: text("target_countries").array(), targetRole: text("target_role"), notes: text("notes"),
   cvUrl: text("cv_url"), cvPublicId: text("cv_public_id"),
   paymentMethod: text("payment_method"), paymentScreenshotUrl: text("payment_screenshot_url"), paymentScreenshotPublicId: text("payment_screenshot_public_id"), transactionId: text("transaction_id"),
   stepReached: integer("step_reached").notNull().default(1),
@@ -59,7 +59,7 @@ export const cvReviews = website.table("cv_reviews", {
   ...base(),
   status: reviewStatus("status").notNull().default("new"),
   name: text("name").notNull(), whatsapp: text("whatsapp").notNull(), email: text("email"),
-  targetRole: text("target_role"), targetCountry: text("target_country"),
+  targetRole: text("target_role"), targetCountry: text("target_country"), targetCountries: text("target_countries").array(),
   cvUrl: text("cv_url"), cvPublicId: text("cv_public_id"), cvFilename: text("cv_filename"), notes: text("notes"),
 }, (t) => [index("cv_reviews_status_idx").on(t.status), index("cv_reviews_created_at_idx").on(t.createdAt), index("cv_reviews_whatsapp_idx").on(t.whatsapp)]).enableRLS();
 

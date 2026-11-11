@@ -9,6 +9,16 @@ const ATTR = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_te
  * - px_attr: first touch attribution (utm, fbclid, gclid, referrer, landing page) for 30 days, attached to every database insert.
  */
 export function proxy(request: NextRequest) {
+  // One canonical domain: www and http go to https://pixelycareers.com with a 308 (API calls are relative and never pass through here).
+  const host = request.headers.get("host") ?? "";
+  const proto = request.headers.get("x-forwarded-proto");
+  if (process.env.NODE_ENV === "production" && (host.startsWith("www.") || (proto === "http" && host.endsWith("pixelycareers.com")))) {
+    const url = request.nextUrl.clone();
+    url.protocol = "https:";
+    url.host = host.replace(/^www./, "");
+    url.port = "";
+    return NextResponse.redirect(url, 308);
+  }
   const response = NextResponse.next();
   if (!request.cookies.has("pc_geo")) {
     const country = request.headers.get("x-vercel-ip-country") ?? request.headers.get("cf-ipcountry") ?? request.headers.get("x-country-code");

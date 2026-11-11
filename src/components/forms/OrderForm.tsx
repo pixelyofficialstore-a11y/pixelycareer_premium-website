@@ -9,7 +9,8 @@ import { PAYMENTS } from "@/config/payments";
 import { cartId, setCartId, trackFunnel, type Commerce } from "@/lib/analytics";
 import { useCountdown, useOffer } from "@/components/offer/useOffer";
 import { inline } from "@/components/offer/Offer";
-import { TARGET_COUNTRIES, whatsappMessage } from "@/lib/site";
+import { whatsappMessage } from "@/lib/site";
+import CountryPicker from "./CountryPicker";
 import { CODES } from "./Fields";
 import Turnstile from "./Turnstile";
 import styles from "./OrderForm.module.css";
@@ -19,7 +20,7 @@ const COUNTRY: Record<MarketKey, string> = { us: "USA", uk: "UK", ae: "UAE", sa:
 /** Short checklist per package: each item fits one line. */
 const CHECKLIST = (key: string, id: PackageId) => {
   const gulf = key === "ae" || key === "sa" || key === "pk";
-  if (id === "ats-career") return ["ATS CV", "Cover letter", "LinkedIn content", "Job keywords", "PDF and Word files"];
+  if (id === "ats-career") return ["ATS / Europass CV", "Cover letter", "LinkedIn content", "Job keywords", "PDF and Word files"];
   if (id === "international-pro") return ["Everything in ATS", "International CV", "LinkedIn makeover", gulf ? "Indeed + Naukrigulf" : "Indeed", "Bio statement", "Contact card"];
   return ["Everything in Pro", "Executive CV", "Visual profile", "10 LinkedIn posts", "Interview guide"];
 };
@@ -103,7 +104,7 @@ function PayRow({ label, value, copy, mono }: { label: string; value: string; co
   );
 }
 
-export type Restore = { id: string; name: string; email: string; whatsapp: string; contact: string; country: string; role: string; sameDay: boolean };
+export type Restore = { id: string; name: string; email: string; whatsapp: string; contact: string; country: string; countries?: string[]; role: string; sameDay: boolean };
 
 /** utm_source, utm_campaign and the Meta click ids from the URL, the cookies, or earlier in this visit (saved by the announcement bar). */
 function readUtm() {
@@ -131,6 +132,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   // Add-ons the visitor picked themselves. The bundled website lives in bundleOn, never in here.
   const [addons, setAddons] = useState<Selection>(initialAddons ?? {});
   const [bundleOn, setBundleOn] = useState(offerParam);
+  const [countries, setCountries] = useState<string[]>(() => restore?.countries?.length ? restore.countries : [restore?.country || COUNTRY[market]]);
   const [v, setV] = useState(() => {
     // A restored cart stores the number with its country code; the form keeps them apart.
     const code = restore?.whatsapp ? CODES.filter((x) => restore.whatsapp.startsWith(x)).sort((a, b) => b.length - a.length)[0] ?? m.phoneCode : m.phoneCode;
@@ -251,7 +253,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         const ok = /^\d+$/.test(digits) && (v.code === "+92" ? digits.length === 10 : digits.length >= 7 && digits.length <= 15);
         if (!ok) e.whatsapp = v.code === "+92" ? "Enter 10 digits after +92." : "Enter 7 to 15 digits.";
       }
-      if (!v.country) e.country = "Choose your target country.";
+      if (!countries.length) e.country = "Choose at least one target country.";
       if (!v.role.trim()) e.role = "Enter your target role.";
       if (!pk && cv && (cv.size > CV_MAX || !/\.(pdf|docx?)$/i.test(cv.name))) e.cv = "Upload a PDF, DOC or DOCX under 5 MB.";
     }
@@ -315,9 +317,9 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const orderPayload = () => {
     const u = readUtm();
     return {
-      market, package: packageId, addons, sameDay, bundle, payChoice: pk ? (payNow ? "now" : "later") : null, step,
+      market, package: bundle ? "executive_bundle" : packageId, addons, sameDay, bundle, payChoice: pk ? (payNow ? "now" : "later") : null, step,
       name: v.name || null, code: v.code, whatsapp: v.whatsapp || null, email: v.email.trim() || null,
-      targetCountry: v.country || null, targetRole: v.role || null, notes: v.notes || null,
+      targetCountry: countries[0] || null, targetCountries: countries, targetRole: v.role || null, notes: v.notes || null,
       fbp: u.fbp || null, fbc: u.fbc || null, eventId: cartId() || undefined, resume: restore?.id ?? null,
     };
   };
@@ -327,7 +329,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     }, 900);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, v.whatsapp, v.code, v.email, v.name, v.country, v.role, packageId, JSON.stringify(addons), sameDay, bundle, later]);
+  }, [step, v.whatsapp, v.code, v.email, v.name, v.country, JSON.stringify(countries), v.role, packageId, JSON.stringify(addons), sameDay, bundle, later]);
   const cont = () => { if (validate(step)) go(step + 1); };
 
   const submit = async () => {
@@ -367,7 +369,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     ...(sameDay ? ["Same day delivery"] : []),
     `Total: ${money(due)}`,
     v.name && `Name: ${v.name}`,
-    v.role && `Role: ${v.role}, ${v.country}`,
+    v.role && `Role: ${v.role}, ${countries.join(", ")}`,
     pk ? (payNow ? `Paid by ${method === "ubl" ? "UBL Bank" : "Easypaisa / JazzCash"}${txn ? `, ID ${txn}` : ""}` : "Pay later") : "",
   ].filter(Boolean).join("\n"));
 
@@ -454,14 +456,25 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
               )}
               {offerParam && !offerLive && <p className={styles.offerEnded}>This offer has ended. You can continue at normal prices.</p>}
               <div className={styles.packs} role="radiogroup" aria-label="Package">
+                {pk && offerLive && (
+                  <div id="pk-executive_bundle" className={`${styles.card} ${styles.pcard} ${bundle ? styles.cardOn : styles.prow} ${styles.hasBadge} ${styles.bundleCard}`}>
+                    <span className={`${styles.pbadge} ${styles.bundleBadge}`}>11.11 Sale</span>
+                    <label className={styles.ptop}>
+                      <input type="radio" name="package" checked={bundle} onChange={() => { choosePackage(offer.packageId); toggleBundle(true); }} data-cta="order-package-executive_bundle" />
+                      <b className={styles.pname}>11.11 Bundle</b>
+                      <strong className={styles.pprice}><s className={styles.bundleWas}>{money(offer.compareAt)}</s> {money(offer.price)}</strong>
+                      <small className={styles.paud}>{offer.headline}. Only {offer.totalSlots} slots, ends in <span suppressHydrationWarning>{inline(offerClock)}</span></small>
+                    </label>
+                  </div>
+                )}
                 {PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => {
-                  const sel = p.id === packageId;
+                  const sel = p.id === packageId && !bundle;
                   const items = CHECKLIST(m.key, p.id);
                   return (
                     <div key={p.id} id={`pk-${p.id}`} className={`${styles.card} ${styles.pcard} ${sel ? styles.cardOn : styles.prow} ${p.id === "international-pro" ? styles.hasBadge : ""}`}>
                       {p.id === "international-pro" && <span className={styles.pbadge}>Recommended</span>}
                       <label className={styles.ptop}>
-                        <input type="radio" name="package" checked={sel} onChange={() => choosePackage(p.id)} />
+                        <input type="radio" name="package" checked={sel} onChange={() => { choosePackage(p.id); setBundleOn(false); }} />
                         <b className={styles.pname}>{p.name}</b>
                         <strong className={styles.pprice}>{p.priceLabel}</strong>
                         <small className={styles.paud}>{AUDIENCE[p.id]}</small>
@@ -578,10 +591,8 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                     </div>
                   </Field>
                 )}
-                <Field id="country" label="Target country *" error={errors.country}>
-                  <select id="country" className={styles.input} value={v.country} onChange={(e) => set("country", e.target.value)} aria-invalid={errors.country ? true : undefined}>
-                    {TARGET_COUNTRIES.map((c) => <option key={c}>{c}</option>)}
-                  </select>
+                <Field id="country" label="Target countries *" error={errors.country}>
+                  <CountryPicker id="country" value={countries} onChange={(l) => { setCountries(l); set("country", l[0] ?? ""); }} invalid={!!errors.country} />
                 </Field>
                 <Field id="role" label="Target role *" error={errors.role}>
                   <input id="role" className={styles.input} placeholder="Project Manager" value={v.role} onChange={(e) => set("role", e.target.value)} aria-invalid={errors.role ? true : undefined} />
@@ -684,7 +695,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   <dl className={styles.rList}>
                     {byEmail ? <div><dt>Email</dt><dd>{v.email}</dd></div> : <div><dt>WhatsApp</dt><dd>{v.code} {v.whatsapp}</dd></div>}
                     <div><dt>Name</dt><dd>{v.name}</dd></div>
-                    <div><dt>Country</dt><dd>{v.country}</dd></div>
+                    <div><dt>Target countries</dt><dd>{countries.join(", ")}</dd></div>
                     <div><dt>Role</dt><dd>{v.role}</dd></div>
                     {pk && v.email && <div><dt>Email</dt><dd>{v.email}</dd></div>}
                     {cv && <div><dt>CV</dt><dd>{cv.name}</dd></div>}

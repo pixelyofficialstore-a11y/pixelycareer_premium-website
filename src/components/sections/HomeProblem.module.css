@@ -570,3 +570,12 @@
   .changesHead, .change { grid-template-columns: 24px minmax(0, 1fr) minmax(0, 1fr); font-size: 13px; }
   .changeFrom, .changeTo { font-size: 13px; }
 }
+
+/* Side annotations: fade and slide in, 200ms, 60ms apart */
+.notes { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.note { position: absolute; padding: 6px 11px; border-radius: 999px; background: #fff; box-shadow: 0 6px 18px rgb(1 12 40 / 12%); font-size: 12.5px; font-weight: 600; line-height: 1.2; white-space: nowrap; opacity: 0; transform: translateY(6px); transition: opacity 200ms ease, transform 200ms ease; }
+.note[data-on="true"] { opacity: 1; transform: none; }
+.noteBad { left: 4%; color: #b42318; border: 1px solid #fecdca; }
+.noteGood { right: 4%; color: #067647; border: 1px solid #abefc6; }
+@media (max-width: 600px) { .note { font-size: 11px; padding: 5px 9px; } }
+@media (prefers-reduced-motion: reduce) { .note { transition: opacity 200ms ease; transform: none; } }

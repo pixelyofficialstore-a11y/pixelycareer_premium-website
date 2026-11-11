@@ -130,7 +130,7 @@ export const SERVICES: Service[] = [
     ],
     before: "Worked in the accounts department.",
     after: "Managed accounts payable for 3 business units, cutting late payments by 40%.",
-    addon: "europass-pack",
+    addon: "role-pack",
     faq: [
       { q: "When do I need Europass?", a: "When an employer, university or programme asks for it." },
       { q: "Is it the same as an ATS CV?", a: "No. Europass has its own structure. We can make both." },

@@ -16,7 +16,7 @@ import { PostToc, ReadingProgress, ShareRow } from "@/components/blog/PostTools"
 import { headingSlug } from "@/components/blog/slug";
 import Reveal from "@/components/ui/Reveal";
 import { getHeadings, getPost, getPosts } from "@/lib/blog";
-import { JsonLd, SITE, breadcrumbJsonLd, faqJsonLd } from "@/lib/seo";
+import { JsonLd, SITE, breadcrumbJsonLd, faqJsonLd, ogImages } from "@/lib/seo";
 import "@/components/blog/blog.css";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -28,10 +28,9 @@ export async function generateMetadata({ params }: Props) {
   const post = getPost((await params).slug);
   if (!post) return {};
   const meta = post.meta;
-  const image = meta.cover ? `${SITE}${meta.cover}` : undefined;
-  const images = image ? [{ url: image, width: 1600, height: 1000, alt: meta.coverAlt || meta.title }] : undefined;
+  const images = ogImages({ label: meta.category || "Blog", title: meta.title, alt: meta.coverAlt || meta.title });
   return {
-    title: { absolute: `${seoTitle(meta.title, meta.keyword)} | Pixely Careers` },
+    title: { absolute: ((t) => (t.length + 17 <= 60 ? `${t} | Pixely Careers` : t))(seoTitle(meta.title, meta.keyword, 43)) },
     description: meta.description,
     keywords: meta.keywords,
     alternates: { canonical: `/blog/${meta.slug}` },
@@ -44,25 +43,25 @@ export async function generateMetadata({ params }: Props) {
       locale: "en_US",
       publishedTime: meta.date,
       modifiedTime: meta.updated ?? meta.date,
-      ...(images ? { images } : {}),
+      images,
     },
-    twitter: { card: "summary_large_image", title: meta.title, description: meta.description, ...(images ? { images } : {}) },
+    twitter: { card: "summary_large_image", title: meta.title, description: meta.description, images: images.map((i) => i.url) },
   };
 }
 
 /** The post title, or when it is over 60 characters, a shorter one that leads with the target keyword. */
-function seoTitle(title: string, keyword?: string) {
-  if (title.length <= 60) return title;
+function seoTitle(title: string, keyword?: string, max = 60) {
+  if (title.length <= max) return title;
   const cap = (s: string) => s.replace(/\b\w/g, (ch) => ch.toUpperCase());
   if (keyword) {
     const escaped = keyword.replace(/[.*+?^$(){}|[\]\\]/g, "\\$&");
     const rest = title.replace(new RegExp(escaped, "i"), "").replace(/^[\s:,.]+|[\s:,.]+$/g, "");
     const lead = cap(keyword);
     const both = rest ? lead + ": " + rest : lead;
-    if (both.length <= 60) return both;
-    return lead.slice(0, 60);
+    if (both.length <= max) return both;
+    return lead.slice(0, max);
   }
-  return title.slice(0, 60).replace(/\s+\S*$/, "");
+  return title.slice(0, max).replace(/\s+\S*$/, "").replace(/\s*\([^)]*$/, "");
 }
 
 /** Links the first mention of a few key terms to their guide: at most 3 per post, never to itself. */
@@ -153,7 +152,7 @@ export default async function Page({ params }: Props) {
     ...others.filter((post) => post.category !== meta.category),
   ].slice(0, 3);
   const url = `${SITE}/blog/${meta.slug}`;
-  const coverAbsolute = meta.cover ? `${SITE}${meta.cover}` : `${url}/opengraph-image`;
+  const coverAbsolute = meta.cover ? `${SITE}${meta.cover}` : ogImages({ label: "Blog", title: meta.title, alt: meta.title })[0].url;
 
   return (
     <>

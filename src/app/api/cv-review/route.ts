@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   return handleLead(req, "cv-review", schema, async (b, attr) => {
     const cv = ownUpload("cv", b.cvUrl, b.cvPublicId);
     const [row] = await db().insert(cvReviews).values({
-      ...attr, market: b.market, name: b.name, whatsapp: b.whatsapp, email: b.email, targetRole: b.targetRole, targetCountry: b.targetCountry,
+      ...attr, market: b.market, name: b.name, whatsapp: b.whatsapp, email: b.email, targetRole: b.targetRole, targetCountry: b.targetCountry, targetCountries: b.targetCountry ? [b.targetCountry] : null,
       cvUrl: cv ? b.cvUrl : null, cvPublicId: cv ? b.cvPublicId : null, cvFilename: cv ? b.cvFilename : null, notes: b.notes,
     }).returning({ id: cvReviews.id });
     return row;

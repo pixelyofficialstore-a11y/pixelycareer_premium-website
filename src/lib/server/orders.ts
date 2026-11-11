@@ -22,6 +22,8 @@ export const orderBody = z.object({
   step: z.number().int().min(1).max(4).default(1),
   name: opt(120), code: opt(6), whatsapp: opt(30), email: z.string().trim().max(160).email().optional().nullable().or(z.literal("")).transform((v) => v || null),
   targetCountry: opt(60), targetRole: opt(120), notes: opt(500),
+  /** Up to five target countries; the first is also stored as targetCountry. */
+  targetCountries: z.array(z.string().trim().min(1).max(40)).max(5).default([]),
   fbp: opt(100), fbc: opt(400),
   /** A recovery link's order id (from /order?cart=...), used when there is no cookie yet. */
   resume: z.string().uuid().optional().nullable(),
@@ -47,7 +49,8 @@ export async function saveOrder(req: Request, b: OrderBody, extra: Partial<typeo
     ...price,
     payChoice: b.market === "pk" ? b.payChoice ?? null : null,
     name: b.name, whatsapp, email: b.email,
-    targetCountry: b.targetCountry, targetRole: b.targetRole, notes: b.notes,
+    targetCountry: b.targetCountries[0] ?? b.targetCountry, targetCountries: b.targetCountries.length ? b.targetCountries : b.targetCountry ? [b.targetCountry] : null,
+    targetRole: b.targetRole, notes: b.notes,
     stepReached: b.step, lastActivityAt: new Date(), updatedAt: new Date(),
     ...extra,
   };
@@ -69,7 +72,8 @@ export async function loadOpenOrder(id: string) {
   if (!z.string().uuid().safeParse(id).success) return null;
   const [row] = await db().select({
     id: orders.id, market: orders.market, package: orders.package, addons: orders.addons, isBundle: orders.isBundle, sameDay: orders.sameDay,
-    name: orders.name, whatsapp: orders.whatsapp, email: orders.email, targetCountry: orders.targetCountry, targetRole: orders.targetRole,
+    name: orders.name, whatsapp: orders.whatsapp, email: orders.email, targetCountry: orders.targetCountry, targetCountries: orders.targetCountries, targetRole: orders.targetRole,
   }).from(orders).where(and(eq(orders.id, id), inArray(orders.status, [...OPEN]))).limit(1);
-  return row ?? null;
+  // The bundle is stored as executive_bundle; the form shows it as Executive with the bundle on.
+  return row ? { ...row, package: row.package === "executive_bundle" ? "executive" : row.package } : null;
 }

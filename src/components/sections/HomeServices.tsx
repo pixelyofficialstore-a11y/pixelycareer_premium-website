@@ -97,12 +97,7 @@ export default function HomeServices({ marketKey }: { marketKey: MarketKey }) {
           <li className={styles.card}>
             <Link href={SERVICES[1].href} className={styles.service} data-cta="home-services-linkedin">
               <div className={styles.frame} aria-hidden="true">
-                {marketKey === "us" ? (
-                  // US: the designed LinkedIn profile for James Carter
-                  <div className={styles.profileShot}>
-                    <Image src="/samples/us/us-linkedin-profile.webp" width={1448} height={1086} alt="" sizes="360px" quality={95} loading="lazy" />
-                  </div>
-                ) : (
+                {(
                   <div className={`${styles.mockup} ${styles.profile}`}>
                     <div className={styles.profileBanner} />
                     <div className={styles.profileContent}>

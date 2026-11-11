@@ -8,7 +8,7 @@ import sampleDefinitions from "../../../public/partners/samples/samples.json";
 
 const title = "For Agencies | White Label CV Writing Partner | Pixely Careers";
 const description = "A dependable outsourced CV and documentation team for recruitment agencies in Pakistan and the Gulf. White label or referral. No minimum volume.";
-const baseMetadata = pageMetadata("/partners", title, description, "/partners/opengraph-image");
+const baseMetadata = pageMetadata("/partners", title, description, { label: "For agencies", title: "Your agency\u2019s CV department" });
 
 export const metadata = {
   ...baseMetadata,

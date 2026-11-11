@@ -1098,3 +1098,12 @@
 @media (max-width: 767px) { .page.standalone .compare { padding-bottom: 40px; } .page .customBox a { display: inline-block; } .page .customBox span { margin-right: 0; display: block; } }
 .page .customBox a { white-space: nowrap; display: inline-block; max-width: none; width: auto; }
 .page .customBox a span { display: inline; margin: 0; color: inherit; font-size: inherit; font-weight: inherit; }
+
+/* 11.11 Bundle (pk, while the sale is on): 4 equal columns, refined orange card */
+@media (min-width: 901px) { .page .priceGrid.grid4 { grid-template-columns: repeat(4, minmax(0, 1fr)); width: min(100%, 1280px); gap: 18px; } }
+.page .cardBundle { border: 1.5px solid rgb(240 90 26 / 0.45); background: linear-gradient(180deg, #fff6f0 0%, #fff 55%); }
+.page .badgeSale { background: #f05a1a; color: #fff; animation: none; }
+.bundleMeta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px; margin: 4px 0 14px; font-size: 13px; color: #6b7280; }
+.bundleMeta b { color: #c2410c; font-weight: 600; }
+.formatLine { margin: 22px auto 0; max-width: 720px; text-align: center; color: #4b5563; font-size: 15px; }
+.bundleCol { background: rgb(240 90 26 / 0.04); }

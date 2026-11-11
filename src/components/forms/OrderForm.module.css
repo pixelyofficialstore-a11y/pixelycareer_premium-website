@@ -404,3 +404,9 @@
   .prow .paud::before { content: none; }
   .review { padding: 4px 20px; }
 }
+
+/* 11.11 Bundle as its own package */
+.bundleCard { border-color: rgb(240 90 26 / 0.4); background: linear-gradient(180deg, #fff7f2, #fff 70%); }
+.bundleCard.cardOn { border-color: #f05a1a; box-shadow: 0 0 0 1px #f05a1a; }
+.pbadge.bundleBadge { background: #f05a1a; color: #fff; }
+.bundleWas { margin-right: 4px; color: #6b7280; font-weight: 500; font-size: 0.85em; }

@@ -200,7 +200,7 @@ export const MARKETS: Record<MarketKey, Market> = {
     formatsIntro: "Formats for UK employers and European applications.",
     faq: [
       { q: "Do you write in UK English?", a: "Yes. UK spelling, a two page CV and no photo, as UK employers expect." },
-      { q: "Do I need a Europass CV?", a: "Only for EU applications. We can make one alongside your UK CV." },
+      { q: "Do I need a Europass CV?", a: "Only for EU applications. Every package includes one CV in the right format for your country: ATS or Europass. Need both? Add another CV." },
       { q: "What are the payment methods?", a: "After you order, we send you secure payment options on WhatsApp or email." },
     ],
     meta: {
@@ -250,7 +250,7 @@ const BASE_PACKAGES = [
       { n: "2", label: "days delivery" },
     ],
     lead: "",
-    items: ["ATS CV written for your target role", "Tailored cover letter", "LinkedIn content rewrite", "Keywords matched to your job ads", "PDF and editable Word files"],
+    items: ["ATS / Europass CV written for your target role", "Tailored cover letter", "LinkedIn content rewrite", "Keywords matched to your job ads", "PDF and editable Word files"],
     button: "Choose ATS Career",
   },
   {
@@ -309,7 +309,7 @@ export function getComparison(m: Market): [string, string, string, string][] {
   const fee = (id: PackageId) => `+${formatPricingPrice(m, m.sameDay[id])}`;
   const naukri = m.key === "ae" || m.key === "sa" || m.key === "pk";
   const rows: [string, string, string, string][] = [
-    [localize(m, "ATS CV"), "Standard", "International standard", "Premium executive"],
+    [localize(m, "ATS / Europass CV"), "Standard", "International standard", "Premium executive"],
     ["One page visual profile", X, X, Y],
     ["Cover letter", "Tailored", "Country specific", "Executive"],
     ["Bio statement", X, Y, "Executive"],
@@ -355,7 +355,7 @@ export const getPricingFaq = (m: Market) => {
     pay ?? { q: "What are the payment methods?", a: "After you order, we send you secure payment options on WhatsApp or email." },
     ...(received ? [received] : []),
     { q: "Which package should I choose?", a: "Early career: ATS Career. 3+ years or applying abroad: International Pro. 7+ years or leadership roles: Executive." },
-    { q: "What exactly do I get?", a: "Your documents as PDF and editable Word files, written for your target role and country. Each package lists exactly what's included." },
+    { q: "What exactly do I get?", a: "One CV for one target role, in the right format for your country: ATS or Europass. Plus your other documents as PDF and editable Word files. Each package lists exactly what's included." },
     { q: "What if I don't like the first draft?", a: "We revise it until you're satisfied. After delivery, you also get free updates during your support period." },
     { q: "How long does it take to get my CV?", a: "First draft in 2 days, 3 days for Executive. Same day delivery is available for a small fee." },
     { q: "Can I upgrade later?", a: "Yes. Pay the difference and we'll add the extra items to your order." },

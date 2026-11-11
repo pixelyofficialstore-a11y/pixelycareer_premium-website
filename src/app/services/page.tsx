@@ -34,7 +34,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
       rows: [
         { name: m === "us" ? "ATS resume" : "ATS CV", line: "Written for your role and country", tag: "In every package", href: "/services/ats-cv" },
         { name: "Cover letter", line: "Tailored to each application", tag: "In every package", href: "/services/cover-letter" },
-        { name: "Europass CV", line: "For EU applications", tag: from(price(() => unitAt(m, "europass-pack", 1, "ats-career"))), href: "/services/europass-cv" },
+        { name: "Europass CV", line: "For EU applications", tag: from(price(() => unitAt(m, "role-pack", 1, "ats-career"))), href: "/services/europass-cv" },
         ...(gulf ? [{ name: "Arabic CV", line: "For Arabic speaking employers", tag: from(price(() => unitAt(m, "arabic", 1, "ats-career"))), href: pricing }] : []),
       ],
     },

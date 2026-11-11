@@ -11,7 +11,10 @@ export type PriceInput = { market: string; package: string; addons: Record<strin
 export async function priceOrder(i: PriceInput) {
   if (!isMarketKey(i.market)) return null;
   const m = MARKETS[i.market];
-  const pkgId = i.package as PackageId;
+  // executive_bundle: the 11.11 Bundle as its own package (Executive + portfolio at the offer price).
+  const asBundle = i.package === "executive_bundle";
+  const pkgId = (asBundle ? "executive" : i.package) as PackageId;
+  if (asBundle) i = { ...i, bundle: true };
   if (!getPackages(m).some((p) => p.id === pkgId)) return null;
   const offer = OFFERS.find((o) => o.packageId === pkgId && o.markets.includes(m.key));
   const state = i.bundle && offer ? await getOfferState(offer.id, m.key) : null;
@@ -23,7 +26,7 @@ export async function priceOrder(i: PriceInput) {
   const addons: AddonLine[] = list.map((a) => ({ id: a.id, name: a.name, qty: a.qty, price: a.total }));
   const discount = isBundle && i.payChoice === "now" ? offer!.payNowDiscount : 0;
   return {
-    market: m.key, package: pkgId, packagePrice: pkg.price, addons, sameDay: i.sameDay, offer: isBundle ? offer!.id : null, isBundle,
+    market: m.key, package: isBundle ? "executive_bundle" : pkgId, packagePrice: pkg.price, addons, sameDay: i.sameDay, offer: isBundle ? offer!.id : null, isBundle,
     discount, subtotal: total, total: total - discount, currency: m.currency,
   };
 }

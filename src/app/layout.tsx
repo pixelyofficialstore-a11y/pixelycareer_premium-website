@@ -20,7 +20,9 @@ const poppins = Poppins({
 
 // Page-specific tags (canonical, Open Graph, Twitter) live in each page, so inner pages never point at the homepage.
 export const metadata: Metadata = {
-  metadataBase: new URL("https://pixelycareers.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pixelycareers.com"),
+  openGraph: { siteName: "Pixely Careers", type: "website", images: [{ url: "/og", width: 1200, height: 630, type: "image/png", alt: "Pixely Careers" }] },
+  twitter: { card: "summary_large_image", images: ["/og"] },
   title: { default: "Pixely Careers", template: "%s | Pixely Careers" },
   description: "Career documentation and personal branding for professionals worldwide.",
   robots: { index: true, follow: true },

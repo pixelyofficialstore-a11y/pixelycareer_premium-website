@@ -16,20 +16,20 @@ const F = (price: number): Price => ({ kind: "flat", price });
 const PK = (ats: number, pro: number, exec: number): Price => ({ kind: "byPackage", ats, pro, exec });
 
 const GULF: Row = {
-  "role-pack": T(129, 99, 75), "europass-pack": T(129, 99, 75), arabic: T(149, 99, 69),
+  "role-pack": T(129, 99, 75), arabic: T(149, 99, 69),
   "content-pack": F(269), bio: F(99), "job-portals": F(149), "contact-card": F(49), portfolio: PK(1999, 1599, 1199),
 };
 const PRICES: Record<MarketKey, Row> = {
   pk: {
-    "role-pack": T(1300, 1000, 750), "europass-pack": T(1300, 1000, 750), arabic: T(1500, 1000, 700),
+    "role-pack": T(1300, 1000, 750), arabic: T(1500, 1000, 700),
     "content-pack": F(2500), bio: F(1000), "job-portals": F(1500), "contact-card": F(500), portfolio: PK(20000, 16000, 12500),
   },
   us: {
-    "role-pack": T(43, 33, 25), "europass-pack": T(43, 33, 25), arabic: T(49, 33, 23),
+    "role-pack": T(43, 33, 25), arabic: T(49, 33, 23),
     "content-pack": F(89), bio: F(33), "job-portals": F(49), "contact-card": F(17), portfolio: PK(649, 529, 399),
   },
   uk: {
-    "role-pack": T(30, 23, 17), "europass-pack": T(30, 23, 17), arabic: T(35, 23, 16),
+    "role-pack": T(30, 23, 17), arabic: T(35, 23, 16),
     "content-pack": F(65), bio: F(23), "job-portals": F(35), "contact-card": F(12), portfolio: PK(459, 369, 279),
   },
   ae: GULF,
@@ -50,8 +50,7 @@ export type Addon = {
 };
 
 export const ADDONS: Addon[] = [
-  { id: "role-pack", name: "Another ATS CV + cover letter", benefit: "Same person, another role", qty: true, badge: "Most added", hiddenOn: [], markets: "all" },
-  { id: "europass-pack", name: "Europass CV + cover letter", benefit: "For EU applications", qty: true, hiddenOn: [], markets: "all" },
+  { id: "role-pack", name: "Another CV + cover letter", benefit: "Another role, or the same role in another format", qty: true, badge: "Most added", hiddenOn: [], markets: "all" },
   { id: "arabic", name: "Arabic CV", benefit: "For Arabic speaking employers", qty: true, hiddenOn: [], markets: ["ae", "sa", "pk"] },
   { id: "content-pack", name: "LinkedIn content pack", benefit: "Stay visible to recruiters", qty: false, hiddenOn: ["exec"], markets: "all" },
   { id: "bio", name: "Bio statement", benefit: "Your professional story", qty: false, hiddenOn: ["pro", "exec"], markets: "all" },

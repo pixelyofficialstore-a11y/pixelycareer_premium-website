@@ -1,7 +1,19 @@
 import type { Metadata } from "next";
 import { MARKETS, MARKET_KEYS, type Market, formatPrice, getPackages, orderHref } from "@/config/markets";
 
-export const SITE = "https://pixelycareers.com";
+export const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://pixelycareers.com").replace(/\/$/, "");
+
+/** The share image for a page: always our branded card, as an absolute URL with its size and type. */
+export type OgSpec = { label?: string; title?: string; offer?: boolean; locale?: string; alt?: string };
+const COUNTRY: Record<string, string> = { us: "US", uk: "UK", ae: "UAE", sa: "Saudi", pk: "Pakistani" };
+export function ogImages(spec: { label: string; title: string; offer?: boolean; alt: string }) {
+  const url = spec.offer ? `${SITE}/og?v=offer` : `${SITE}/og?${new URLSearchParams({ l: spec.label, t: spec.title })}`;
+  return [{ url, width: 1200, height: 630, type: "image/png", alt: spec.alt }];
+}
+const labelFor = (path: string) => {
+  const seg = path.split("/").filter(Boolean)[0] ?? "";
+  return ({ blog: "Blog", services: "Service", pricing: "Pricing", order: "Order", about: "About", contact: "Contact", partners: "For agencies", "free-cv-review": "Free CV review" } as Record<string, string>)[seg] ?? "Pixely Careers";
+};
 
 export function JsonLd({ data }: { data: object }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
@@ -12,7 +24,8 @@ export const hreflangs = () => ({
   "x-default": "/",
 });
 
-export function homeMetadata(m: Market): Metadata {
+export function homeMetadata(m: Market, offer = false): Metadata {
+  const images = ogImages({ label: m.region, title: `Stand out in the ${COUNTRY[m.key] ?? m.region} market`, offer, alt: m.meta.title });
   return {
     title: { absolute: m.meta.title },
     description: m.meta.description,
@@ -24,18 +37,20 @@ export function homeMetadata(m: Market): Metadata {
       title: m.meta.title,
       description: m.meta.ogDescription ?? m.meta.description,
       locale: m.hreflang.replace("-", "_"),
+      images,
     },
-    twitter: { card: "summary_large_image", title: m.meta.title, description: m.meta.ogDescription ?? m.meta.description },
+    twitter: { card: "summary_large_image", title: m.meta.title, description: m.meta.ogDescription ?? m.meta.description, images: images.map((i) => i.url) },
   };
 }
 
-export function pageMetadata(path: string, title: string, description: string, image = "/opengraph-image"): Metadata {
+export function pageMetadata(path: string, title: string, description: string, og: OgSpec = {}): Metadata {
+  const images = ogImages({ label: og.label ?? labelFor(path), title: og.title ?? title.replace(/\s*\|\s*Pixely Careers$/, "").split(" | ")[0], offer: og.offer, alt: og.alt ?? title });
   return {
     title: { absolute: title },
     description,
     alternates: { canonical: path },
-    openGraph: { type: "website", url: `${SITE}${path}`, siteName: "Pixely Careers", title, description, locale: "en_US", images: [{ url: image, width: 1200, height: 630, alt: "Pixely Careers" }] },
-    twitter: { card: "summary_large_image", title, description, images: [image] },
+    openGraph: { type: "website", url: `${SITE}${path}`, siteName: "Pixely Careers", title, description, locale: og.locale ?? "en_US", images },
+    twitter: { card: "summary_large_image", title, description, images: images.map((i) => i.url) },
   };
 }
 

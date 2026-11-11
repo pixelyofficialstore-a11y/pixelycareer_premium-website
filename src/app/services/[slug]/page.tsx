@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: Props) {
   if (!s) return {};
   const m = await requestMarket();
   const l = copy(m);
-  return pageMetadata(`/services/${s.slug}`, `${localizeTitle(m, s.name)} | Pixely Careers`, `${l(s.sub)} First draft in 2 days.`, `/services/${s.slug}/opengraph-image`);
+  return pageMetadata(`/services/${s.slug}`, `${localizeTitle(m, s.name)} | Pixely Careers`, `${l(s.sub)} First draft in 2 days.`, { label: "Service", title: localizeTitle(m, s.name), locale: m.hreflang.replace("-", "_") });
 }
 
 const ICONS: Record<ServiceIcon, string> = {

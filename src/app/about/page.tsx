@@ -5,7 +5,7 @@ import HomeTrustStrip from "@/components/sections/HomeTrustStrip";
 import BrandOrbit from "@/components/about/BrandOrbit";
 import AboutMotion from "@/components/about/AboutMotion";
 import { requestMarket } from "@/lib/market-server";
-import { JsonLd, breadcrumbJsonLd, SITE } from "@/lib/seo";
+import { JsonLd, breadcrumbJsonLd, ogImages, SITE } from "@/lib/seo";
 import { orderHref } from "@/config/markets";
 import { FACEBOOK_REVIEWS_URL } from "@/lib/site";
 import { getReviews } from "@/lib/home-content";
@@ -24,9 +24,9 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
     locale: "en_US",
-    images: [{ url: "/about/opengraph-image", width: 1200, height: 630, alt: "About Pixely Careers" }],
+    images: ogImages({ label: "About", title: "About Pixely Careers", alt: "About Pixely Careers" }),
   },
-  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ["/about/opengraph-image"] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION, images: ogImages({ label: "About", title: "About Pixely Careers", alt: "" }).map((i) => i.url) },
 };
 
 const STATS = [

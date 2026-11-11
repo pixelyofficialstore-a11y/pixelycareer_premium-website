@@ -1,15 +1,22 @@
-import { MARKETS, getPackages, getPricingFaq, isMarketKey } from "@/config/markets";
+import { MARKETS, formatPricingPrice, getPackages, getPricingFaq, isMarketKey } from "@/config/markets";
 import { cookies } from "next/headers";
 import FinalCta from "@/components/sections/FinalCta";
 import Pricing from "@/components/sections/Pricing";
 import Reveal from "@/components/ui/Reveal";
 import { JsonLd, SITE, breadcrumbJsonLd, faqJsonLd, pageMetadata } from "@/lib/seo";
 
-export const metadata = pageMetadata(
-  "/pricing",
-  "Pricing | ATS CV and LinkedIn Packages | Pixely Careers",
-  "Clear, one time prices for ATS CVs, cover letters and LinkedIn profiles. First draft in 2 days, revisions included, PDF and Word files.",
-);
+export async function generateMetadata({ searchParams }: { searchParams: Promise<{ m?: string; market?: string }> }) {
+  const q = await searchParams;
+  const k = isMarketKey(q.m) ? q.m : isMarketKey(q.market) ? q.market : "us";
+  const m = MARKETS[k];
+  const lowest = Math.min(...getPackages(m).map((p) => p.price));
+  return pageMetadata(
+    k === "us" ? "/pricing" : `/pricing?m=${k}`,
+    "Pricing | ATS CV and LinkedIn Packages | Pixely Careers",
+    "Clear, one time prices for ATS CVs, cover letters and LinkedIn profiles. First draft in 2 days, revisions included, PDF and Word files.",
+    { label: "Pricing", title: `Packages from ${formatPricingPrice(m, lowest)}`, locale: m.hreflang.replace("-", "_") },
+  );
+}
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ m?: string; market?: string }> }) {
   const query = await searchParams;
