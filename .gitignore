@@ -46,3 +46,16 @@ next-env.d.ts
 # copied from content/samples by scripts/sync-samples.mjs
 /public/samples/
 .orders/
+
+# Replit and tool leftovers: never commit
+.replit
+replit.nix
+.agents/
+.local/
+.cache/
+.config/
+attached_assets/
+artifacts/
+generated-artifacts/
+reports/
+/lib/

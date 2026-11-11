@@ -1,8 +1,0 @@
-- [Tailwind build verification](tailwind-build-verification.md) — compiler changes need rendered-style checks; a successful build can still omit utility classes.
-- [Preview hydration safety](preview-hydration.md) — injected preview scripts can collide with raw head scripts; preserve React-owned markup until hydration.
-- [Agency partnership content](agency-partnership-content.md) — partner rates and agency identities stay private; no employment or visa guarantees.
-- [Page motion isolation](page-motion-isolation.md) — custom page reveals must not compete with the shared document-wide animation controller.
-- [Blog editorial rules](blog-editorial-rules.md) — preserve article bodies during UI work; verify free Unsplash/Pexels photos and photographer credits.
-- [Homepage design trials](homepage-design-trials.md) — keep unapproved homepage design and CTA trials on the main page until broader rollout is approved.
-- [Testimonial publication](testimonial-publication.md) — three supplied Pakistan WhatsApp outcomes approved; main-page-only rollout and 78 Facebook reviews.
-- [Browser focus verification](browser-focus-verification.md) — activate background browser targets before checking focus dependent interactions.
