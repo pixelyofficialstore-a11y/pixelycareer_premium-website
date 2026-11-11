@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { dbError } from "@/lib/db";
+import { isConfigError } from "@/lib/server/env";
 import { ORDER_COOKIE, orderBody, orderCookie, saveOrder } from "@/lib/server/orders";
 import { fail, limited, readJson } from "@/lib/server/request";
 
@@ -16,7 +18,8 @@ export async function POST(req: Request) {
     res.cookies.set(ORDER_COOKIE, row.id, orderCookie);
     return res;
   } catch (e) {
-    console.error("draft save failed:", e instanceof Error ? e.message : "unknown");
+    console.error("draft save failed:", dbError(e));
+    if (isConfigError(e)) return fail(503, "This is not configured yet. Please message us on WhatsApp.");
     return fail(500, "Something went wrong. Please try again.");
   }
 }

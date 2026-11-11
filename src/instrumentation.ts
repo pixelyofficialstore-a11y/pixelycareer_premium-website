@@ -5,6 +5,6 @@ export async function register() {
   const missing = missingEnv();
   if (!missing.length) return;
   const msg = `Missing environment variables: ${missing.join(", ")}. See .env.example.`;
-  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV === "production") throw new Error(msg);
-  console.error(msg);
+  // Never block startup: routes that need a missing variable answer 503 on their own.
+  console.warn(msg);
 }

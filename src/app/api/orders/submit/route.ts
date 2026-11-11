@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { dbError } from "@/lib/db";
+import { isConfigError } from "@/lib/server/env";
 import { z } from "zod";
 import { clearOfferCache } from "@/lib/offer-server";
 import { ownUpload } from "@/lib/server/cloudinary";
@@ -57,7 +59,8 @@ export async function POST(req: Request) {
     res.cookies.delete(ORDER_COOKIE);
     return res;
   } catch (e) {
-    console.error("order submit failed:", e instanceof Error ? e.message : "unknown");
+    console.error("order submit failed:", dbError(e));
+    if (isConfigError(e)) return fail(503, "This is not configured yet. Please message us on WhatsApp.");
     return fail(500, "We could not save your order. Please try again.");
   }
 }

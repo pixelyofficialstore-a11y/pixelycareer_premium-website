@@ -5,12 +5,14 @@ import { ImageResponse } from "next/og";
 export const OG_SIZE = { width: 1200, height: 630 };
 export const OG_TYPE = "image/png";
 
-const read = (p: string) => fs.readFileSync(path.join(process.cwd(), p));
+// Fixed paths (no variables), so the build traces only these two files.
+const LOGO = () => fs.readFileSync(path.join(process.cwd(), "public", "brand", "logo-dark.svg"));
+const FONT = () => fs.readFileSync(path.join(process.cwd(), "node_modules", "@fontsource", "poppins", "files", "poppins-latin-600-normal.woff"));
 
 /** Share image: white, official logo top-left, label in Vivid Blue, thin blue rule, title in Navy. */
 export function ogImage(label: string, title: string) {
-  const logo = `data:image/svg+xml;base64,${read("public/brand/logo-dark.svg").toString("base64")}`;
-  const font = read("node_modules/@fontsource/poppins/files/poppins-latin-600-normal.woff");
+  const logo = `data:image/svg+xml;base64,${LOGO().toString("base64")}`;
+  const font = FONT();
   return new ImageResponse(
     (
       <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between", padding: 72, background: "#ffffff", fontFamily: "Poppins" }}>

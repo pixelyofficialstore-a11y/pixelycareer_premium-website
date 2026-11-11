@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { dbError } from "@/lib/db";
+import { isConfigError } from "@/lib/server/env";
 import { UPLOADS, sniff, upload, type UploadKind } from "@/lib/server/cloudinary";
 import { fail, limited } from "@/lib/server/request";
 
@@ -21,7 +23,8 @@ export async function POST(req: Request) {
   try {
     return NextResponse.json(await upload(kind, bytes, ext));
   } catch (e) {
-    console.error("upload failed:", e instanceof Error ? e.message : "unknown");
+    console.error("upload failed:", dbError(e));
+    if (isConfigError(e)) return fail(503, "This is not configured yet. Please message us on WhatsApp.");
     return fail(500, "The upload failed. Please try again.");
   }
 }

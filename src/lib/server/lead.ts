@@ -1,4 +1,6 @@
 import "server-only";
+import { dbError } from "@/lib/db";
+import { isConfigError } from "@/lib/server/env";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { attribution, fail, honeypot, limited, normalizePhone, opt, readJson, turnstileOk } from "./request";
@@ -35,7 +37,8 @@ export async function handleLead<S extends z.ZodObject<typeof leadBase & z.ZodRa
     if (!row) return fail();
     return NextResponse.json({ ref: row.id.slice(0, 8).toUpperCase() });
   } catch (e) {
-    console.error(`${bucket} insert failed:`, e instanceof Error ? e.message : "unknown");
+    console.error(`${bucket} insert failed:`, dbError(e));
+    if (isConfigError(e)) return fail(503, "This is not configured yet. Please message us on WhatsApp.");
     return fail(500, "Something went wrong. Please try again.");
   }
 }

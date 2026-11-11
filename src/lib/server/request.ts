@@ -29,6 +29,8 @@ export function limited(req: Request, bucket: string, max: number, windowMs = 60
 
 /** Cloudflare Turnstile check for final submits. */
 export async function turnstileOk(token: string | null | undefined, req: Request) {
+  // No keys while developing locally: skip. In production a missing secret is a config error (503).
+  if (!process.env.TURNSTILE_SECRET_KEY && process.env.NODE_ENV === "development") return true;
   if (!token) return false;
   const body = new URLSearchParams({ secret: env("TURNSTILE_SECRET_KEY"), response: token });
   const ip = clientIp(req);

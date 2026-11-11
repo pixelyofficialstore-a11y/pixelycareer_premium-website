@@ -1,4 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
+import { dbError } from "@/lib/db";
+import { isConfigError } from "@/lib/server/env";
 import { NextResponse } from "next/server";
 import { and, eq, isNotNull, lt } from "drizzle-orm";
 import { db, orders } from "@/lib/db";
@@ -19,7 +21,8 @@ export async function GET(req: Request) {
       .returning({ id: orders.id });
     return NextResponse.json({ ok: true, abandoned: rows.length });
   } catch (e) {
-    console.error("abandoned cron failed:", e instanceof Error ? e.message : "unknown");
+    console.error("abandoned cron failed:", dbError(e));
+    if (isConfigError(e)) return fail(503, "This is not configured yet. Please message us on WhatsApp.");
     return fail(500, "Something went wrong.");
   }
 }

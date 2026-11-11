@@ -11,3 +11,5 @@ export function env(name: Key): string {
 }
 export const optionalEnv = (name: Key) => process.env[name] || "";
 export const missingEnv = () => REQUIRED.filter((k) => !process.env[k]);
+/** Marks an error caused by a missing setting, so routes can answer 503 instead of 500. */
+export const isConfigError = (e: unknown) => e instanceof Error && /^Missing environment variable|DATABASE_URL is not a valid URL/.test(e.message);

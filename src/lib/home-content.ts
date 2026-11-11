@@ -1,5 +1,9 @@
-import fs from "fs";
-import path from "path";
+import ae from "../../content/reviews/ae.json";
+import globalReviews from "../../content/reviews/global.json";
+import pk from "../../content/reviews/pk.json";
+import sa from "../../content/reviews/sa.json";
+import uk from "../../content/reviews/uk.json";
+import us from "../../content/reviews/us.json";
 import type { MarketKey } from "@/config/markets";
 
 export type Review = {
@@ -13,7 +17,10 @@ export type Review = {
   sourceUrl?: string;
 };
 
-const json = (file: string) => JSON.parse(fs.readFileSync(path.join(process.cwd(), file), "utf8"));
+// Imported statically so the build only bundles these files (no whole-project file tracing).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const FILES: Record<string, any> = { "content/reviews/ae.json": ae, "content/reviews/global.json": globalReviews, "content/reviews/pk.json": pk, "content/reviews/sa.json": sa, "content/reviews/uk.json": uk, "content/reviews/us.json": us };
+const json = (file: string) => FILES[file] ?? { reviews: [] };
 
 /** The market's own reviews, then the global ones. Never generated: empty files mean no section. */
 export function getReviews(market: MarketKey): Review[] {

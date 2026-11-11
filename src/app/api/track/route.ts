@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { dbError } from "@/lib/db";
+import { isConfigError } from "@/lib/server/env";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, events, orders } from "@/lib/db";
@@ -48,7 +50,8 @@ export async function POST(req: Request) {
       b.page);
     return NextResponse.json({ ok: true });
   } catch (e) {
-    console.error("track failed:", e instanceof Error ? e.message : "unknown");
+    console.error("track failed:", dbError(e));
+    if (isConfigError(e)) return fail(503, "This is not configured yet. Please message us on WhatsApp.");
     return fail(500);
   }
 }

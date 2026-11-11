@@ -1,4 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
+import { dbError } from "@/lib/db";
+import { isConfigError } from "@/lib/server/env";
 import { NextResponse } from "next/server";
 import { and, eq, isNull } from "drizzle-orm";
 import { db, events, orders } from "@/lib/db";
@@ -36,7 +38,8 @@ export async function POST(req: Request) {
     await db().insert(events).values({ market: o.market, orderId: o.id, name: "purchase", value: String(o.total), currency: o.currency, meta: { event_id: eventId, capi_sent: sent } });
     return NextResponse.json({ ok: true, sent });
   } catch (e) {
-    console.error("mark-paid failed:", e instanceof Error ? e.message : "unknown");
+    console.error("mark-paid failed:", dbError(e));
+    if (isConfigError(e)) return fail(503, "This is not configured yet. Please message us on WhatsApp.");
     return fail(500, "Something went wrong.");
   }
 }
