@@ -6,6 +6,7 @@ import { calcOrder } from "@/config/addons";
 import { MARKETS, getPackages, isMarketKey, type PackageId } from "@/config/markets";
 import { getOffer } from "@/config/offers";
 import { clearOfferCache, getOfferState } from "@/lib/offer-server";
+import { saveCart, validCartId } from "@/lib/carts";
 
 export const runtime = "nodejs";
 const MAX = 10 * 1024 * 1024;
@@ -59,6 +60,9 @@ export async function POST(req: Request) {
   // The offer is only recorded while it is open and the order really has its package and add-on.
   const offer = getOffer(s("offer_id"));
   const offerOk = !!offer && pkgId === offer.packageId && (selection[offer.addonId] ?? 0) > 0 && !!(await getOfferState(offer.id, market))?.open;
+  // Paying now on the offer saves the pay now discount. Always worked out here, never taken from the browser.
+  const payDiscount = offerOk && payNow ? offer!.payNowDiscount : 0;
+  const finalTotal = total - payDiscount;
   const id = `PC-${String(randomInt(0, 1000000)).padStart(6, "0")}`;
   const record = {
     id,
@@ -66,7 +70,9 @@ export async function POST(req: Request) {
     package: pkgId,
     same_day: s("same_day") === "yes",
     addons: list.map((a) => ({ id: a.id, qty: a.qty, unitBreakdown: a.unitBreakdown, total: a.total })),
-    total,
+    total: finalTotal,
+    pay_now_discount: payDiscount,
+    status: "new",
     currency: m.currency,
     name: s("name"),
     whatsapp: byEmail ? "" : `${s("code")}${s("whatsapp")}`,
@@ -81,6 +87,11 @@ export async function POST(req: Request) {
     offer_id: offerOk ? offer!.id : "",
     utm_source: s("utm_source").slice(0, 100),
     utm_campaign: s("utm_campaign").slice(0, 100),
+    fbclid: s("fbclid").slice(0, 300),
+    fbp: s("fbp").slice(0, 100),
+    fbc: s("fbc").slice(0, 400),
+    ip: (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim().slice(0, 60),
+    user_agent: (req.headers.get("user-agent") ?? "").slice(0, 300),
   };
   try {
     await persist(id, record, { cv, screenshot: shot });
@@ -89,6 +100,8 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "We could not save your order. Please try again." }, { status: 500 });
   }
   clearOfferCache();
+  // The cart for this visit is now an order: no recovery emails, and it leaves the abandoned list.
+  if (validCartId(s("cart_id"))) await saveCart(s("cart_id"), { status: "converted", order_id: id }).catch(() => null);
   // Send the email notification here with the provider configured in production.
-  return NextResponse.json({ id, total });
+  return NextResponse.json({ id, total: finalTotal });
 }

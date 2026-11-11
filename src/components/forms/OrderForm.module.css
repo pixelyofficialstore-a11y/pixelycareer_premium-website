@@ -274,3 +274,15 @@
 .sumBundle dd s { color: #8792a5; font-size: 12px; font-weight: 400; }
 .sumBundle dd em { margin-top: 4px; padding: 2px 8px; border: 1px solid var(--sale-border); border-radius: 999px; background: var(--sale-tint); color: var(--sale-600); font-style: normal; font-size: 11px; font-weight: 600; }
 @media (max-width: 767px) { .offerSwitch { flex-wrap: wrap; } .offerSwitch p { flex: 1 1 calc(100% - 40px); } .offerSwitch button { margin-left: 28px; } }
+/* Payment step: Pay now and Pay later as two equal choices */
+.payChoice { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.payOpt { display: grid; gap: 4px; padding: 16px; border: 1px solid #e6ecf5; border-radius: 16px; background: #fff; color: #010c28; font: inherit; text-align: left; cursor: pointer; transition: border-color 150ms ease, background 150ms ease; }
+.payOptOn { border: 1.5px solid #0048ff; background: #f5f8ff; }
+.payOptHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.payOptHead b { font-size: 15px; font-weight: 600; }
+.payOptHead em { padding: 2px 9px; border: 1px solid var(--sale-border); border-radius: 999px; background: var(--sale-tint); color: var(--sale-600); font-style: normal; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.payOpt strong { font-family: var(--font-head); font-size: 22px; font-weight: 600; }
+.payOpt strong s { margin-left: 8px; color: #8792a5; font-family: inherit; font-size: 13px; font-weight: 400; }
+.payOpt small { color: #6b7280; font-size: 13px; line-height: 1.4; }
+.contactNote { margin: -6px 0 16px; color: #6b7280; font-size: 12px; }
+@media (max-width: 767px) { .payChoice { gap: 8px; } .payOpt { padding: 12px; } .payOpt strong { font-size: 19px; } .payOpt strong s { display: block; margin: 0; } }

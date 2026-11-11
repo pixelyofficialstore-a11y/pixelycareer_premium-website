@@ -13,6 +13,11 @@ function readCookie(): MarketKey | null {
   return isMarketKey(legacy) ? legacy : null;
 }
 
+/** No saved choice: a visitor whose country is Pakistan counts as pk. */
+function geoMarket(): MarketKey | null {
+  return document.cookie.match(/(?:^|; )pc_geo=([^;]+)/)?.[1] === "PK" ? "pk" : null;
+}
+
 export function saveMarket(key: MarketKey) {
   document.cookie = `pc_market=${key}; path=/; max-age=31536000; samesite=lax`;
   document.cookie = `market=${key}; path=/; max-age=31536000; samesite=lax`;
@@ -43,7 +48,7 @@ export function useMarket(): MarketKey {
   const path = usePathname();
   const saved = useSyncExternalStore(
     subscribe,
-    () => marketFromQuery(path) ?? readCookie(),
+    () => marketFromQuery(path) ?? readCookie() ?? geoMarket(),
     () => null,
   );
   const blogMarket = useSyncExternalStore(

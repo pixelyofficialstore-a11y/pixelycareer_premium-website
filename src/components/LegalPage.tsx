@@ -18,7 +18,7 @@ function Text({ text }: { text: string }) {
 }
 
 export default function LegalPage({ title, path, summary, sections }: { title: string; path: string; summary: string; sections: LegalSection[] }) {
-  const toc = sections.map((s, i) => ({ id: `s${i + 1}`, label: `${i + 1}. ${s.title}` }));
+  const toc = sections.map((s, i) => ({ id: s.id ?? `s${i + 1}`, label: `${i + 1}. ${s.title}` }));
   return (
     <div className="lg">
       <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: title, path }])} />
@@ -33,7 +33,7 @@ export default function LegalPage({ title, path, summary, sections }: { title: s
         <LegalToc items={toc} />
         <article className="lg-body">
           {sections.map((s, i) => (
-            <section key={s.title} id={`s${i + 1}`} className="lg-section">
+            <section key={s.title} id={s.id ?? `s${i + 1}`} className="lg-section">
               <h2>{i + 1}. {s.title}</h2>
               <p><Text text={s.text} /></p>
               {s.note && <p className="lg-note">{s.note}</p>}

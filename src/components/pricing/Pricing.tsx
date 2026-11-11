@@ -124,7 +124,6 @@ export default function Pricing({
       data-pricing-page={standalone || undefined}
       data-pricing-variant={compact ? "compact" : undefined}
     >
-      {standalone && market === "pk" && <OfferBand market={market} slot="pricing_band" />}
       <header className={`${styles.hero} ${compact ? styles.compactHero : ""}`}>
         <div className={styles.heroInner} data-reveal>
           {!standalone && !compact && <p className={styles.eyebrow}>Pricing</p>}
@@ -211,6 +210,7 @@ export default function Pricing({
         </div>
       </section>
 
+      {standalone && market === "pk" && <OfferBand market={market} slot="pricing_band" />}
       {!compact && <section id="compare" className={styles.compare} aria-labelledby="compare-heading">
         <div className={styles.sectionInner}>
           <h2 className={styles.sectionTitle} id="compare-heading">Compare <em className="m-break">every detail.</em></h2>

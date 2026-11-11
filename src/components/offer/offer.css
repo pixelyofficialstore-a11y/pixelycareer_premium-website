@@ -13,7 +13,9 @@
 
 /* Filled pill */
 .of-tag { display: inline-block; padding: 4px 11px; border-radius: 999px; background: var(--sale-gradient); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
-.of-tag-wide { font-size: 13px; letter-spacing: 0.08em; }
+.of-tag-big { display: inline-flex; align-items: center; gap: 7px; padding: 6px 16px; font-size: 15px; font-weight: 800; letter-spacing: 0.08em; }
+.of-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 22px 0 0; padding: 0; list-style: none; }
+.of-chips li { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border: 1px solid rgb(255 255 255 / 0.12); border-radius: 999px; background: rgb(255 255 255 / 0.08); color: #fff; font-size: 13px; white-space: nowrap; }
 
 /* Ticker: a calm 36px bar. The page spacing follows --bar-h. */
 html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
@@ -62,10 +64,9 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
 .of-btn { display: inline-flex; align-items: center; justify-content: center; width: 320px; height: 56px; margin-top: 28px; border-radius: 999px; background: var(--sale-gradient); box-shadow: var(--sale-glow); color: #fff; font-weight: 600; font-size: 16px; text-decoration: none; transition: transform 200ms ease, box-shadow 200ms ease; }
 .of-btn:hover { transform: translateY(-2px); box-shadow: var(--sale-glow-strong); }
 .of-band-slots { margin: 14px 0 0; color: var(--sale-on-navy); font-size: 13px; font-weight: 600; }
-.of-band-note { margin: 16px 0 0; color: rgb(255 255 255 / 0.55); font-size: 13px; }
-/* On /pricing the band opens the page: it starts below the fixed header, which stays on a light background. */
-.of-band-top { margin-top: calc(80px + var(--bar-h, 0px)); }
-.of-band-top + header { margin-top: 0 !important; }
+.of-band-note { margin: 16px 0 0; color: rgb(255 255 255 / 0.5); font-size: 12px; }
+.of-band-note a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.of-count { margin-top: 22px; }
 
 /* Executive pricing card: the only card with a sale accent */
 .price-card:has(> .of-card-tag) { position: relative; border: 1.5px solid var(--sale-border) !important; border-radius: 24px; }
@@ -110,7 +111,6 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
   .of-count div { min-width: 0; padding: 0 14px; }
   .of-count b { font-size: 24px; }
   .of-btn { width: 100%; }
-  .of-band-top { margin-top: calc(72px + var(--bar-h, 0px)); }
   .of-glass { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
   .of-glass-a { white-space: normal; }
 }

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useRef, type ReactNode } from "react";
 import { BUNDLE, offerHref } from "@/config/offers";
 import type { MarketKey } from "@/config/markets";
-import { trackPromotion } from "@/lib/analytics";
+import { trackFunnel, trackPromotion, type Commerce } from "@/lib/analytics";
 import { useCountdown, useOffer } from "./useOffer";
 import "./offer.css";
 
@@ -34,7 +34,11 @@ function useSeen(slot: string) {
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) { trackPromotion("view_promotion", BUNDLE.id, slot); io.disconnect(); }
+      if (e.isIntersecting) {
+        trackPromotion("view_promotion", BUNDLE.id, slot);
+        if (slot.endsWith("_band")) trackFunnel("view", OFFER_ITEM);
+        io.disconnect();
+      }
     }, { threshold: 0.5 });
     io.observe(el);
     return () => io.disconnect();
@@ -43,7 +47,8 @@ function useSeen(slot: string) {
 }
 
 export const inline = (t: { d: number; h: number; m: number }) => `${t.d}d ${pad(t.h)}h ${pad(t.m)}m`;
-const claim = (slot: string) => () => trackPromotion("select_promotion", BUNDLE.id, slot);
+const OFFER_ITEM: Commerce = { name: BUNDLE.title, ids: [BUNDLE.packageId, BUNDLE.addonId], value: BUNDLE.price, currency: "PKR", items: 2 };
+const claim = (slot: string) => () => { trackPromotion("select_promotion", BUNDLE.id, slot); trackFunnel("cart", OFFER_ITEM); };
 
 export function Flame({ size = 14 }: { size?: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true"><path d="M12 2c1 3.5-1.5 5.2-1.5 7.6 0 1.3.9 2.2 2 2.2 1.4 0 2.2-1.2 1.9-3.1 2.6 1.8 4.6 4.5 4.6 7.6A7 7 0 0 1 12 23a7 7 0 0 1-7-6.7c0-4.3 3.2-6.8 4.5-9.6.6 1 .9 2 .8 3.2C12.3 8.4 12.9 5.5 12 2Z" /></svg>;
@@ -83,15 +88,20 @@ export function OfferBand({ market, slot = "home_band" }: { market: MarketKey; s
   const ref = useSeen(slot);
   if (!live) return null;
   return (
-    <section id="offer" ref={ref} className={`of-band${slot === "pricing_band" ? " of-band-top" : ""}`} aria-labelledby="of-band-title">
+    <section id="offer" ref={ref} className="of-band" aria-labelledby="of-band-title">
       <div className="of-band-inner">
-        <span className="of-tag of-tag-wide">11.11 SALE</span>
+        <span className="of-tag of-tag-big"><Flame size={15} />11.11 SALE</span>
         <h2 id="of-band-title">Executive Career Branding <em>& Personal Website.</em></h2>
         <p className="of-band-price"><s>{rs(BUNDLE.compareAt)}</s><b>{rs(BUNDLE.price)}</b><span className="of-save">Save {SAVE_PCT}%</span></p>
+        <ul className="of-chips">
+          {["Premium CV and LinkedIn", "Personal portfolio website", "Free domain + hosting for 1 year"].map((chip) => (
+            <li key={chip}><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8.5 3.2 3L13 4.5" /></svg>{chip}</li>
+          ))}
+        </ul>
         <Countdown t={t} />
         <Link href={OFFER_HREF} className="of-btn" data-cta={`offer-claim-${slot}`} onClick={claim(slot)}>Claim 11.11 offer →</Link>
         {remaining !== null && remaining <= SHOW_SLOTS_AT && <p className="of-band-slots">Only {remaining} slots left</p>}
-        <p className="of-band-note">100% money back guarantee.</p>
+        <p className="of-band-note">100% money back guarantee · <Link href="/terms#offers">T&C apply</Link></p>
       </div>
     </section>
   );
@@ -117,7 +127,7 @@ export function ExecOfferBox({ market }: { market: MarketKey }) {
 }
 
 /** Final CTA on pk: a glass strip under the subtext and Claim as the main button while the sale is on. */
-export function FinalCtaOffer({ market, children }: { market: MarketKey; children: ReactNode }) {
+export function FinalCtaOffer({ market, blog = false, children }: { market: MarketKey; blog?: boolean; children: ReactNode }) {
   const { live, t } = useLive(market, 60_000);
   if (!live) return <>{children}</>;
   return (
@@ -128,7 +138,9 @@ export function FinalCtaOffer({ market, children }: { market: MarketKey; childre
       </div>
       <div className="final-actions">
         <Link href={OFFER_HREF} className="btn of-cta-btn min-h-14 px-8 text-[1.0625rem]" data-cta="offer-claim-final_cta" onClick={claim("final_cta")}>Claim 11.11 offer →</Link>
-        <Link href="/order?market=pk" className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="home-final-order">Start your order</Link>
+        {blog
+          ? <Link href="/pricing?m=pk" className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="blog-final-packages">See packages</Link>
+          : <Link href="/order?market=pk" className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="home-final-order">Start your order</Link>}
       </div>
     </>
   );

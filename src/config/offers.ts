@@ -21,6 +21,8 @@ export type Offer = {
   startsAt: string;
   endsAt: string;
   totalSlots: number;
+  /** Off the offer price when the customer pays now (uploads a payment screenshot) instead of paying later. */
+  payNowDiscount: number;
   active: boolean;
 };
 
@@ -40,6 +42,8 @@ export const OFFERS: Offer[] = [
     startsAt: "2026-11-11T00:00:00+05:00",
     endsAt: "2026-11-30T23:59:59+05:00",
     totalSlots: 10,
+    // CONFIRM (owner only, never rendered): the pay now saving.
+    payNowDiscount: 1000,
     active: true,
   },
 ];

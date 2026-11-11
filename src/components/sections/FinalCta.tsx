@@ -22,7 +22,7 @@ export default function FinalCta({ market, variant, cta }: { market: Market; var
           </h2>
           <p className="final-sub">First draft in 2 days. <span>100% money back guarantee.</span></p>
           {market.key === "pk" ? (
-            <FinalCtaOffer market={market.key}>
+            <FinalCtaOffer market={market.key} blog={blog}>
           <div className="final-actions">
             <Link href={cta?.href ?? orderHref(market)} className="btn btn-white min-h-14 px-8 text-[1.0625rem]" data-cta={cta?.id ?? "home-final-order"}>
               {cta?.label ?? "Start your order"}

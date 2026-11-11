@@ -2563,11 +2563,11 @@ body:has(#home-problem-title) #top .wrap { max-width: 1760px; padding-inline: cl
   #main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy .hero-actions > .btn { width: 100%; justify-content: center; }
   #main:is(:has(#home-problem-title), :has([data-pricing-page])) .rise-free .hero-visual { margin: 32px auto 0; }
 
-  /* Trust strip: 40px above and below; full labels on up to two lines */
-  #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] { padding-block: 40px; }
+  /* Trust strip: 48px above and below; full labels on two lines, never cut off */
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] { padding-block: 48px; }
   #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] [class*="_full"] { display: inline; }
   #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] [class*="_short"] { display: none; }
-  #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] [class*="_label"] { font-size: 11px; letter-spacing: .06em; line-height: 1.35; text-align: center; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) > section[class*="strip"] [class*="_label"] { display: block; max-width: 100px; margin-inline: auto; overflow: visible; font-size: 10px; letter-spacing: .04em; line-height: 1.35; text-align: center; white-space: normal; }
 
   /* Section headlines: one size, balanced, second phrase on its own line */
   #main:is(:has(#home-problem-title), :has(#final-cta)) :is(#home-problem-title, #services-title, #formats-title, #process-title, #testimonials-title, #faq-title, #pricing h2, #cta-title) {

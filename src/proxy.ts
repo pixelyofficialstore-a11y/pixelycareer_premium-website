@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-/** Blog pages: remember the visitor's country (from the host's geo header) so blog CTAs can route to their market. */
+/** Every page: remember the visitor's country (from the host's geo header). A visitor in Pakistan with no saved market gets the pk site and its offer. */
 export function proxy(request: NextRequest) {
   const response = NextResponse.next();
   if (request.cookies.has("pc_geo")) return response;
@@ -9,4 +9,4 @@ export function proxy(request: NextRequest) {
   return response;
 }
 
-export const config = { matcher: ["/blog", "/blog/:path*"] };
+export const config = { matcher: ["/((?!api|_next|.*\\..*).*)"] };

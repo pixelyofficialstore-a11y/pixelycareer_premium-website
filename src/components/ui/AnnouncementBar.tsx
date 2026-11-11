@@ -19,6 +19,8 @@ function readCampaign() {
     if (fromUrl) sessionStorage.setItem(CAMPAIGN_KEY, fromUrl);
     const source = new URLSearchParams(location.search).get("utm_source");
     if (source) sessionStorage.setItem("pixely-utm-source", source);
+    const fbclid = new URLSearchParams(location.search).get("fbclid");
+    if (fbclid) sessionStorage.setItem("pixely-fbclid", fbclid);
     return fromUrl ?? sessionStorage.getItem(CAMPAIGN_KEY);
   } catch {
     return new URLSearchParams(location.search).get("utm_campaign");

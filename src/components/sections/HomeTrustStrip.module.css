@@ -186,3 +186,10 @@ a.item:hover .reviews {
 /* Under the offer band: 48px above and below, no minimum height. */
 .strip { min-height: 0; padding-block: 48px; }
 @media (max-width: 767px) { .strip { padding-block: 48px; } }
+
+/* Mobile labels: two lines, never cut off. */
+@media (max-width: 767px) {
+  .strip .label, .strip .label:has(.reviews) { display: block; max-width: 100px; margin-inline: auto; overflow: visible; font-size: 10px; letter-spacing: 0.04em; line-height: 1.35; text-align: center; white-space: normal; text-overflow: clip; }
+  .strip .label span { overflow: visible; white-space: normal; text-overflow: clip; }
+  .strip .label .reviews { display: inline-grid; margin-left: 4px; vertical-align: middle; }
+}

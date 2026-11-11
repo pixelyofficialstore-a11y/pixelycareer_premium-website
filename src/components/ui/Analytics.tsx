@@ -2,7 +2,7 @@
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { GA4_ID, META_PIXEL_ID, trackEvent } from "@/lib/analytics";
+import { GA4_ID, META_PIXEL_ID, trackFunnel } from "@/lib/analytics";
 
 /** Renders and does nothing until NEXT_PUBLIC_GA4_ID or NEXT_PUBLIC_META_PIXEL_ID is set. */
 export default function Analytics() {
@@ -11,17 +11,26 @@ export default function Analytics() {
 
   useEffect(() => {
     if (!enabled) return;
+    // A pricing card as a commerce item: its name, its price as shown, and the page's currency.
+    const item = (card: HTMLElement, id: string) => {
+      const name = card.querySelector(".price-name")?.textContent ?? "";
+      const price = [...card.querySelectorAll("[class*='price']")].map((n) => n.textContent ?? "").filter((t) => /\d/.test(t) && !/\d.*\d{4,}.*\d{4,}/.test(t)).pop() ?? "";
+      const pk = /Rs|PKR/.test(card.textContent ?? "");
+      return { name, ids: [id || name.toLowerCase().replace(/\s+/g, "-")], value: Number(price.replace(/[^\d]/g, "")) || 0, currency: pk ? "PKR" : /£/.test(price) ? "GBP" : /AED/.test(price) ? "AED" : /SAR/.test(price) ? "SAR" : "USD" };
+    };
     const onClick = (e: MouseEvent) => {
       const cta = (e.target as Element).closest<HTMLElement>("[data-cta]")?.dataset.cta ?? "";
-      const chosen = cta.match(/-choose-(.+)$/)?.[1];
-      if (chosen) trackEvent("begin_order", { package: chosen, cta });
+      const card = (e.target as Element).closest<HTMLElement>(".price-card");
+      const chosen = cta.match(/-(?:choose|order)-(ats-career|international-pro|executive)$/)?.[1];
+      if (chosen && card) trackFunnel("cart", item(card, chosen));
+      else if (/^service-.+-order$/.test(cta)) trackFunnel("cart", { name: document.title.split("|")[0].trim(), ids: [cta.replace(/^service-|-order$/g, "")], value: 0, currency: "USD" });
     };
     document.addEventListener("click", onClick);
     const io = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (!entry.isIntersecting) continue;
         io.unobserve(entry.target);
-        trackEvent("view_package", { package: entry.target.querySelector(".price-name")?.textContent });
+        trackFunnel("view", item(entry.target as HTMLElement, ""));
       }
     });
     document.querySelectorAll(".price-card").forEach((c) => io.observe(c));

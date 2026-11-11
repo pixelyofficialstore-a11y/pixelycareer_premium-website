@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { availableAddons, calcOrder, totalFor, unitAt, type Selection } from "@/config/addons";
 import { MARKETS, formatPricingPrice, getPackages, localize, type MarketKey, type PackageId } from "@/config/markets";
 import { PAYMENTS } from "@/config/payments";
-import { trackEvent } from "@/lib/analytics";
+import { cartId, setCartId, trackFunnel, type Commerce } from "@/lib/analytics";
 import { useCountdown, useOffer } from "@/components/offer/useOffer";
 import { Flame, inline } from "@/components/offer/Offer";
 import { TARGET_COUNTRIES } from "@/lib/site";
@@ -100,27 +100,38 @@ function PayRow({ label, value, copy, mono }: { label: string; value: string; co
   );
 }
 
-/** utm_source and utm_campaign from the URL, or from earlier in this visit (saved by the announcement bar). */
+export type Restore = { id: string; name: string; email: string; whatsapp: string; contact: string; country: string; role: string; sameDay: boolean };
+
+/** utm_source, utm_campaign and the Meta click ids from the URL, the cookies, or earlier in this visit (saved by the announcement bar). */
 function readUtm() {
   try {
     const q = new URLSearchParams(location.search);
-    return { utm_source: q.get("utm_source") ?? sessionStorage.getItem("pixely-utm-source") ?? "", utm_campaign: q.get("utm_campaign") ?? sessionStorage.getItem("pixely-campaign") ?? "" };
+    const cookie = (n: string) => document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? "";
+    const fbclid = q.get("fbclid") ?? sessionStorage.getItem("pixely-fbclid") ?? "";
+    return {
+      utm_source: q.get("utm_source") ?? sessionStorage.getItem("pixely-utm-source") ?? "", utm_campaign: q.get("utm_campaign") ?? sessionStorage.getItem("pixely-campaign") ?? "",
+      fbclid, fbp: cookie("_fbp"), fbc: cookie("_fbc") || (fbclid ? `fb.1.${Date.now()}.${fbclid}` : ""),
+    };
   } catch {
-    return { utm_source: "", utm_campaign: "" };
+    return { utm_source: "", utm_campaign: "", fbclid: "", fbp: "", fbc: "" };
   }
 }
 
-export default function OrderForm({ market, initial, initialAddons, offerParam = false, hasQr = false }: { market: MarketKey; initial?: PackageId; initialAddons?: Selection; offerParam?: boolean; hasQr?: boolean }) {
+export default function OrderForm({ market, initial, initialAddons, offerParam = false, hasQr = false, restore }: { market: MarketKey; initial?: PackageId; initialAddons?: Selection; offerParam?: boolean; hasQr?: boolean; restore?: Restore }) {
   const m = MARKETS[market];
   const router = useRouter();
   const packages = getPackages(m);
   const pk = market === "pk";
   const [step, setStep] = useState(1);
   const [packageId, setPackageId] = useState<PackageId>(initial ?? "international-pro");
-  const [sameDay, setSameDay] = useState(false);
+  const [sameDay, setSameDay] = useState(restore?.sameDay ?? false);
   const [addons, setAddons] = useState<Selection>(initialAddons ?? {});
   const [viewOpen, setViewOpen] = useState<PackageId[]>([]);
-  const [v, setV] = useState({ name: "", code: m.phoneCode, whatsapp: "", email: "", contact: "whatsapp", country: COUNTRY[market], role: "", notes: "" });
+  const [v, setV] = useState(() => {
+    // A restored cart stores the number with its country code; the form keeps them apart.
+    const code = restore?.whatsapp ? CODES.filter((x) => restore.whatsapp.startsWith(x)).sort((a, b) => b.length - a.length)[0] ?? m.phoneCode : m.phoneCode;
+    return { name: restore?.name ?? "", code, whatsapp: restore?.whatsapp ? restore.whatsapp.slice(restore.whatsapp.startsWith(code) ? code.length : 0) : "", email: restore?.email ?? "", contact: restore?.contact === "email" ? "email" : "whatsapp", country: restore?.country || COUNTRY[market], role: restore?.role ?? "", notes: "" };
+  });
   const [cv, setCv] = useState<File | null>(null);
   const [later, setLater] = useState(false);
   const [method, setMethod] = useState<"easypaisa" | "ubl">("easypaisa");
@@ -173,6 +184,10 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const money = (n: number) => formatPricingPrice(m, n);
   const options = availableAddons(m, packageId);
   const payNow = pk && !later;
+  // Paying now on the 11.11 offer saves the pay now discount. It shows from the payment step on.
+  const payOff = bundle ? offer.payNowDiscount : 0;
+  const due = total - (payNow && step >= 3 ? payOff : 0);
+  const item: Commerce = { name: bundle ? offer.title : pkg.name, ids: [packageId, ...list.map((a) => a.id)], value: due, currency: m.currency, items: 1 + list.length };
   const byEmail = v.contact === "email";
   const channel = byEmail ? "email" : "WhatsApp";
 
@@ -241,6 +256,36 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   };
 
   const go = (to: number) => { setErrors({}); setSheet(false); setStep(to); };
+
+  // Funnel events. AddToCart: a package arrives from a link, or the visitor changes the package, an extra or same day delivery.
+  const firstCart = useRef(true);
+  useEffect(() => {
+    if (firstCart.current) { firstCart.current = false; if (!initial) return; }
+    trackFunnel("cart", item);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [packageId, JSON.stringify(addons), sameDay]);
+  useEffect(() => { if (step === 2) trackFunnel("checkout", item); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [step]);
+  useEffect(() => { if (payNow && shot) trackFunnel("payment", item); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [shot, payNow]);
+
+  // Cart: saved once a valid WhatsApp number or email is in, then updated on every change (debounced).
+  useEffect(() => { if (restore?.id) setCartId(restore.id); }, [restore?.id]);
+  useEffect(() => {
+    if (step < 2) return;
+    const phone = v.whatsapp.replace(/[\s-]/g, "").replace(/^0/, "");
+    const phoneOk = !byEmail && /^\d+$/.test(phone) && (v.code === "+92" ? phone.length === 10 : phone.length >= 7 && phone.length <= 15);
+    const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email.trim());
+    if (!phoneOk && !emailOk) return;
+    const id = cartId();
+    if (!id) return;
+    const t = setTimeout(() => {
+      fetch("/api/carts", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify({
+        id, market, package: packageId, addons, same_day: sameDay, offer_id: bundle ? offer.id : "", name: v.name, preferred_contact: v.contact,
+        whatsapp: phoneOk ? `${v.code}${phone}` : "", email: emailOk ? v.email.trim() : "", country: v.country, role: v.role, ...readUtm(),
+      }) }).catch(() => {});
+    }, 900);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, v.whatsapp, v.code, v.email, v.name, v.contact, v.country, v.role, packageId, JSON.stringify(addons), sameDay, bundle]);
   const cont = () => { if (validate(step)) go(step + 1); };
 
   const submit = async () => {
@@ -252,7 +297,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       market, package: packageId, same_day: sameDay ? "yes" : "no", addons: JSON.stringify(addons), name: v.name, code: v.code, whatsapp: v.whatsapp, email: v.email,
       preferred_contact: v.contact, country: v.country, role: v.role, notes: v.notes, terms: "yes",
       payment_choice: payNow ? "now" : "later", payment_method: payNow ? method : "", transaction_id: txn,
-      offer_id: bundle ? offer.id : "", ...readUtm(),
+      offer_id: bundle ? offer.id : "", cart_id: cartId(), ...readUtm(),
     };
     Object.entries(f).forEach(([k, val]) => d.append(k, val));
     if (cv) d.append("cv", cv);
@@ -261,7 +306,8 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       const res = await fetch("/api/orders", { method: "POST", body: d });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
-      trackEvent("generate_lead", { package: packageId, market, ...(bundle ? { promotion_id: offer.id } : {}) });
+      trackFunnel("lead", { ...item, value: data.total ?? due, orderId: data.id });
+      try { sessionStorage.removeItem("pixely-cart-id"); } catch {}
       const q = new URLSearchParams({ id: data.id, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1" } : {}) });
       router.push(`/order/success?${q}`);
     } catch (err) {
@@ -295,7 +341,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       </dl>
       <div className={styles.sumTotal}>
         <span>Total</span>
-        <strong key={total} className={styles.totalNum}>{money(total)}</strong>
+        <strong key={due} className={styles.totalNum}>{money(due)}</strong>
       </div>
       <p className={styles.guarantee}><Shield /> 100% money back guarantee</p>
     </>
@@ -452,6 +498,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   </Field>
                 )}
               </div>
+              <p className={styles.contactNote}>We&apos;ll only use this to contact you about your order.</p>
               <Field id="name" label="Full name *" error={errors.name}>
                 <input id="name" className={styles.input} value={v.name} onChange={(e) => set("name", e.target.value)} autoComplete="name" aria-invalid={errors.name ? true : undefined} />
               </Field>
@@ -478,19 +525,30 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   <Shield />
                   <p>No payment needed now. We&apos;ll send a secure payment link on your preferred channel.</p>
                 </div>
-              ) : later ? (
+              ) : (
+                <>
+                <div className={styles.payChoice} role="radiogroup" aria-label="When do you want to pay?">
+                  <button type="button" role="radio" aria-checked={!later} className={`${styles.payOpt} ${!later ? styles.payOptOn : ""}`} onClick={() => setLater(false)} data-cta="order-pay-now">
+                    <span className={styles.payOptHead}><b>Pay now</b>{payOff > 0 && <em>Best price</em>}</span>
+                    <strong>{money(total - payOff)}{payOff > 0 && <s>{money(total)}</s>}</strong>
+                    <small>{payOff > 0 ? `Save ${money(payOff)} and lock your slot` : "Work starts as soon as we verify it."}</small>
+                  </button>
+                  <button type="button" role="radio" aria-checked={later} className={`${styles.payOpt} ${later ? styles.payOptOn : ""}`} onClick={() => setLater(true)} data-cta="order-pay-later">
+                    <span className={styles.payOptHead}><b>Pay later</b></span>
+                    <strong>{money(total)}</strong>
+                    <small>Talk to us first. Pay after we confirm.</small>
+                  </button>
+                </div>
+                {later ? (
                 <div className={`${styles.card} ${styles.info}`}>
                   <Shield />
-                  <p>
-                    We&apos;ll send you payment details after confirming your order. Work starts once payment is received.{" "}
-                    <button type="button" className={styles.linkBtn} onClick={() => setLater(false)}>Pay now instead</button>
-                  </p>
+                  <p>We&apos;ll message you on {channel} to confirm your order and share payment details.</p>
                 </div>
-              ) : (
+                ) : (
                 <div className={`${styles.card} ${styles.payCard}`}>
                   <div className={styles.due}>
                     <span>Amount due</span>
-                    <strong>{money(total)}</strong>
+                    <strong>{money(due)}</strong>
                   </div>
                   <div className={styles.tabs} role="tablist" aria-label="Payment method">
                     <button type="button" role="tab" aria-selected={method === "easypaisa"} className={method === "easypaisa" ? styles.tabOn : ""} onClick={() => setMethod("easypaisa")}>Easypaisa / JazzCash</button>
@@ -521,9 +579,10 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   </div>
                   <div className={styles.payFoot}>
                     <p><Shield /> Your payment is safe. Confirmed on WhatsApp within a few hours.</p>
-                    <p>Prefer to pay later? <button type="button" className={styles.linkBtn} onClick={() => setLater(true)}>Send details later</button></p>
                   </div>
                 </div>
+                )}
+                </>
               )}
             </section>
           )}
@@ -563,7 +622,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 </div>
               </div>
               <div className={styles.totalBox}>
-                <div><span>Total</span><strong key={total} className={styles.totalNum}>{money(total)}</strong></div>
+                <div><span>Total</span><strong key={due} className={styles.totalNum}>{money(due)}</strong></div>
                 <p><Shield /> 100% money back guarantee</p>
               </div>
               <label className={styles.terms}>
@@ -603,7 +662,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
           </div>
           <div className={`${styles.mbar} ${footerSeen && !sheet ? styles.mbarHidden : ""}`} role="region" aria-label="Order total">
             <button type="button" className={styles.mtotal} onClick={() => setSheet((s) => !s)} aria-expanded={sheet}>
-              <strong key={total}>{money(total)}</strong>
+              <strong key={due}>{money(due)}</strong>
               <span>{pkg.name}{extrasCount ? ` + ${extrasCount} extra${extrasCount > 1 ? "s" : ""}` : ""} ⌃</span>
             </button>
             {continueBtn(styles.mcontinue)}
