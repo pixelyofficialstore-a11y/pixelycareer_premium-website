@@ -249,3 +249,12 @@
 .textLink { color: #0048ff; font-weight: 500; text-decoration: none; }
 .textLink:hover { text-decoration: underline; }
 @media (max-width: 767px) { .success { padding-top: calc(72px + var(--bar-h, 0px) + 56px); } .success h1 { font-size: 32px; } }
+
+/* Personal Brand Bundle */
+.offerBanner { margin: 0 0 16px; padding: 14px 16px; border-radius: 14px; background: #010c28; color: #fff; font-size: 14px; line-height: 1.5; }
+.offerEnded { margin: 0 0 16px; padding: 14px 16px; border-radius: 14px; background: #f6f8fc; color: #3a465b; font-size: 14px; }
+.sumBundle dt { color: #010c28 !important; font-weight: 600; }
+.sumBundle dd { display: grid; justify-items: end; }
+.sumBundle dd s { color: #8792a5; font-size: 12px; font-weight: 400; }
+.offerNudge { display: block; width: 100%; margin-top: 12px; padding: 14px 16px; border: 1px solid #fdba74; border-radius: 14px; background: #fff7ed; color: #c2410c; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
+.offerNudge:hover { background: #ffedd5; }

@@ -5,6 +5,7 @@ import BackButton from "@/components/ui/BackButton";
 import { useEffect, useState, type ReactNode } from "react";
 import { saveMarket } from "@/components/ui/useMarket";
 import Faq from "@/components/sections/Faq";
+import { OfferStrip, OfferTag, PricingOfferBox } from "@/components/offer/Offer";
 import { MARKETS, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
 import { WHATSAPP_URL , whatsappMessage } from "@/lib/site";
 import styles from "./Pricing.module.css";
@@ -158,6 +159,7 @@ export default function Pricing({
                   <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
                     {recommended && <span className={styles.badge}>Recommended</span>}
                     {tag?.id === p.id && <span className="sp-includes">{tag.text}</span>}
+                    {p.id === "executive" && market === "pk" && <OfferTag market={market} />}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
                     <div className={styles.pricePair}>
@@ -167,6 +169,7 @@ export default function Pricing({
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
                     </Link>
+                    {p.id === "executive" && market === "pk" && <PricingOfferBox market={market} />}
                     {(
                       <>
                         <hr className={styles.divider} />
@@ -197,6 +200,7 @@ export default function Pricing({
               );
             })}
           </ul>
+          {market === "pk" && standalone && <OfferStrip market={market} />}
           {compact && (
             <nav className={styles.compactCta} aria-label="Pricing details">
               <Link href={`/pricing?m=${market}#compare`} data-cta="home-pricing-compare">

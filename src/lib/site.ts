@@ -3,6 +3,7 @@ export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
 export const CONTACT_EMAIL = "info@pixelycareers.com"; // CONFIRM email
 export const LINKEDIN_URL = "https://www.linkedin.com/company/pixelycareers";
 export const FACEBOOK_REVIEWS_URL = "https://www.facebook.com/pixelycareers.pk/reviews/";
+export const FACEBOOK_URL = "https://www.facebook.com/pixelycareers.pk/";
 export const whatsappMessage = (text: string) => `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
 
 export const NAV = [

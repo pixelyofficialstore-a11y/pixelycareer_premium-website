@@ -7,6 +7,8 @@ import { availableAddons, calcOrder, totalFor, unitAt, type Selection } from "@/
 import { MARKETS, formatPricingPrice, getPackages, localize, type MarketKey, type PackageId } from "@/config/markets";
 import { PAYMENTS } from "@/config/payments";
 import { trackEvent } from "@/lib/analytics";
+import { useCountdown, useOffer } from "@/components/offer/useOffer";
+import { inline } from "@/components/offer/Offer";
 import { TARGET_COUNTRIES } from "@/lib/site";
 import { CODES } from "./Fields";
 import styles from "./OrderForm.module.css";
@@ -98,7 +100,17 @@ function PayRow({ label, value, copy, mono }: { label: string; value: string; co
   );
 }
 
-export default function OrderForm({ market, initial, hasQr = false }: { market: MarketKey; initial?: PackageId; hasQr?: boolean }) {
+/** utm_source and utm_campaign from the URL, or from earlier in this visit (saved by the announcement bar). */
+function readUtm() {
+  try {
+    const q = new URLSearchParams(location.search);
+    return { utm_source: q.get("utm_source") ?? sessionStorage.getItem("pixely-utm-source") ?? "", utm_campaign: q.get("utm_campaign") ?? sessionStorage.getItem("pixely-campaign") ?? "" };
+  } catch {
+    return { utm_source: "", utm_campaign: "" };
+  }
+}
+
+export default function OrderForm({ market, initial, initialAddons, offerParam = false, hasQr = false }: { market: MarketKey; initial?: PackageId; initialAddons?: Selection; offerParam?: boolean; hasQr?: boolean }) {
   const m = MARKETS[market];
   const router = useRouter();
   const packages = getPackages(m);
@@ -106,7 +118,7 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
   const [step, setStep] = useState(1);
   const [packageId, setPackageId] = useState<PackageId>(initial ?? "international-pro");
   const [sameDay, setSameDay] = useState(false);
-  const [addons, setAddons] = useState<Selection>({});
+  const [addons, setAddons] = useState<Selection>(initialAddons ?? {});
   const [viewOpen, setViewOpen] = useState<PackageId[]>([]);
   const [v, setV] = useState({ name: "", code: m.phoneCode, whatsapp: "", email: "", contact: "whatsapp", country: COUNTRY[market], role: "", notes: "" });
   const [cv, setCv] = useState<File | null>(null);
@@ -143,6 +155,14 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
 
   const set = (k: keyof typeof v, value: string) => setV((s) => ({ ...s, [k]: value }));
   const { pkg, list, total } = calcOrder(m, packageId, sameDay, addons);
+  // Personal Brand Bundle (pk): Executive + portfolio at the normal add-on price, shown as one line.
+  const { offer, open: offerOpenNow } = useOffer(market);
+  const offerClock = useCountdown();
+  const offerLive = offerOpenNow && !offerClock.done;
+  const bundle = offerLive && packageId === offer.packageId && (addons[offer.addonId] ?? 0) > 0;
+  const bundleSave = offer.compareAt - offer.price;
+  const shownList = bundle ? list.filter((a) => a.id !== offer.addonId) : list;
+  const bundleLine = bundle ? pkg.price + (list.find((a) => a.id === offer.addonId)?.total ?? 0) : 0;
   const money = (n: number) => formatPricingPrice(m, n);
   const options = availableAddons(m, packageId);
   const payNow = pk && !later;
@@ -225,6 +245,7 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
       market, package: packageId, same_day: sameDay ? "yes" : "no", addons: JSON.stringify(addons), name: v.name, code: v.code, whatsapp: v.whatsapp, email: v.email,
       preferred_contact: v.contact, country: v.country, role: v.role, notes: v.notes, terms: "yes",
       payment_choice: payNow ? "now" : "later", payment_method: payNow ? method : "", transaction_id: txn,
+      offer_id: bundle ? offer.id : "", ...readUtm(),
     };
     Object.entries(f).forEach(([k, val]) => d.append(k, val));
     if (cv) d.append("cv", cv);
@@ -233,7 +254,7 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
       const res = await fetch("/api/orders", { method: "POST", body: d });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
-      trackEvent("generate_lead", { package: packageId, market });
+      trackEvent("generate_lead", { package: packageId, market, ...(bundle ? { promotion_id: offer.id } : {}) });
       const q = new URLSearchParams({ id: data.id, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1" } : {}) });
       router.push(`/order/success?${q}`);
     } catch (err) {
@@ -253,8 +274,10 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
   const summaryLines = (
     <>
       <dl className={styles.sumList}>
-        <div><dt>{pkg.name}</dt><dd>{money(pkg.price)}</dd></div>
-        {list.map((a) => (
+        {bundle ? (
+          <div className={styles.sumBundle}><dt>{offer.title}</dt><dd><s>{money(offer.compareAt)}</s>{money(bundleLine)}</dd></div>
+        ) : <div><dt>{pkg.name}</dt><dd>{money(pkg.price)}</dd></div>}
+        {shownList.map((a) => (
           <div key={a.id} className={styles.sumLine}>
             <dt><span className={styles.sumName}>{a.name}</span>{a.qty > 1 && <span className={styles.sumQty}>× {a.qty}</span>}</dt>
             <dd>{money(a.total)}</dd>
@@ -295,6 +318,8 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
         <form ref={formRef} className={styles.form} noValidate onSubmit={(e) => e.preventDefault()}>
           {step === 1 && (
             <>
+              {bundle && <p className={styles.offerBanner} suppressHydrationWarning><b>{offer.title} applied</b> · You save {money(bundleSave)} · ends in {inline(offerClock)}</p>}
+              {offerParam && !offerLive && <p className={styles.offerEnded}>This offer has ended. You can continue at normal prices.</p>}
               <div className={styles.packs} role="radiogroup" aria-label="Package">
                 {PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => {
                   const sel = p.id === packageId;
@@ -346,7 +371,7 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
                   {options.map((o) => {
                     const qty = addons[o.id] ?? 0;
                     const on = qty > 0;
-                    const set1 = (n: number) => setAddons((s) => { const next = { ...s }; if (n < 1) delete next[o.id]; else next[o.id] = Math.min(10, n); return next; });
+                    const set1 = (n: number) => setAddons((s) => { const next = { ...s }; if (n < 1) { if (!(offerParam && offerLive && o.id === offer.addonId && packageId === offer.packageId)) delete next[o.id]; } else next[o.id] = Math.min(10, n); return next; });
                     let sub: string;
                     if (!o.qty) sub = `${o.benefit} · ${money(totalFor(m.key, o.id, 1, packageId))}`;
                     else if (!on) sub = `${o.benefit} · ${money(unitAt(m.key, o.id, 1, packageId))}`;
@@ -375,6 +400,11 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
                     );
                   })}
                 </div>
+                {offerLive && packageId === offer.packageId && !bundle && (
+                  <button type="button" className={styles.offerNudge} onClick={() => setAddons((a) => ({ ...a, [offer.addonId]: 1 }))}>
+                    Add your website for {money(unitAt(market, offer.addonId, 1, packageId))} and get the 11.11 price →
+                  </button>
+                )}
               </section>
             </>
           )}
@@ -490,8 +520,8 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
                 <div className={styles.card}>
                   <div className={styles.rHead}><h3>Package</h3><button type="button" onClick={() => go(1)}>Edit</button></div>
                   <dl className={styles.rList}>
-                    <div><dt>{pkg.name}</dt><dd>{money(pkg.price)}</dd></div>
-                    {list.map((a) => <div key={a.id}><dt>{a.name}{a.qty > 1 && <span className={styles.sumQty}> × {a.qty}</span>}</dt><dd>{money(a.total)}</dd></div>)}
+                    {bundle ? <div className={styles.sumBundle}><dt>{offer.title}</dt><dd><s>{money(offer.compareAt)}</s>{money(bundleLine)}</dd></div> : <div><dt>{pkg.name}</dt><dd>{money(pkg.price)}</dd></div>}
+                    {shownList.map((a) => <div key={a.id}><dt>{a.name}{a.qty > 1 && <span className={styles.sumQty}> × {a.qty}</span>}</dt><dd>{money(a.total)}</dd></div>)}
                     {sameDay && <div><dt>Same day delivery</dt><dd>{pkg.sameDayLabel}</dd></div>}
                   </dl>
                 </div>

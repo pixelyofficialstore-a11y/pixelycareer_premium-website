@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   // Blog posts merged into newer guides.
   async redirects() {
     return [
+      { source: "/offer", destination: "/pk#bundle", statusCode: 301 },
       { source: "/blog/what-is-an-ats-cv", destination: "/blog/ats-friendly-resume-checklist", permanent: true },
       { source: "/blog/one-column-vs-two-column-cv", destination: "/blog/resume-format-2026", permanent: true },
       { source: "/blog/cv-summary-examples", destination: "/blog/linkedin-about-section-examples", permanent: true },

@@ -5,6 +5,9 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import { getAnnouncement, isBarHidden } from "@/config/announcements";
 import { MARKETS } from "@/config/markets";
 import { useMarket } from "./useMarket";
+import { useCountdown, useOffer } from "@/components/offer/useOffer";
+import { inline } from "@/components/offer/Offer";
+import "@/components/offer/offer.css";
 
 const CAMPAIGN_KEY = "pixely-campaign";
 const CLOSED_KEY = "pixely-bar-closed";
@@ -14,6 +17,8 @@ function readCampaign() {
   try {
     const fromUrl = new URLSearchParams(location.search).get("utm_campaign");
     if (fromUrl) sessionStorage.setItem(CAMPAIGN_KEY, fromUrl);
+    const source = new URLSearchParams(location.search).get("utm_source");
+    if (source) sessionStorage.setItem("pixely-utm-source", source);
     return fromUrl ?? sessionStorage.getItem(CAMPAIGN_KEY);
   } catch {
     return new URLSearchParams(location.search).get("utm_campaign");
@@ -25,6 +30,8 @@ export default function AnnouncementBar() {
   const market = MARKETS[useMarket()];
   const [campaign, setCampaign] = useState<string | null>(null);
   const hidden = isBarHidden(path);
+  const { open: offerOpen, remaining } = useOffer(market.key);
+  const left = useCountdown();
 
   // Moving between pages with and without a bar: the header and page spacing follow --bar-h.
   useLayoutEffect(() => {
@@ -47,8 +54,15 @@ export default function AnnouncementBar() {
     }
   };
 
-  const message = getAnnouncement(market, path, campaign);
-  const inner = (
+  // pk: the Personal Brand Bundle replaces the page message while it is open (also for utm_campaign "bundle").
+  const bundle = offerOpen && !left.done;
+  const message = bundle ? { key: "brand-bundle", text: "", href: "/pk#bundle", ctaLabel: undefined } : getAnnouncement(market, path, campaign);
+  const inner = bundle ? (
+    <>
+      <span className="ann-desk" suppressHydrationWarning>11.11 Brand Sale · Executive + website for Rs 20,000 · ends in {inline(left)} →</span>
+      <span className="ann-mob">11.11 Sale: Executive + website Rs 20,000 →</span>
+    </>
+  ) : (
     <>
       {message.text}
       {message.ctaLabel && <span className="ml-2 underline underline-offset-3">{message.ctaLabel}</span>}

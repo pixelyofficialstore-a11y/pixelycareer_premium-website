@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { MARKETS, localizeTitle } from "@/config/markets";
 import PaymentLogos from "@/components/ui/PaymentLogos";
 import { useMarket } from "@/components/ui/useMarket";
-import { CONTACT_EMAIL, FOOTER_SERVICES, LINKEDIN_URL, WHATSAPP_URL } from "@/lib/site";
+import { CONTACT_EMAIL, FACEBOOK_URL, FOOTER_SERVICES, LINKEDIN_URL, WHATSAPP_URL } from "@/lib/site";
 
 const colTitle = "font-head text-sm font-medium text-white";
 const linkCls = "inline-flex min-h-11 items-center text-white/75 transition-colors hover:text-white lg:min-h-9";
@@ -43,6 +43,15 @@ function Col({ title, links }: { title: string; links: { label: string; href: st
   );
 }
 
+/** One clean list: a 16px icon and a short label on each row. */
+const CONTACT_ROWS = [
+  { label: CONTACT_EMAIL, href: `mailto:${CONTACT_EMAIL}`, cta: "footer-email", icon: "M3 6h18v12H3zM3 7l9 6 9-6" },
+  { label: "+92 370 6404900", href: WHATSAPP_URL, cta: "footer-whatsapp", icon: "M12 3a9 9 0 0 0-7.8 13.5L3 21l4.6-1.2A9 9 0 1 0 12 3zM9 8.5c0 3.5 3 6.5 6.5 6.5l1-1.5-2-1-1 1a5 5 0 0 1-3-3l1-1-1-2z" },
+  { label: "LinkedIn", href: LINKEDIN_URL, cta: "footer-linkedin", icon: "M4 4h16v16H4zM8 10v6M8 7.5v.01M12 16v-6M12 13a2.5 2.5 0 0 1 5 0v3" },
+  { label: "@pixelycareers.pk", href: "https://www.instagram.com/pixelycareers.pk", cta: "footer-instagram", icon: "M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zM12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zM17.5 6.5v.01" },
+  { label: "Pixely Careers PK", href: FACEBOOK_URL, cta: "footer-facebook", icon: "M15 3h-2a4 4 0 0 0-4 4v3H7v4h2v7h4v-7h3l1-4h-4V7.5a.5.5 0 0 1 .5-.5H15z" },
+];
+
 export default function Footer() {
   const market = MARKETS[useMarket()];
   // Quiet region links, hidden for visitors arriving from an ad. No prices here.
@@ -79,23 +88,14 @@ export default function Footer() {
           </div>
           <div className="col-span-12 lg:col-span-3">
             <Fold title="Contact">
-              <li>
-                <a href={`mailto:${CONTACT_EMAIL}`} className={linkCls} data-cta="footer-email">{CONTACT_EMAIL}</a>
-              </li>
-              <li>
-                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className={linkCls} data-cta="footer-whatsapp">
-                  WhatsApp +92 370 6404900
-                </a>
-              </li>
-              <li>
-                <a href={LINKEDIN_URL} target="_blank" rel="noopener noreferrer" className={linkCls} data-cta="footer-linkedin">LinkedIn</a>
-              </li>
-              <li>
-                <a href="https://www.instagram.com/pixelycareers.pk" target="_blank" rel="noopener noreferrer" className={linkCls}>
-                  Instagram @pixelycareers.pk
-                </a>
-              </li>
-              <li className="flex min-h-11 items-center text-white/75 lg:min-h-9">Facebook: Pixely Careers PK</li>
+              {CONTACT_ROWS.map((row) => (
+                <li key={row.label}>
+                  <a href={row.href} {...(row.href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})} className="foot-contact" data-cta={row.cta}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={row.icon} /></svg>
+                    <span>{row.label}</span>
+                  </a>
+                </li>
+              ))}
             </Fold>
           </div>
         </div>

@@ -1,27 +1,25 @@
 "use client";
-import { useState } from "react";
 import { useMarket } from "./useMarket";
 
-// Official logo files go in /public/payments/logos/ (easypaisa.svg, jazzcash.svg, ubl.svg, visa.svg, mastercard.svg).
-// CONFIRM card payments are accepted before showing Visa and Mastercard.
-const LOGOS: Record<string, [string, string][]> = {
-  pk: [["easypaisa", "Easypaisa"], ["jazzcash", "JazzCash"], ["ubl", "UBL"]],
-  // CONFIRM card payments are live before adding Visa and Mastercard here.
-  other: [],
-};
+/** Simple line icons, no logo files. */
+const WALLET = "M3 7h15a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7zm0 0V6a2 2 0 0 1 2-2h11M16 13h.01";
+const PHONE = "M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2";
+const BANK = "M3 10l9-6 9 6M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20h18";
 
-/** "We accept" plus small grey logos. A logo whose file is missing is skipped, and the row hides if none load. */
+const PK: [string, string][] = [["JazzCash", PHONE], ["Easypaisa", WALLET], ["Bank transfer", BANK]];
+
+/** pk only: "We accept" with small grey text chips. Other markets show nothing until their methods are confirmed. */
 export default function PaymentLogos() {
   const market = useMarket();
-  const [failed, setFailed] = useState<string[]>([]);
-  const list = (market === "pk" ? LOGOS.pk : LOGOS.other).filter(([id]) => !failed.includes(id));
-  if (!list.length) return null;
+  if (market !== "pk") return null;
   return (
-    <div className="pay-logos" aria-label="Accepted payment methods">
-      <span>We accept</span>
-      {list.map(([id, name]) => (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img key={id} src={`/payments/logos/${id}.svg`} alt={name} height={20} onError={() => setFailed((f) => [...f, id])} />
+    <div className="pay-chips" aria-label="Accepted payment methods">
+      <span>We accept:</span>
+      {PK.map(([name, d]) => (
+        <span key={name} className="pay-chip">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={d} /></svg>
+          {name}
+        </span>
       ))}
     </div>
   );

@@ -4,6 +4,8 @@ import { randomInt } from "node:crypto";
 import { NextResponse } from "next/server";
 import { calcOrder } from "@/config/addons";
 import { MARKETS, getPackages, isMarketKey, type PackageId } from "@/config/markets";
+import { getOffer } from "@/config/offers";
+import { clearOfferCache, getOfferState } from "@/lib/offer-server";
 
 export const runtime = "nodejs";
 const MAX = 10 * 1024 * 1024;
@@ -54,6 +56,9 @@ export async function POST(req: Request) {
   const selection: Record<string, number> = {};
   if (raw && typeof raw === "object" && !Array.isArray(raw)) for (const [k, v] of Object.entries(raw)) selection[k] = Number(v) || 0;
   const { list, total } = calcOrder(m, pkgId, s("same_day") === "yes", selection);
+  // The offer is only recorded while it is open and the order really has its package and add-on.
+  const offer = getOffer(s("offer_id"));
+  const offerOk = !!offer && pkgId === offer.packageId && (selection[offer.addonId] ?? 0) > 0 && !!(await getOfferState(offer.id, market))?.open;
   const id = `PC-${String(randomInt(0, 1000000)).padStart(6, "0")}`;
   const record = {
     id,
@@ -73,6 +78,9 @@ export async function POST(req: Request) {
     payment_choice: payNow ? "now" : "later",
     payment_method: payNow ? s("payment_method") : "",
     transaction_id: s("transaction_id"),
+    offer_id: offerOk ? offer!.id : "",
+    utm_source: s("utm_source").slice(0, 100),
+    utm_campaign: s("utm_campaign").slice(0, 100),
   };
   try {
     await persist(id, record, { cv, screenshot: shot });
@@ -80,6 +88,7 @@ export async function POST(req: Request) {
     console.error("order persist failed", e);
     return NextResponse.json({ error: "We could not save your order. Please try again." }, { status: 500 });
   }
+  clearOfferCache();
   // Send the email notification here with the provider configured in production.
   return NextResponse.json({ id, total });
 }

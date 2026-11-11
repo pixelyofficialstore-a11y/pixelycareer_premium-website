@@ -2629,3 +2629,17 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
 .pay-logos { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: rgb(255 255 255 / 0.7); }
 .pay-logos img { height: 20px; width: auto; filter: grayscale(1) brightness(1.8); opacity: 0.8; transition: filter 200ms ease, opacity 200ms ease; }
 .pay-logos img:hover { filter: none; opacity: 1; }
+
+/* Footer: contact list with icons, payment chips (pk) */
+.foot-contact { display: flex; align-items: center; gap: 12px; min-height: 36px; color: rgb(255 255 255 / 0.75); font-size: 14px; text-decoration: none; transition: color 150ms ease; }
+.foot-contact:hover { color: #fff; }
+.foot-contact svg { flex: none; }
+.pay-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: rgb(255 255 255 / 0.7); font-size: 13px; }
+.pay-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid rgb(255 255 255 / 0.15); border-radius: 999px; background: rgb(255 255 255 / 0.06); color: rgb(255 255 255 / 0.8); font-size: 12px; }
+
+/* Mobile headings: bolder and slightly tighter */
+@media (max-width: 767px) {
+  h1, h2 { font-weight: 700 !important; }
+  /* The hero H1 keeps its own tighter tracking, so the bolder line still fits a 375px screen. */
+  :is(h1, h2):not(.hero-copy h1) { letter-spacing: -0.02em !important; }
+}

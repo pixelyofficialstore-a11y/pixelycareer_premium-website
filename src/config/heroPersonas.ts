@@ -30,9 +30,8 @@ export type HeroPersona = {
   };
 };
 
-const pic = (market: MarketKey, name: string): CvPicture => ({ src: `/cv/${market}/${name}.webp`, width: 1131, height: 1600 });
-/** US homepage samples: A4 PNG exports in public/samples/us. */
-const usPic = (name: string, alt: string): CvPicture => ({ src: `/samples/us/${name}.png`, width: 2828, height: 4000, alt, quality: 95, sizes: "(max-width: 768px) 100vw, 640px", hd: true });
+/** Sharp 1600px WebP exports from each market pack: bad (1), good (2), hero-good (3). */
+const pic = (market: MarketKey, name: string): CvPicture => ({ src: `/cv/${market}/${name}.webp`, width: 1600, height: 2263, quality: 90, sizes: "(max-width: 768px) 100vw, 640px", hd: true });
 
 export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
   us: {
@@ -42,11 +41,10 @@ export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
     areas: [{ left: 2.5, top: 12, width: 34.5, height: 86 }, { left: 38, top: 24.5, width: 56.5, height: 13.5 }, { left: 38.5, top: 41, width: 56.5, height: 40.5 }],
     chips: ["ATS Friendly", "US Resume Format", "Keyword Matched"],
     images: {
-      heroBad: usPic("us-bad-cv", "Example of a two column resume that fails ATS"),
-      heroFlip: usPic("us-good-cv-photo", "ATS friendly resume with photo"),
-      good: usPic("us-good-cv", "ATS friendly single column resume for a US Project Manager"),
-      bad: usPic("us-bad-cv", "Example of a two column resume that fails ATS"),
-      pageGood: pic("us", "good"),
+      heroBad: pic("us", "bad"),
+      heroFlip: pic("us", "hero-good"),
+      good: pic("us", "good"),
+      bad: pic("us", "bad"),
     },
   },
   pk: {
@@ -56,7 +54,7 @@ export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
     areas: [{ left: 0.5, top: 17, width: 30, height: 82.5 }, { left: 2.5, top: 42, width: 27.5, height: 25.5 }, { left: 2.5, top: 68, width: 27.5, height: 18.5 }],
     chips: ["ATS Friendly", "Gulf and UK Formats", "PDF and Word"],
     images: {
-      heroBad: pic("pk", "hero-bad"),
+      heroBad: pic("pk", "bad"),
       heroFlip: pic("pk", "hero-good"),
       good: pic("pk", "good"),
       bad: pic("pk", "bad"),
@@ -69,7 +67,7 @@ export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
     areas: [{ left: 0.5, top: 17, width: 30, height: 82.5 }, { left: 2.5, top: 39.5, width: 27.5, height: 18.5 }, { left: 2.5, top: 58, width: 27.5, height: 23.5 }],
     chips: ["ATS Friendly", "UAE CV Format", "Visa Status Included"],
     images: {
-      heroBad: pic("ae", "hero-bad"),
+      heroBad: pic("ae", "bad"),
       heroFlip: pic("ae", "hero-good"),
       good: pic("ae", "good"),
       bad: pic("ae", "bad"),
@@ -82,7 +80,7 @@ export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
     areas: [{ left: 0.5, top: 17, width: 30, height: 82.5 }, { left: 2.5, top: 40.5, width: 27.5, height: 20.5 }, { left: 37, top: 38.5, width: 58, height: 31.5 }],
     chips: ["ATS Friendly", "KSA CV Format", "Keyword Matched"],
     images: {
-      heroBad: pic("sa", "hero-bad"),
+      heroBad: pic("sa", "bad"),
       good: pic("sa", "good"),
       bad: pic("sa", "bad"),
       heroFlip: pic("sa", "hero-good"),
@@ -95,7 +93,7 @@ export const HERO_PERSONAS: Record<MarketKey, HeroPersona> = {
     areas: [{ left: 0.5, top: 1, width: 37.5, height: 98 }, { left: 41, top: 46.5, width: 52, height: 51.5 }, { left: 3, top: 42.5, width: 31, height: 25 }],
     chips: ["ATS Friendly", "UK CV Format", "Europass Available"],
     images: {
-      heroBad: pic("uk", "hero-bad"),
+      heroBad: pic("uk", "bad"),
       heroFlip: pic("uk", "hero-good"),
       good: pic("uk", "good"),
       bad: pic("uk", "bad"),

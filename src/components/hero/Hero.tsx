@@ -3,6 +3,7 @@ import { HERO_PERSONAS } from "@/config/heroPersonas";
 import { orderHref, type Market } from "@/config/markets";
 import { ArrowDown, ArrowRight } from "@/components/ui/Icons";
 import HeroStack from "./HeroStack";
+import { HeroOfferCard } from "@/components/offer/Offer";
 import styles from "./Hero.module.css";
 
 export default function Hero({ market, centerMobileHeadline = false }: { market: Market; centerMobileHeadline?: boolean }) {
@@ -45,6 +46,7 @@ export default function Hero({ market, centerMobileHeadline = false }: { market:
                 Scroll ↓
               </span>}
             </div>
+            {market.key === "pk" && <HeroOfferCard market={market.key} />}
           </div>
           <div className="hero-visual col-span-12 lg:col-span-6">
             <HeroStack persona={persona} />
