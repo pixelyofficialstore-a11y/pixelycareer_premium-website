@@ -14,6 +14,9 @@ export default function Analytics({ allowLocal = false }: { allowLocal?: boolean
   useEffect(() => {
     if (!META_PIXEL_ID || (!allowLocal && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname))) return;
     enableMeta();
+    // fbc: keep the click id from ?fbclid as an _fbc cookie for 90 days when Meta has not set one.
+    const fbclid = new URLSearchParams(location.search).get("fbclid");
+    if (fbclid && !/(?:^|; )_fbc=/.test(document.cookie)) document.cookie = `_fbc=fb.1.${Date.now()}.${fbclid}; path=/; max-age=${60 * 60 * 24 * 90}; SameSite=Lax`;
     setPixel({ vid: visitorId() });
   }, [allowLocal]);
   // PageView on first load and on every route change, once per page.
@@ -69,7 +72,7 @@ export default function Analytics({ allowLocal = false }: { allowLocal?: boolean
         </>
       )}
       {META_PIXEL_ID && pixel && (
-        <Script id="meta-pixel" strategy="afterInteractive">{`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}',{external_id:'${pixel.vid}'});`}</Script>
+        <Script id="meta-pixel" strategy="afterInteractive">{`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${META_PIXEL_ID}');`}</Script>
       )}
       {META_PIXEL_ID && (
         // eslint-disable-next-line @next/next/no-img-element

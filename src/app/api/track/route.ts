@@ -24,11 +24,12 @@ const body = z.object({
   page: opt(500),
   meta: z.record(z.string().max(40), z.union([z.string().max(200), z.number(), z.boolean(), z.array(z.string().max(60)).max(20)])).optional(),
   fbp: opt(100), fbc: opt(400),
+  user: z.object({ email: opt(160), phone: opt(30), firstName: opt(80), lastName: opt(80) }).optional(),
 });
 
 /**
  * Funnel log. Writes the event and mirrors it to the Conversions API with the same event id the browser Pixel used,
- * so Meta deduplicates them. Purchase is never accepted here: it only comes from /api/mark-paid.
+ * so Meta deduplicates them. Purchase is never accepted here: the CRM sends it after payment is verified.
  */
 export async function POST(req: Request) {
   if (limited(req, "track", 60)) return fail(429);
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
       ...attr, market: b.market, sessionId: b.sessionId, orderId, name: b.name,
       value: b.value != null ? String(b.value) : null, currency: b.currency, page: b.page, meta: { ...(b.meta ?? {}), event_id: b.eventId },
     });
-    await sendCapi(META[b.name], b.eventId, { phone: user.whatsapp, email: user.email, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, orderId] },
+    await sendCapi(META[b.name], b.eventId, { phone: user.whatsapp ?? b.user?.phone, email: user.email ?? b.user?.email, name: [b.user?.firstName, b.user?.lastName].filter(Boolean).join(" ") || null, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, orderId] },
       { ...(b.value != null ? { value: b.value, currency: b.currency } : {}), ...(b.meta?.content_name ? { content_name: b.meta.content_name } : {}), ...(Array.isArray(b.meta?.content_ids) ? { content_ids: b.meta.content_ids, content_type: "product" } : {}) },
       b.page);
     return NextResponse.json({ ok: true });

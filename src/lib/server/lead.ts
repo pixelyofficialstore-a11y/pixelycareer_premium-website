@@ -41,7 +41,7 @@ export async function handleLead<S extends z.ZodObject<typeof leadBase & z.ZodRa
     // Conversions API Lead, same event_id as the browser Pixel. Fire and forget.
     const lead = bucket === "partners" ? "partner" : "cv_review";
     const vid = (await cookies()).get("px_vid")?.value ?? null;
-    void sendCapi("Lead", b.eventId ?? `Lead_${row.id}`, { phone: whatsapp, email: b.email, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, row.id] },
+    void sendCapi("Lead", b.eventId ?? `Lead_${row.id}`, { phone: whatsapp, email: b.email, name: b.name, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, row.id] },
       { content_name: lead, content_ids: [lead], content_type: "product", value: 0, currency: "PKR" }, req.headers.get("referer"));
     return NextResponse.json({ ref: row.id.slice(0, 8).toUpperCase() });
   } catch (e) {

@@ -1,7 +1,7 @@
 /**
  * Analytics. Nothing loads or sends unless the env vars are set:
  * NEXT_PUBLIC_META_PIXEL_ID (Meta Pixel) and NEXT_PUBLIC_GA_ID or NEXT_PUBLIC_GA4_ID (GA4).
- * Purchase is never sent from the browser: it goes through the Conversions API when an order is marked paid.
+ * Purchase is never sent from the browser: the CRM sends it after payment is verified.
  */
 export const GA4_ID = process.env.NEXT_PUBLIC_GA_ID ?? process.env.NEXT_PUBLIC_GA4_ID;
 import { track } from "./meta";
@@ -57,7 +57,7 @@ export function trackFunnel(step: keyof typeof FUNNEL, c: Commerce) {
   // Lead: the server sends the Conversions API event itself (with the contact details), so the browser only fires the Pixel.
   track(meta, {
     content_name: c.name, content_ids: c.ids, content_type: "product", value: c.value, currency: c.currency, ...(c.items ? { num_items: c.items } : {}),
-  }, { eventId: `${meta}_${eventId}`, server: step !== "lead" });
+  }, undefined, { eventId: `${meta}_${eventId}`, server: step !== "lead" });
   w.gtag?.("event", ga, {
     value: c.value, currency: c.currency, ...(c.orderId ? { transaction_id: c.orderId } : {}), event_id: `${ga}_${eventId}`,
     items: c.ids.map((id) => ({ item_id: id, item_name: c.name })),

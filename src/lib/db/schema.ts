@@ -44,6 +44,7 @@ export const orders = website.table("orders", {
   stepReached: integer("step_reached").notNull().default(1),
   lastActivityAt: timestamp("last_activity_at", { withTimezone: true }).notNull().defaultNow(),
   eventId: text("event_id"),
+  leadEventId: text("lead_event_id"), eventSourceUrl: text("event_source_url"),
   paidAt: timestamp("paid_at", { withTimezone: true }),
 }, (t) => [index("orders_status_idx").on(t.status), index("orders_created_at_idx").on(t.createdAt), index("orders_whatsapp_idx").on(t.whatsapp)]).enableRLS();
 

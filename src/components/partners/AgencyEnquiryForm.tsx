@@ -98,8 +98,8 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
     setHandoffUrl(url);
     // Saved for the CRM in the background; the WhatsApp handoff never waits for it.
     const ck = (n: string) => document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? null;
-    const leadId = newEventId("Lead");
-    track("Lead", { content_name: "partner", content_ids: ["partner"], content_type: "product", value: 0, currency: "PKR" }, { eventId: leadId, server: false });
+    const leadId = newEventId();
+    track("Lead", { content_name: "partner", content_ids: ["partner"], content_type: "product", value: 0, currency: "PKR" }, undefined, { eventId: leadId, server: false });
     fetch("/api/partners", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify({
       turnstile: ts, name: form.name, orgName: form.organization, orgType: form.organizationType || null, code: form.code, whatsapp: form.phone, email: form.email || null,
       countryHq: form.country || null, monthlyVolume: form.volume || null, model: form.model || null, notes: form.notes || null, website: hp.current?.value ?? "", fbp: ck("_fbp"), fbc: ck("_fbc"), eventId: leadId,
