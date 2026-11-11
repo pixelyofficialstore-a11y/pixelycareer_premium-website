@@ -81,7 +81,8 @@ export default function HomeProcess({ marketKey = "us" }: { marketKey?: MarketKe
       const curve = el.querySelector<SVGSVGElement>("[data-curve]");
       const rail = el.querySelector<SVGSVGElement>("[data-rail]");
       if (curve) { curve.style.height = `${end}px`; curve.setAttribute("viewBox", `0 0 200 ${end}`); curve.querySelectorAll("path").forEach((p) => p.setAttribute("d", d)); }
-      if (rail) rail.style.height = `${end}px`;
+      // Mobile rail starts at the first dot, so nothing sticks out above circle 01.
+      if (rail) { rail.style.top = `${ys[0]}px`; rail.style.height = `${Math.max(0, end - ys[0])}px`; }
     };
     fit();
     const ro = new ResizeObserver(fit);
