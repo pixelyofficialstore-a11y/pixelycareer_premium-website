@@ -169,3 +169,36 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
 .of-exec-claim:hover { box-shadow: var(--sale-glow-strong); }
 .of-exec-extra { color: var(--sale-600); font-weight: 600; }
 .of-exec-extra > span { color: var(--sale-600) !important; }
+
+/* Final CTA v2: left copy, checklist and stats; right, the navy bundle card */
+.final-grid:has(.of-fcard) { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 0 64px; align-items: center; }
+.final-grid:has(.of-fcard) .final-cv { display: none !important; }
+.final-copy:has(.of-fcard) { display: contents; }
+.final-copy:has(.of-fcard) > :not(.of-fcard) { grid-column: 1; }
+.final-copy:has(.of-fcard) > #cta-title { align-self: end; }
+.of-fcard { grid-column: 2; grid-row: 1 / span 5; align-self: center; padding: 22px; border-radius: 20px; background: #010c28; box-shadow: 0 24px 48px -24px rgb(1 12 40 / 0.6); color: #fff; }
+.of-fcard-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: rgb(255 255 255 / 0.6); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.of-fcard-title { margin: 16px 0 0; font-size: 18px; font-weight: 600; line-height: 1.35; }
+.of-fcard-title em { display: block; font-style: normal; color: var(--sale-on-navy); }
+.of-fcard-was { margin: 16px 0 0; color: rgb(255 255 255 / 0.5); font-size: 13px; }
+.of-fcard-price { display: flex; align-items: baseline; justify-content: space-between; margin: 2px 0 18px; }
+.of-fcard-price b { font-family: var(--font-head); font-size: 36px; font-weight: 700; line-height: 1.1; }
+.of-fcard-price span { color: var(--sale-on-navy); font-size: 14px; font-weight: 600; }
+.of-fcard-alt { margin: 14px 0 0; color: rgb(255 255 255 / 0.6); font-size: 13px; text-align: center; }
+.of-fcard-alt a { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
+.of-flist { display: grid; gap: 10px; margin: 22px 0 0; padding: 0; list-style: none; }
+.of-flist li { display: flex; align-items: center; gap: 10px; color: #fff; font-size: 15px; }
+.of-flist svg { flex: none; color: #ffb48f; }
+.of-fstats { display: flex; gap: 48px; margin-top: 24px; padding-top: 20px; border-top: 1px solid rgb(255 255 255 / 0.2); }
+.of-fstats p { display: grid; margin: 0; color: rgb(255 255 255 / 0.7); font-size: 13px; }
+.of-fstats b { color: #fff; font-family: var(--font-head); font-size: 24px; font-weight: 700; }
+@media (max-width: 900px) {
+  .final-grid:has(.of-fcard) { grid-template-columns: 1fr; text-align: center; }
+  .of-fcard { grid-column: 1; grid-row: auto; margin-top: 22px; padding: 18px; text-align: left; }
+  .of-flist, .of-fstats { display: none; }
+  .of-fcard-title { font-size: 17px; }
+  .of-fcard-price b { font-size: 30px; }
+}
+.final-copy:has(.of-fcard) #cta-title em, .final-grid:has(.of-fcard) #cta-title em { color: rgb(255 255 255 / 0.75) !important; }
+#final-cta:has(.of-fcard) { padding-block: 72px !important; }
+@media (max-width: 900px) { #final-cta:has(.of-fcard) { padding-block: 48px !important; } }

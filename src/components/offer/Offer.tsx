@@ -140,21 +140,27 @@ export function ExecClaim() {
   return <Link href={OFFER_HREF} className="of-exec-claim" data-cta="offer-claim-pricing_card" onClick={claim("pricing_card")}>Claim 11.11 Bundle →</Link>;
 }
 
-/** Final CTA on pk: a glass strip under the subtext and Claim as the main button while the sale is on. */
+/**
+ * Final CTA on pk while the sale is on: a checklist and two stats under the subtext, and a navy bundle card
+ * in place of the CV image (stacked under the subtext on mobile). Otherwise the normal buttons.
+ */
 export function FinalCtaOffer({ market, blog = false, children }: { market: MarketKey; blog?: boolean; children: ReactNode }) {
   const { live, t } = useLive(market, 60_000);
   if (!live) return <>{children}</>;
+  const tick = <svg viewBox="0 0 16 16" width="15" height="15" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.4" /><path d="m5 8.2 2 2L11 6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" /></svg>;
   return (
     <>
-      <div className="of-glass">
-        <span className="of-glass-a"><span className="of-tag">11.11 SALE</span><b>{BUNDLE.headline}</b></span>
-        <span className="of-glass-b"><span><s>27,500</s> <strong>{rs(BUNDLE.price)}</strong></span><span className="of-glass-time" suppressHydrationWarning>{inline(t)}</span></span>
-      </div>
-      <div className="final-actions">
-        <Link href={OFFER_HREF} className="btn of-cta-btn min-h-14 px-8 text-[1.0625rem]" data-cta="offer-claim-final_cta" onClick={claim("final_cta")}>Claim 11.11 offer →</Link>
-        {blog
-          ? <Link href="/pricing?m=pk" className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="blog-final-packages">See packages</Link>
-          : <Link href="/order?market=pk" className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="home-final-order">Start your order</Link>}
+      <ul className="of-flist">
+        {["Premium executive CV and LinkedIn makeover", "Your own personal portfolio website", "Free domain and hosting for 1 year"].map((i) => <li key={i}>{tick}{i}</li>)}
+      </ul>
+      <div className="of-fstats"><p><b>1,800+</b>Professionals helped</p><p><b>100%</b>Recommended on Facebook</p></div>
+      <div className="of-fcard">
+        <div className="of-fcard-top"><span className="of-tag">11.11 BUNDLE</span><span suppressHydrationWarning>Ends in {inline(t)}</span></div>
+        <p className="of-fcard-title">Executive Career Branding <em>& Personal Website</em></p>
+        <p className="of-fcard-was">Worth <s>{rs(BUNDLE.compareAt)}</s></p>
+        <p className="of-fcard-price"><b>{rs(BUNDLE.price)}</b><span>Save 7,500</span></p>
+        <Link href={OFFER_HREF} className="of-exec-claim" data-cta="offer-claim-final_cta" onClick={claim("final_cta")}>Claim 11.11 Bundle →</Link>
+        <p className="of-fcard-alt">Just need a CV? <Link href="/pricing?m=pk" data-cta={blog ? "blog-final-packages" : "final-packages"}>See all packages</Link></p>
       </div>
     </>
   );
