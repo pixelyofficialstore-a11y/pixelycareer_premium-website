@@ -8,5 +8,5 @@ export const generateStaticParams = () => SERVICES.map((s) => ({ slug: s.slug })
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const s = getService((await params).slug);
-  return ogImage(s?.group ?? "Services", s?.h1 ?? "Pixely Careers");
+  return ogImage(s?.group ?? "Services", s ? s.h1.join(" ") : "Pixely Careers");
 }

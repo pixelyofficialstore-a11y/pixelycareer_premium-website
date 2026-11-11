@@ -1,0 +1,34 @@
+/* ===== Legal pages: one template ===== */
+.lg-hero { padding: calc(80px + var(--bar-h, 0px) + 56px) 0 40px; background: #fff; }
+.lg-hero h1 { margin: 0; font-size: 48px; }
+.lg-date { margin: 12px 0 0; color: #6b7280; font-size: 13px; }
+.lg-summary { margin: 12px 0 0; color: #6b7280; font-size: 17px; line-height: 1.6; }
+.lg-grid { display: grid; grid-template-columns: 240px minmax(0, 680px); gap: 64px; align-items: start; padding-bottom: 96px; }
+.lg-toc { position: sticky; top: calc(80px + var(--bar-h, 0px) + 32px); display: grid; gap: 2px; }
+.lg-toc a, .lg-toc-mobile a { display: block; padding: 6px 0 6px 14px; border-left: 2px solid transparent; color: #6b7280; font-size: 14px; line-height: 1.4; text-decoration: none; transition: color 150ms ease, border-color 150ms ease; }
+.lg-toc a:hover, .lg-toc-mobile a:hover { color: #010c28; }
+.lg-toc a.is-active { border-left-color: #0048ff; color: #0048ff; }
+.lg-toc-mobile { display: none; }
+.lg-section { scroll-margin-top: calc(80px + var(--bar-h, 0px) + 24px); }
+.lg-section + .lg-section { margin-top: 48px; }
+.lg-section h2 { margin: 0 0 12px; color: #010c28; font-size: 20px; font-weight: 600; line-height: 1.35; }
+.lg-section p { margin: 0; color: #4a5568; font-size: 16px; line-height: 1.75; }
+.lg-section p a, .lg-questions a { color: #0048ff; text-decoration: underline; text-underline-offset: 3px; }
+.lg-section .lg-note { margin-top: 16px; padding: 16px; border-radius: 12px; background: #f6f8fc; color: #010c28; }
+.lg-questions { margin-top: 64px; padding: 24px; border: 1px solid #e6ecf5; border-radius: 16px; background: #f6f8fc; color: #010c28; font-size: 16px; line-height: 1.6; }
+
+@media (max-width: 1023px) {
+  .lg-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; padding-bottom: 64px; }
+  .lg-toc { display: none; }
+  .lg-toc-mobile { display: block; border: 1px solid #e6ecf5; border-radius: 12px; background: #f6f8fc; }
+  .lg-toc-mobile summary { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; color: #010c28; font-size: 15px; font-weight: 600; cursor: pointer; list-style: none; }
+  .lg-toc-mobile summary::-webkit-details-marker { display: none; }
+  .lg-toc-mobile summary::after { content: "+"; color: #0048ff; font-size: 20px; font-weight: 400; }
+  .lg-toc-mobile[open] summary::after { content: "×"; }
+  .lg-toc-mobile nav { padding: 0 16px 12px; }
+}
+@media (max-width: 767px) {
+  .lg-hero { padding: calc(72px + var(--bar-h, 0px) + 40px) 0 32px; }
+  .lg-hero h1 { font-size: 34px; }
+  .lg .wrap { padding-inline: 20px; }
+}

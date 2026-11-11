@@ -1,6 +1,5 @@
 import type { Market } from "@/config/markets";
 import { ArrowRight } from "@/components/ui/Icons";
-import Rich from "@/components/ui/Rich";
 import type { Review } from "@/lib/home-content";
 
 function Card({ r, hidden }: { r: Review; hidden?: boolean }) {
@@ -81,7 +80,7 @@ export default function Reviews({ market, reviews }: { market: Market; reviews: 
           </a>
         ) : (
           <span className="text-navy/70">
-            See all reviews on Facebook <Rich text="[CONFIRM URL]" />
+            See all reviews on Facebook
           </span>
         )}
       </p>

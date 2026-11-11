@@ -9,5 +9,5 @@ export const metadata = pageMetadata(
 );
 
 export default function Page() {
-  return <LegalPage title="Terms of Service" path="/terms" sections={TERMS} />;
+  return <LegalPage title="Terms of Service" path="/terms" summary="The rules for ordering and using our services." sections={TERMS} />;
 }

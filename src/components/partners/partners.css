@@ -622,3 +622,65 @@ em.ag-line > span { animation-delay: 100ms; }
 @media (max-width: 767px) { .agency-page .agency-carousel-track { min-height: 400px !important; } }
 .agency-page :is(.agency-why, .agency-who, .agency-ways, .agency-samples, .agency-steps-section) .agency-title { width: 100% !important; max-width: none !important; margin-left: 0 !important; margin-right: 0 !important; text-align: center !important; }
 .agency-page .agency-ways-heading .agency-model-switch { display: inline-grid; width: auto; margin-left: auto !important; margin-right: auto !important; justify-self: center; align-self: center; } .agency-page .agency-ways-heading { display: flex !important; flex-direction: column !important; align-items: center !important; }
+
+/* ===== Final fix ===== */
+/* 1. Hero: the header is fixed, so the padding holds header + bar + 48px. The copy had an extra 56px on top and the grid aligned to start; both removed. */
+.agency-page .agency-hero { min-height: 0; padding: calc(80px + var(--bar-h, 0px) + 48px) 0 48px; }
+.agency-page .agency-hero-grid { align-items: center; }
+.agency-page .agency-hero-copy { padding-top: 0; }
+
+/* 3. Spacing */
+.agency-page .agency-section { padding: 80px 0; margin: 0; }
+.agency-page .agency-stats { padding: 32px 0; margin: 0; }
+.agency-page .agency-stats > section { padding-block: 0; }
+.agency-page :is(.agency-why, .agency-who, .agency-samples, .agency-steps-section) .agency-title { margin-bottom: 48px !important; }
+.agency-page .agency-ways-heading { margin-bottom: 48px; }
+.agency-page .agency-faq-reveal, .agency-page .agency-faq { margin: 0; }
+
+/* 4. Toggle: a light segmented control with a white sliding pill */
+.agency-page .agency-ways-heading .agency-model-switch { display: inline-grid; width: auto; height: 44px; grid-template-columns: repeat(2, minmax(120px, auto)); gap: 0; padding: 4px; border: 0; border-radius: 999px; background: #eef3ff; }
+.agency-page .agency-model-switch::before { inset: 4px 50% 4px 4px; border-radius: 999px; background: #fff; box-shadow: 0 4px 12px -4px rgb(1 12 40 / 0.18); transition: transform 250ms cubic-bezier(.2,.75,.25,1); }
+.agency-page .agency-model-switch button { min-height: 0; height: 36px; min-width: 120px; padding: 0 20px; color: #6b7280; font-size: 14px; font-weight: 500; text-align: center; white-space: nowrap; }
+.agency-page .agency-model-switch button[aria-selected="true"] { color: #010c28; }
+
+/* 5. Form section: light theme, white card */
+.agency-page .agency-final { background: #f6f8fc; color: #010c28; border-bottom: 1px solid #e6ecf5; }
+.agency-page .agency-final .agency-title { color: #010c28; }
+.agency-page .agency-final .agency-title em { color: #0048ff; }
+.agency-page .agency-final-copy p { color: #6b7280; font-size: 16px; }
+.agency-page .agency-final-grid { align-items: center; }
+.agency-page .agency-enquiry .agency-form-card { min-width: 0; padding: 32px; border: 1px solid #e6ecf5; border-radius: 24px; background: #fff; color: #010c28; box-shadow: 0 24px 48px -32px rgb(1 12 40 / 0.25); }
+.agency-page .agency-enquiry .agency-form-heading { margin: 0; color: #010c28; font-size: 18px; font-weight: 600; }
+.agency-page .agency-enquiry .agency-form-step-title { position: relative; margin: 6px 0 24px; padding-bottom: 14px; color: #6b7280; font-size: 13px; font-weight: 500; }
+.agency-page .agency-enquiry .agency-form-step-title::before { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; border-radius: 4px; background: #e6ecf5; }
+.agency-page .agency-enquiry .agency-form-step-title::after { content: ""; position: absolute; left: 0; bottom: 0; width: 50%; height: 4px; border-radius: 4px; background: #0048ff; transition: width 250ms ease; }
+.agency-page .agency-form-card:has(.agency-form-progress li:nth-child(2)[aria-current="step"]) .agency-form-step-title::after { width: 100%; }
+.agency-page .agency-enquiry .agency-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 16px; }
+.agency-page .agency-enquiry .agency-field { min-width: 0; }
+.agency-page .agency-enquiry .agency-field label { display: block; margin-bottom: 6px; color: #010c28; font-size: 14px; font-weight: 500; }
+.agency-page .agency-enquiry .agency-field :is(input, select, textarea) { width: 100%; min-width: 0; min-height: 48px; padding: 0 14px; border: 1px solid #e6ecf5; border-radius: 12px; background: #fff; color: #010c28; font-size: 15px; box-shadow: none; }
+.agency-page .agency-enquiry .agency-field textarea { padding: 12px 14px; }
+.agency-page .agency-enquiry .agency-field :is(input, select, textarea):focus-visible { border-color: #0048ff; box-shadow: 0 0 0 2px rgb(0 72 255 / 0.3); outline: none; }
+.agency-page .agency-enquiry .agency-field label, .agency-page .agency-enquiry .agency-choice-group legend { color: #010c28; }
+.agency-page .agency-enquiry .agency-phone-input { display: flex; gap: 8px; min-width: 0; }
+.agency-page .agency-enquiry .agency-phone-input select { width: 104px; flex: none; }
+.agency-page .agency-enquiry .agency-phone-input input { flex: 1; min-width: 0; }
+.agency-page .agency-enquiry .agency-form-navigation { display: flex; gap: 12px; margin-top: 24px; }
+.agency-page .agency-enquiry .agency-form-submit { min-height: 48px; border: 0; border-radius: 999px; background: #0048ff; color: #fff; font-weight: 600; }
+.agency-page .agency-enquiry .agency-form-submit:hover { background: #003bd1; }
+.agency-page .agency-enquiry .agency-form-back { min-height: 48px; padding: 0 20px; border: 1px solid #e6ecf5; border-radius: 999px; background: #fff; color: #010c28; }
+.agency-page .agency-enquiry .agency-choice { border-color: #e6ecf5; background: #fff; color: #010c28; }
+.agency-page .agency-enquiry .agency-choice[aria-checked="true"] { border-color: #0048ff; background: #f5f8ff; color: #0048ff; }
+.agency-page .agency-enquiry .agency-input-error { color: #d92d20; }
+
+@media (max-width: 767px) {
+  .agency-page .agency-hero { padding: calc(72px + var(--bar-h, 0px) + 32px) 0 32px; }
+  .agency-page .agency-section { padding: 56px 0; }
+  .agency-page :is(.agency-why, .agency-who, .agency-samples, .agency-steps-section) .agency-title { margin-bottom: 32px !important; }
+  .agency-page .agency-ways-heading { margin-bottom: 32px; }
+  .agency-page .agency-enquiry .agency-form-card { padding: 20px; }
+  .agency-page .agency-enquiry .agency-form-grid { grid-template-columns: minmax(0, 1fr); }
+  .agency-page .agency-model-switch button { min-width: 0; padding: 0 16px; }
+}
+@media (min-width: 1024px) { .agency-page .agency-hero-grid > :last-child { height: 380px; overflow: visible; } .agency-page .agency-hero-grid > :last-child > * { transform: scale(0.82); transform-origin: center; } }
+@media (min-width: 1024px) { .agency-page .agency-hero-grid > :last-child { height: 360px; } }

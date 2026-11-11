@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import BackButton from "@/components/ui/BackButton";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { saveMarket } from "@/components/ui/useMarket";
 import Faq from "@/components/sections/Faq";
 import { MARKETS, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
@@ -92,7 +92,13 @@ export default function Pricing({
   standalone = false,
   variant = "default",
   faqItems = [],
+  heading,
+  note,
+  tag,
 }: {
+  heading?: ReactNode;
+  note?: string;
+  tag?: { id: string; text: string };
   market: MarketKey;
   standalone?: boolean;
   variant?: "default" | "compact";
@@ -121,11 +127,11 @@ export default function Pricing({
         <div className={styles.heroInner} data-reveal>
           {!standalone && !compact && <p className={styles.eyebrow}>Pricing</p>}
           <HeroHeading className={`${styles.heroTitle} ${compact || standalone ? styles.compactHeroTitle : ""}${standalone ? " display" : ""}`}>
-            {compact || standalone ? <>Invest once. <em>Apply with confidence.</em></> : <>One price. <em>No surprises.</em></>}
+            {heading ?? (compact || standalone ? <>Invest once. <em>Apply with confidence.</em></> : <>One price. <em>No surprises.</em></>)}
           </HeroHeading>
           {(compact || standalone) && (
             <p className={styles.guaranteeSub}>
-              100% money back guarantee. Zero risk.
+              {note ?? "100% money back guarantee. Zero risk."}
             </p>
           )}
           {!standalone && !compact && (
@@ -151,6 +157,7 @@ export default function Pricing({
                 <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`} data-reveal>
                   <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
                     {recommended && <span className={styles.badge}>Recommended</span>}
+                    {tag?.id === p.id && <span className="sp-includes">{tag.text}</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
                     <div className={styles.pricePair}>

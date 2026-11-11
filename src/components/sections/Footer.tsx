@@ -122,6 +122,10 @@ export default function Footer() {
             ·{" "}
             <Link href="/terms" className="inline-block py-3 underline underline-offset-4 hover:text-white md:py-0">
               Terms
+            </Link>{" "}
+            ·{" "}
+            <Link href="/refund-policy" className="inline-block py-3 underline underline-offset-4 hover:text-white md:py-0">
+              Refund Policy
             </Link>
           </p>
           <PaymentLogos />

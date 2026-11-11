@@ -1,9 +1,8 @@
 import ContactForm from "@/components/forms/ContactForm";
 import Reveal from "@/components/ui/Reveal";
-import Rich from "@/components/ui/Rich";
 import { requestMarket } from "@/lib/market-server";
 import { JsonLd, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
-import { WHATSAPP_URL } from "@/lib/site";
+import { CONTACT_EMAIL, WHATSAPP_URL } from "@/lib/site";
 
 export const metadata = pageMetadata(
   "/contact",
@@ -21,7 +20,7 @@ export default async function Page() {
         <p className="page-sub">The fastest way is WhatsApp.</p>
       </section>
 
-      <section aria-label="Contact options" className="wrap mt-14 grid gap-6 md:grid-cols-3 lg:mt-20">
+      <section aria-label="Contact options" className="wrap mt-14 grid gap-6 md:grid-cols-2 lg:mt-20">
         <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="card lift block p-8" data-cta="contact-whatsapp" data-reveal>
           <h2 className="card-title">WhatsApp</h2>
           <p className="mt-4 text-lg font-medium text-vivid">0370-6404900</p>
@@ -30,13 +29,7 @@ export default async function Page() {
         <div className="card p-8" data-reveal>
           <h2 className="card-title">Email</h2>
           <p className="mt-4">
-            <Rich text="[CONFIRM email]" />
-          </p>
-        </div>
-        <div className="card p-8" data-reveal>
-          <h2 className="card-title">Hours</h2>
-          <p className="mt-4">
-            <Rich text="[CONFIRM hours, PKT]" />
+            <a href={`mailto:${CONTACT_EMAIL}`} className="text-lg font-medium text-vivid">{CONTACT_EMAIL}</a>
           </p>
         </div>
       </section>

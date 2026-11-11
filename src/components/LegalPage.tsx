@@ -1,39 +1,49 @@
-import { LAST_UPDATED, type LegalSection } from "@/config/legal";
-import Rich from "@/components/ui/Rich";
+import Link from "next/link";
+import { LEGAL, type LegalSection } from "@/config/legal";
+import LegalToc from "@/components/LegalToc";
 import { JsonLd, breadcrumbJsonLd } from "@/lib/seo";
+import { WHATSAPP_URL } from "@/lib/site";
+import "./legal-page.css";
 
-export default function LegalPage({ title, path, sections }: { title: string; path: string; sections: LegalSection[] }) {
+/** Plain text with [label](/path) links. */
+function Text({ text }: { text: string }) {
   return (
     <>
-      <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: title, path }])} />
-      <div className="page-top wrap pb-24 lg:pb-40">
-        <div className="doc-grid">
-          <nav aria-label="On this page" className="doc-toc">
-            {sections.map((s, i) => (
-              <a key={s.title} href={`#s${i + 1}`}>
-                {i + 1}. {s.title}
-              </a>
-            ))}
-          </nav>
-          <article>
-            {process.env.NODE_ENV === "development" && <p className="confirm mb-6">Draft. Have this reviewed by a lawyer before launch.</p>}
-            <h1 className="page-h1 text-[clamp(44px,5vw,72px)]">{title}</h1>
-            <p className="mt-4 text-sm text-navy/70">Last updated: {LAST_UPDATED}</p>
-            <div className="prose-doc mt-4">
-              {sections.map((s, i) => (
-                <section key={s.title}>
-                  <h2 id={`s${i + 1}`}>
-                    {i + 1}. {s.title}
-                  </h2>
-                  <p>
-                    <Rich text={s.text} />
-                  </p>
-                </section>
-              ))}
-            </div>
-          </article>
-        </div>
-      </div>
+      {text.split(/(\[[^\]]+\]\([^)]+\))/).map((part, i) => {
+        const m = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+        return m ? <Link key={i} href={m[2]}>{m[1]}</Link> : part;
+      })}
     </>
+  );
+}
+
+export default function LegalPage({ title, path, summary, sections }: { title: string; path: string; summary: string; sections: LegalSection[] }) {
+  const toc = sections.map((s, i) => ({ id: `s${i + 1}`, label: `${i + 1}. ${s.title}` }));
+  return (
+    <div className="lg">
+      <JsonLd data={breadcrumbJsonLd([{ name: "Home", path: "/" }, { name: title, path }])} />
+      <header className="lg-hero">
+        <div className="wrap">
+          <h1 className="display">{title}</h1>
+          <p className="lg-date">Last updated: {LEGAL.lastUpdated}</p>
+          <p className="lg-summary">{summary}</p>
+        </div>
+      </header>
+      <div className="wrap lg-grid">
+        <LegalToc items={toc} />
+        <article className="lg-body">
+          {sections.map((s, i) => (
+            <section key={s.title} id={`s${i + 1}`} className="lg-section">
+              <h2>{i + 1}. {s.title}</h2>
+              <p><Text text={s.text} /></p>
+              {s.note && <p className="lg-note">{s.note}</p>}
+            </section>
+          ))}
+          <aside className="lg-questions">
+            Questions? Email <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a> or <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">message us on WhatsApp</a>.
+          </aside>
+        </article>
+      </div>
+    </div>
   );
 }

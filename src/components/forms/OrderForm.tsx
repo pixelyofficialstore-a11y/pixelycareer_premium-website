@@ -523,7 +523,7 @@ export default function OrderForm({ market, initial, hasQr = false }: { market: 
               </div>
               <label className={styles.terms}>
                 <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} aria-invalid={errors.terms ? true : undefined} />
-                <span>I agree to the <Link href="/terms" target="_blank">Terms</Link> and <Link href="/privacy" target="_blank">Privacy Policy</Link></span>
+                <span>I agree to the <Link href="/terms" target="_blank">Terms</Link>, <Link href="/privacy" target="_blank">Privacy Policy</Link> and <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
               </label>
               {errors.terms && <p className={styles.error}>{errors.terms}</p>}
               {errors.submit && <p className={styles.error} role="alert">{errors.submit}</p>}

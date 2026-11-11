@@ -9,5 +9,5 @@ export const metadata = pageMetadata(
 );
 
 export default function Page() {
-  return <LegalPage title="Privacy Policy" path="/privacy" sections={PRIVACY} />;
+  return <LegalPage title="Privacy Policy" path="/privacy" summary="How we collect, use and protect your information." sections={PRIVACY} />;
 }
