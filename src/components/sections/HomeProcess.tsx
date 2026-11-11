@@ -65,10 +65,11 @@ export default function HomeProcess({ marketKey = "us" }: { marketKey?: MarketKe
       const ys = [...el.querySelectorAll<HTMLElement>("[data-dot]")].map((d) => { const r = d.getBoundingClientRect(); return Math.round(r.top + r.height / 2 - top); });
       const end = ys[ys.length - 1];
       if (!end) return;
-      // One full sine wave from dot 01 to dot 04 (A = 48px), sampled at 80 points and joined with Catmull-Rom curves.
-      // Each dot sits on the wave at its own height, so the line runs through the dot centres.
-      const y0 = ys[0], H = end - y0, A = 48;
-      const wave = (y: number) => A * Math.sin((2 * Math.PI * (y - y0)) / H);
+      // One gentle wave from dot 01 to dot 04 (A = 40px) that bends toward the card side of every step:
+      // left at 01, right at 02, left at 03, right at 04. Sampled at 80 points and joined with Catmull-Rom curves.
+      // Each dot sits on the wave at its own height, so the line runs through the dot centres and 04 sits beside its card.
+      const y0 = ys[0], H = end - y0, A = 40, turns = ys.length - 1;
+      const wave = (y: number) => -A * Math.cos((turns * Math.PI * (y - y0)) / H);
       const pts = Array.from({ length: 80 }, (_, n) => { const y = y0 + (H * n) / 79; return [100 + wave(y), y]; });
       let d = `M${pts[0][0]} ${pts[0][1]}`;
       for (let n = 0; n < pts.length - 1; n++) {
@@ -104,7 +105,7 @@ export default function HomeProcess({ marketKey = "us" }: { marketKey?: MarketKe
       gsap.fromTo(step.querySelector("[data-card]"),
         { autoAlpha: 0, x: wide ? side * 60 : 0, y: wide ? 0 : 32, rotate: wide ? side * 6 : 0 },
         { autoAlpha: 1, x: 0, y: 0, rotate: 0, duration: 0.8, ease: "power3.out",
-          scrollTrigger: { trigger: step.querySelector("[data-dot]"), start: "center 70%", toggleActions: "play none none reverse",
+          scrollTrigger: { trigger: step.querySelector("[data-dot]"), start: "center 82%", toggleActions: "play none none reverse",
             onEnter: () => step.setAttribute("data-reached", ""), onLeaveBack: () => step.removeAttribute("data-reached") } });
     });
     let frame = 0;

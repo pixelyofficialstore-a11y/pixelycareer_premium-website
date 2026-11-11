@@ -2648,5 +2648,6 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
   /* Long lines that must keep their line count with the bolder weight. */
   main [class*="compactHeroTitle"]:not(#_) { font-size: 6.9vw !important; }
   main #process-title { font-size: 7.5vw !important; }
+  main .hero-copy h1:not(#_) { font-size: 8.9vw !important; }
   main .sv-content h2:not(#_) { font-size: 6.8vw !important; }
 }

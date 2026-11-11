@@ -5,7 +5,7 @@ import BackButton from "@/components/ui/BackButton";
 import { useEffect, useState, type ReactNode } from "react";
 import { saveMarket } from "@/components/ui/useMarket";
 import Faq from "@/components/sections/Faq";
-import { ExecLine, ExecRibbon, OfferBand } from "@/components/offer/Offer";
+import { ExecOfferBox, ExecTag, OfferBand } from "@/components/offer/Offer";
 import { MARKETS, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
 import { WHATSAPP_URL , whatsappMessage } from "@/lib/site";
 import styles from "./Pricing.module.css";
@@ -159,7 +159,7 @@ export default function Pricing({
                 <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`} data-reveal>
                   <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
                     {recommended && <span className={styles.badge}>Recommended</span>}
-                    {p.id === "executive" && market === "pk" && <ExecRibbon market={market} />}
+                    {p.id === "executive" && market === "pk" && <ExecTag market={market} />}
                     {tag?.id === p.id && <span className="sp-includes">{tag.text}</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
@@ -167,7 +167,7 @@ export default function Pricing({
                       {p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}
                       <PriceAmount label={p.priceLabel} />
                     </div>
-                    {p.id === "executive" && market === "pk" && <ExecLine market={market} />}
+                    {p.id === "executive" && market === "pk" && <ExecOfferBox market={market} />}
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
                     </Link>

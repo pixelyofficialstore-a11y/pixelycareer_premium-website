@@ -10,6 +10,8 @@ export type Offer = {
   markets: MarketKey[];
   title: string;
   headline: string;
+  /** For tight spaces: hero pill, ticker, sticky bar. */
+  short: string;
   includes: string[];
   packageId: PackageId;
   addonId: string;
@@ -27,7 +29,8 @@ export const OFFERS: Offer[] = [
     id: "brand-bundle",
     markets: ["pk"],
     title: "11.11 Sale",
-    headline: "Executive package + website",
+    headline: "Executive Career Branding & Personal Website",
+    short: "Executive Branding & Website",
     includes: ["Executive Career Branding package", "Portfolio website with free domain and hosting for the first year"],
     packageId: "executive",
     addonId: "portfolio",
