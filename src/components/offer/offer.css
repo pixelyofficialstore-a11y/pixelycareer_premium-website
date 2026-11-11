@@ -114,3 +114,36 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
   .of-glass { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
   .of-glass-a { white-space: normal; }
 }
+
+/* ===== Offer band v3: copy and checklist on the left, the price card on the right ===== */
+.of-band { padding: 64px 0; }
+.of-band-grid { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 56px; align-items: center; max-width: 1040px; }
+.of-band-copy { text-align: left; }
+.of-band-copy h2 { margin: 18px 0 0; }
+.of-list { display: grid; gap: 12px; margin: 24px 0 0; padding: 0; list-style: none; }
+.of-list li { display: flex; align-items: center; gap: 10px; color: rgb(255 255 255 / 0.85); font-size: 16px; }
+.of-list svg { flex: none; color: var(--sale-on-navy); }
+.of-price-card { display: flex; flex-direction: column; align-items: center; padding: 28px 28px 22px; border: 1px solid rgb(255 255 255 / 0.12); border-radius: 22px; background: rgb(255 255 255 / 0.04); text-align: center; }
+.of-was { margin: 0; color: rgb(255 255 255 / 0.55); font-size: 14px; }
+.of-was s { color: rgb(255 255 255 / 0.55); }
+.of-now { margin: 4px 0 0; color: #fff; font-family: var(--font-head); font-size: 48px; font-weight: 700; line-height: 1.05; }
+.of-price-card .of-save { margin-top: 10px; border-color: rgb(239 95 42 / 0.35); background: rgb(239 95 42 / 0.15); color: var(--sale-on-navy); }
+.of-ends { display: none; margin: 10px 0 0; color: rgb(255 255 255 / 0.65); font-size: 14px; font-variant-numeric: tabular-nums; }
+.of-price-card .of-count { width: 100%; justify-content: space-between; margin-top: 20px; padding: 14px 0; border: 0; border-block: 1px solid rgb(255 255 255 / 0.1); border-radius: 0; background: none; }
+.of-price-card .of-count div { flex: 1; min-width: 0; padding: 0; }
+.of-price-card .of-btn { width: 100%; margin-top: 20px; }
+.of-price-card .of-band-note { margin-top: 12px; }
+@media (max-width: 900px) {
+  .of-band { padding: 48px 0; }
+  .of-band-grid { grid-template-columns: 1fr; gap: 20px; max-width: 440px; }
+  .of-band-copy { display: contents; }
+  .of-band-copy > .of-tag { justify-self: center; order: 1; }
+  .of-band-copy h2 { order: 2; margin: 0; text-align: center; }
+  .of-price-card { order: 3; padding: 22px 18px 18px; }
+  .of-list { order: 4; justify-self: center; margin: 4px 0 0; gap: 8px; }
+  .of-list li { font-size: 14px; }
+  .of-now { font-size: 36px; }
+  .of-price-card .of-save, .of-price-card .of-count { display: none; }
+  .of-ends { display: block; }
+  .of-price-card .of-btn { margin-top: 16px; }
+}

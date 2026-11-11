@@ -17,7 +17,6 @@ import "./offer.css";
 const rs = (n: number) => `Rs ${n.toLocaleString("en-US")}`;
 const pad = (n: number) => String(n).padStart(2, "0");
 export const OFFER_HREF = offerHref(BUNDLE);
-const SAVE_PCT = Math.round(((BUNDLE.compareAt - BUNDLE.price) / BUNDLE.compareAt) * 100);
 /** Slots show only once a few have sold. */
 const SHOW_SLOTS_AT = 7;
 
@@ -89,19 +88,26 @@ export function OfferBand({ market, slot = "home_band" }: { market: MarketKey; s
   if (!live) return null;
   return (
     <section id="offer" ref={ref} className="of-band" aria-labelledby="of-band-title">
-      <div className="of-band-inner">
-        <span className="of-tag of-tag-big"><Flame size={15} />11.11 SALE</span>
-        <h2 id="of-band-title">Executive Career Branding <em>& Personal Website.</em></h2>
-        <p className="of-band-price"><s>{rs(BUNDLE.compareAt)}</s><b>{rs(BUNDLE.price)}</b><span className="of-save">Save {SAVE_PCT}%</span></p>
-        <ul className="of-chips">
-          {["Premium CV and LinkedIn", "Personal portfolio website", "Free domain + hosting for 1 year"].map((chip) => (
-            <li key={chip}><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8.5 3.2 3L13 4.5" /></svg>{chip}</li>
-          ))}
-        </ul>
-        <Countdown t={t} />
-        <Link href={OFFER_HREF} className="of-btn" data-cta={`offer-claim-${slot}`} onClick={claim(slot)}>Claim 11.11 offer →</Link>
-        {remaining !== null && remaining <= SHOW_SLOTS_AT && <p className="of-band-slots">Only {remaining} slots left</p>}
-        <p className="of-band-note">100% money back guarantee · <Link href="/terms#offers">T&C apply</Link></p>
+      <div className="wrap of-band-grid">
+        <div className="of-band-copy">
+          <span className="of-tag of-tag-big"><Flame size={15} />11.11 SALE</span>
+          <h2 id="of-band-title">Executive Career Branding <em>& Personal Website.</em></h2>
+          <ul className="of-list">
+            {["Premium CV and LinkedIn makeover", "Personal portfolio website", "Free domain and hosting for 1 year"].map((item) => (
+              <li key={item}><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8.5 3.2 3L13 4.5" /></svg>{item}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="of-price-card">
+          <p className="of-was">Total value <s>{rs(BUNDLE.compareAt)}</s></p>
+          <p className="of-now">{rs(BUNDLE.price)}</p>
+          <span className="of-save">You save {rs(BUNDLE.compareAt - BUNDLE.price)}</span>
+          <p className="of-ends" suppressHydrationWarning>Ends in {inline(t)}</p>
+          <Countdown t={t} />
+          <Link href={OFFER_HREF} className="of-btn" data-cta={`offer-claim-${slot}`} onClick={claim(slot)}>Claim 11.11 offer →</Link>
+          {remaining !== null && remaining <= SHOW_SLOTS_AT && <p className="of-band-slots">Only {remaining} slots left</p>}
+          <p className="of-band-note">Money back guarantee · <Link href="/terms#offers">T&C apply</Link></p>
+        </div>
       </div>
     </section>
   );
