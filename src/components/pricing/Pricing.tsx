@@ -5,7 +5,7 @@ import BackButton from "@/components/ui/BackButton";
 import { useEffect, useState, type ReactNode } from "react";
 import { saveMarket } from "@/components/ui/useMarket";
 import Faq from "@/components/sections/Faq";
-import { OfferStrip, OfferTag, PricingOfferBox } from "@/components/offer/Offer";
+import { ExecLine, ExecRibbon, OfferBand } from "@/components/offer/Offer";
 import { MARKETS, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
 import { WHATSAPP_URL , whatsappMessage } from "@/lib/site";
 import styles from "./Pricing.module.css";
@@ -124,11 +124,12 @@ export default function Pricing({
       data-pricing-page={standalone || undefined}
       data-pricing-variant={compact ? "compact" : undefined}
     >
+      {standalone && market === "pk" && <OfferBand market={market} slot="pricing_band" />}
       <header className={`${styles.hero} ${compact ? styles.compactHero : ""}`}>
         <div className={styles.heroInner} data-reveal>
           {!standalone && !compact && <p className={styles.eyebrow}>Pricing</p>}
           <HeroHeading className={`${styles.heroTitle} ${compact || standalone ? styles.compactHeroTitle : ""}${standalone ? " display" : ""}`}>
-            {heading ?? (compact || standalone ? <>Invest once. <em>Apply with confidence.</em></> : <>One price. <em>No surprises.</em></>)}
+            {heading ?? (compact || standalone ? <>Invest once. <em className="m-break">Apply with confidence.</em></> : <>One price. <em>No surprises.</em></>)}
           </HeroHeading>
           {(compact || standalone) && (
             <p className={styles.guaranteeSub}>
@@ -158,18 +159,18 @@ export default function Pricing({
                 <li key={p.id} className={`${styles.cardSlot} ${recommended ? styles.recommendedSlot : ""}`} data-reveal>
                   <article className={`${styles.card} price-card ${recommended ? styles.cardRecommended : ""}`} aria-label={`${content.name} package`}>
                     {recommended && <span className={styles.badge}>Recommended</span>}
+                    {p.id === "executive" && market === "pk" && <ExecRibbon market={market} />}
                     {tag?.id === p.id && <span className="sp-includes">{tag.text}</span>}
-                    {p.id === "executive" && market === "pk" && <OfferTag market={market} />}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
                     <div className={styles.pricePair}>
                       {p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}
                       <PriceAmount label={p.priceLabel} />
                     </div>
+                    {p.id === "executive" && market === "pk" && <ExecLine market={market} />}
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
                     </Link>
-                    {p.id === "executive" && market === "pk" && <PricingOfferBox market={market} />}
                     {(
                       <>
                         <hr className={styles.divider} />
@@ -200,7 +201,6 @@ export default function Pricing({
               );
             })}
           </ul>
-          {market === "pk" && standalone && <OfferStrip market={market} />}
           {compact && (
             <nav className={styles.compactCta} aria-label="Pricing details">
               <Link href={`/pricing?m=${market}#compare`} data-cta="home-pricing-compare">
@@ -213,7 +213,7 @@ export default function Pricing({
 
       {!compact && <section id="compare" className={styles.compare} aria-labelledby="compare-heading">
         <div className={styles.sectionInner}>
-          <h2 className={styles.sectionTitle} id="compare-heading">Compare <em>every detail.</em></h2>
+          <h2 className={styles.sectionTitle} id="compare-heading">Compare <em className="m-break">every detail.</em></h2>
           <div className={`${styles.compareCard} ${styles.desktopCompare}`}>
             <table className={styles.table}>
               <colgroup><col /><col /><col className={styles.recommendedCol} /><col /></colgroup>

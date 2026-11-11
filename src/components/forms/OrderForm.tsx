@@ -275,7 +275,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     <>
       <dl className={styles.sumList}>
         {bundle ? (
-          <div className={styles.sumBundle}><dt>{offer.title}</dt><dd><s>{money(offer.compareAt)}</s>{money(bundleLine)}</dd></div>
+          <div className={styles.sumBundle}><dt>{offer.title}: Executive + website</dt><dd><s>{money(offer.compareAt)}</s>{money(bundleLine)}</dd></div>
         ) : <div><dt>{pkg.name}</dt><dd>{money(pkg.price)}</dd></div>}
         {shownList.map((a) => (
           <div key={a.id} className={styles.sumLine}>
@@ -318,7 +318,13 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         <form ref={formRef} className={styles.form} noValidate onSubmit={(e) => e.preventDefault()}>
           {step === 1 && (
             <>
-              {bundle && <p className={styles.offerBanner} suppressHydrationWarning><b>{offer.title} applied</b> · You save {money(bundleSave)} · ends in {inline(offerClock)}</p>}
+              {bundle && <p className={styles.offerApplied}><b>11.11 Sale applied</b> · You save {money(bundleSave)}</p>}
+              {pk && offerLive && !bundle && (
+                <div className={styles.offerSwitch}>
+                  <p suppressHydrationWarning><b>11.11 Sale</b> · Executive + website for {money(offer.price)} · ends in {inline(offerClock)}</p>
+                  <button type="button" onClick={() => { choosePackage(offer.packageId); setAddons((a) => ({ ...a, [offer.addonId]: 1 })); }} data-cta="offer-order-switch">Switch to offer →</button>
+                </div>
+              )}
               {offerParam && !offerLive && <p className={styles.offerEnded}>This offer has ended. You can continue at normal prices.</p>}
               <div className={styles.packs} role="radiogroup" aria-label="Package">
                 {PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => {
@@ -400,11 +406,6 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                     );
                   })}
                 </div>
-                {offerLive && packageId === offer.packageId && !bundle && (
-                  <button type="button" className={styles.offerNudge} onClick={() => setAddons((a) => ({ ...a, [offer.addonId]: 1 }))}>
-                    Add your website for {money(unitAt(market, offer.addonId, 1, packageId))} and get the 11.11 price →
-                  </button>
-                )}
               </section>
             </>
           )}
@@ -520,7 +521,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 <div className={styles.card}>
                   <div className={styles.rHead}><h3>Package</h3><button type="button" onClick={() => go(1)}>Edit</button></div>
                   <dl className={styles.rList}>
-                    {bundle ? <div className={styles.sumBundle}><dt>{offer.title}</dt><dd><s>{money(offer.compareAt)}</s>{money(bundleLine)}</dd></div> : <div><dt>{pkg.name}</dt><dd>{money(pkg.price)}</dd></div>}
+                    {bundle ? <div className={styles.sumBundle}><dt>{offer.title}: Executive + website</dt><dd><s>{money(offer.compareAt)}</s>{money(bundleLine)}</dd></div> : <div><dt>{pkg.name}</dt><dd>{money(pkg.price)}</dd></div>}
                     {shownList.map((a) => <div key={a.id}><dt>{a.name}{a.qty > 1 && <span className={styles.sumQty}> × {a.qty}</span>}</dt><dd>{money(a.total)}</dd></div>)}
                     {sameDay && <div><dt>Same day delivery</dt><dd>{pkg.sameDayLabel}</dd></div>}
                   </dl>

@@ -6,7 +6,7 @@ import { getAnnouncement, isBarHidden } from "@/config/announcements";
 import { MARKETS } from "@/config/markets";
 import { useMarket } from "./useMarket";
 import { useCountdown, useOffer } from "@/components/offer/useOffer";
-import { inline } from "@/components/offer/Offer";
+import { Ticker } from "@/components/offer/Offer";
 import "@/components/offer/offer.css";
 
 const CAMPAIGN_KEY = "pixely-campaign";
@@ -56,11 +56,10 @@ export default function AnnouncementBar() {
 
   // pk: the Personal Brand Bundle replaces the page message while it is open (also for utm_campaign "bundle").
   const bundle = offerOpen && !left.done;
-  const message = bundle ? { key: "brand-bundle", text: "", href: "/pk#bundle", ctaLabel: undefined } : getAnnouncement(market, path, campaign);
+  const message = bundle ? { key: "brand-bundle", text: "", href: "/pk#offer", ctaLabel: undefined } : getAnnouncement(market, path, campaign);
   const inner = bundle ? (
     <>
-      <span className="ann-desk" suppressHydrationWarning>11.11 Brand Sale · Executive + website for Rs 20,000 · ends in {inline(left)} →</span>
-      <span className="ann-mob">11.11 Sale: Executive + website Rs 20,000 →</span>
+      <Ticker t={left} />
     </>
   ) : (
     <>

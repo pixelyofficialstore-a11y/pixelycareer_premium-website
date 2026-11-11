@@ -258,3 +258,10 @@
 .sumBundle dd s { color: #8792a5; font-size: 12px; font-weight: 400; }
 .offerNudge { display: block; width: 100%; margin-top: 12px; padding: 14px 16px; border: 1px solid #fdba74; border-radius: 14px; background: #fff7ed; color: #c2410c; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
 .offerNudge:hover { background: #ffedd5; }
+/* 11.11 Sale strips */
+.offerApplied { margin: 0 0 16px; padding: 12px 16px; border: 1.5px solid #16a34a; border-radius: 14px; background: #f0fdf4; color: #14532d; font-size: 14px; }
+.offerSwitch { display: flex; align-items: center; justify-content: space-between; gap: 6px 16px; margin: 0 0 16px; padding: 12px 16px; border: 1.5px solid #ff5a1f; border-radius: 14px; background: #fff; font-size: 14px; }
+.offerSwitch p { margin: 0; color: #010c28; }
+.offerSwitch b { color: #ff5a1f; }
+.offerSwitch button { flex: none; border: 0; background: none; color: #ff5a1f; font-weight: 700; font-size: 14px; cursor: pointer; white-space: nowrap; }
+@media (max-width: 767px) { .offerSwitch { flex-direction: column; align-items: flex-start; } }

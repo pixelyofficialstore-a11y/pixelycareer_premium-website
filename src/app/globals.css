@@ -2626,9 +2626,10 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
 @media (max-width: 767px) { #main#main#main:has([data-pricing-page]) section#pricing[aria-label="Pricing packages"] { padding: 0 1.25rem 48px; } }
 
 /* Footer: accepted payment logos */
-.pay-logos { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 13px; color: rgb(255 255 255 / 0.7); }
-.pay-logos img { height: 20px; width: auto; filter: grayscale(1) brightness(1.8); opacity: 0.8; transition: filter 200ms ease, opacity 200ms ease; }
-.pay-logos img:hover { filter: none; opacity: 1; }
+.pay-logos { display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; white-space: nowrap; font-size: 13px; color: rgb(255 255 255 / 0.7); }
+.pay-logo { display: inline-flex; align-items: center; height: 30px; padding: 0 10px; border-radius: 8px; background: #fff; }
+.pay-logo img { display: block; width: auto; height: 18px; }
+@media (max-width: 767px) { .pay-logos { gap: 6px; font-size: 12px; } .pay-logo { height: 26px; padding: 0 7px; } .pay-logo img { height: 14px; } }
 
 /* Footer: contact list with icons, payment chips (pk) */
 .foot-contact { display: flex; align-items: center; gap: 12px; min-height: 36px; color: rgb(255 255 255 / 0.75); font-size: 14px; text-decoration: none; transition: color 150ms ease; }
@@ -2637,9 +2638,15 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
 .pay-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: rgb(255 255 255 / 0.7); font-size: 13px; }
 .pay-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid rgb(255 255 255 / 0.15); border-radius: 999px; background: rgb(255 255 255 / 0.06); color: rgb(255 255 255 / 0.8); font-size: 12px; }
 
-/* Mobile headings: bolder and slightly tighter */
+/* Mobile headings: bolder and tighter, same line count. Section headings only (not cards, forms or the footer). */
 @media (max-width: 767px) {
-  h1, h2 { font-weight: 700 !important; }
-  /* The hero H1 keeps its own tighter tracking, so the bolder line still fits a 375px screen. */
-  :is(h1, h2):not(.hero-copy h1) { letter-spacing: -0.02em !important; }
+  main :is(h1, h2):not(.card-title, form *, aside *, .lg-section h2) { font-weight: 700 !important; letter-spacing: -0.03em !important; line-height: 1.08 !important; text-wrap: balance; }
+  main h1:not(form *) { font-size: clamp(34px, 9.5vw, 42px) !important; }
+  main h2:not(.card-title, form *, aside *, .lg-section h2) { font-size: clamp(28px, 8vw, 34px) !important; }
+  /* Intended breaks: "Invest once." / "Apply with confidence." and "Compare" / "every detail." */
+  .m-break { display: block; }
+  /* Long lines that must keep their line count with the bolder weight. */
+  main [class*="compactHeroTitle"]:not(#_) { font-size: 6.9vw !important; }
+  main #process-title { font-size: 7.5vw !important; }
+  main .sv-content h2:not(#_) { font-size: 6.8vw !important; }
 }

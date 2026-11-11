@@ -7,23 +7,27 @@ import { trackPromotion } from "@/lib/analytics";
 import { useCountdown, useOffer } from "./useOffer";
 import "./offer.css";
 
-/** 11.11 Brand Sale (pk). Every piece hides itself when the offer ends by time or slots. */
+/**
+ * 11.11 Sale (pk). One offer, the same words everywhere: "Executive package + website", Rs 27,500 → Rs 20,000.
+ * Every piece hides itself when the offer ends by time or slots, and all use the real endsAt.
+ */
 
 const rs = (n: number) => `Rs ${n.toLocaleString("en-US")}`;
 const pad = (n: number) => String(n).padStart(2, "0");
-const HREF = offerHref(BUNDLE);
-const SAVE = BUNDLE.compareAt - BUNDLE.price;
+export const OFFER_HREF = offerHref(BUNDLE);
+const SAVE_PCT = Math.round(((BUNDLE.compareAt - BUNDLE.price) / BUNDLE.compareAt) * 100);
+/** Slots show only once a few have sold. */
+const SHOW_SLOTS_AT = 7;
 
-/** Live and not past the deadline. */
-function useLive(market: MarketKey) {
+export function useLive(market: MarketKey, tick = 1000) {
   const { open, remaining } = useOffer(market);
-  const t = useCountdown(1000);
+  const t = useCountdown(tick);
   return { live: open && !t.done, remaining, t };
 }
 
 /** Fires view_promotion once when the element is half visible. */
 function useSeen(slot: string) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -37,146 +41,116 @@ function useSeen(slot: string) {
 }
 
 export const inline = (t: { d: number; h: number; m: number }) => `${t.d}d ${pad(t.h)}h ${pad(t.m)}m`;
+const claim = (slot: string) => () => trackPromotion("select_promotion", BUNDLE.id, slot);
 
-export function OfferBadge({ className = "" }: { className?: string }) {
-  return <span className={`of-badge ${className}`}>{BUNDLE.title}</span>;
+function Flame() {
+  return <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 2c1 3.5-1.5 5.2-1.5 7.6 0 1.3.9 2.2 2 2.2 1.4 0 2.2-1.2 1.9-3.1 2.6 1.8 4.6 4.5 4.6 7.6A7 7 0 0 1 12 23a7 7 0 0 1-7-6.7c0-4.3 3.2-6.8 4.5-9.6.6 1 .9 2 .8 3.2C12.3 8.4 12.9 5.5 12 2Z" /></svg>;
 }
 
-export function Countdown({ t, dark = false }: { t: { d: number; h: number; m: number; s: number }; dark?: boolean }) {
+/** Hero: one small pill above the H1. */
+export function HeroPill({ market }: { market: MarketKey }) {
+  const { live } = useLive(market, 60_000);
+  if (!live) return null;
   return (
-    <div className={`of-count${dark ? " of-count-dark" : ""}`} role="timer" aria-label={`${t.d} days, ${t.h} hours and ${t.m} minutes left`}>
+    <a href="#offer" className="of-pill" data-cta="offer-hero-pill">
+      <Flame />
+      <span className="of-pill-long">11.11 Sale · Executive + website · Rs 20,000 →</span>
+      <span className="of-pill-short">11.11 Sale · Rs 20,000 →</span>
+    </a>
+  );
+}
+
+/** Four boxes; the seconds flip on each tick. */
+function Countdown({ t }: { t: { d: number; h: number; m: number; s: number } }) {
+  return (
+    <div className="of-count" role="timer" aria-label={`${t.d} days, ${t.h} hours and ${t.m} minutes left`}>
       {([["Days", t.d], ["Hours", t.h], ["Min", t.m], ["Sec", t.s]] as const).map(([label, n]) => (
-        <div key={label}><b suppressHydrationWarning>{pad(n)}</b><span>{label}</span></div>
+        <div key={label}>
+          <b key={label === "Sec" ? n : label} className={label === "Sec" ? "of-flip" : undefined} suppressHydrationWarning>{pad(n)}</b>
+          <span>{label}</span>
+        </div>
       ))}
     </div>
   );
 }
 
-export function SlotsBar({ remaining, dark = false }: { remaining: number | null; dark?: boolean }) {
-  if (remaining === null) return null;
-  return (
-    <div className={`of-slots${dark ? " of-slots-dark" : ""}`}>
-      <p>Only <b>{remaining} of {BUNDLE.totalSlots}</b> slots left</p>
-      <div className="of-track"><i style={{ width: `${(remaining / BUNDLE.totalSlots) * 100}%` }} /></div>
-    </div>
-  );
-}
-
-function Claim({ slot, className, children = "Claim offer →" }: { slot: string; className: string; children?: ReactNode }) {
-  return (
-    <Link href={HREF} className={className} data-cta={`offer-claim-${slot}`} onClick={() => trackPromotion("select_promotion", BUNDLE.id, slot)}>
-      {children}
-    </Link>
-  );
-}
-
-/** Hero: under the buttons, before the CV mockup on mobile. */
-export function HeroOfferCard({ market }: { market: MarketKey }) {
+/** The offer band (id="offer"): right after the hero on /pk, above the heading on /pricing?m=pk. */
+export function OfferBand({ market, slot = "home_band" }: { market: MarketKey; slot?: string }) {
   const { live, remaining, t } = useLive(market);
-  const ref = useSeen("home_hero");
+  const ref = useSeen(slot);
   if (!live) return null;
   return (
-    <div ref={ref} className="of-hero">
-      <div className="of-hero-top"><OfferBadge />{remaining !== null && <span className="of-left">Only {remaining} slots left</span>}</div>
-      <p className="of-hero-title">{BUNDLE.headline}</p>
-      <p className="of-price"><s>{rs(BUNDLE.compareAt)}</s> <b>{rs(BUNDLE.price)}</b> <span className="of-save">Save {rs(SAVE)}</span></p>
-      <div className="of-hero-foot">
+    <section id="offer" ref={ref} className={`of-band${slot === "pricing_band" ? " of-band-top" : ""}`} aria-labelledby="of-band-title">
+      <div className="of-band-inner">
+        <span className="of-tag">11.11 SALE</span>
+        <h2 id="of-band-title">Executive package <em>+ your own website.</em></h2>
+        <p className="of-band-price"><s>{rs(BUNDLE.compareAt)}</s><b>{rs(BUNDLE.price)}</b><span className="of-save">Save {SAVE_PCT}%</span></p>
         <Countdown t={t} />
-        <Claim slot="home_hero" className="btn btn-primary of-hero-btn" />
-      </div>
-    </div>
-  );
-}
-
-const EXEC = ["Premium executive CV", "One page visual profile", "Executive cover letter and bio", "LinkedIn makeover and 10 posts", "Indeed and Naukrigulf profiles", "Interview preparation guide"];
-const SITE = ["Personal website design", "Mobile friendly", "Free domain and hosting for the first year", "Linked to your CV and LinkedIn"];
-
-/** Homepage section id="bundle", right after the trust strip. */
-export function BundleSection({ market }: { market: MarketKey }) {
-  const { live, remaining, t } = useLive(market);
-  const ref = useSeen("home_bundle");
-  if (!live) return null;
-  return (
-    <section id="bundle" className="of-bundle" aria-labelledby="of-bundle-title">
-      <div ref={ref} className="wrap of-bundle-grid">
-        <div>
-          <OfferBadge />
-          <h2 id="of-bundle-title" className="display">Your CV, LinkedIn and website. <em>One price. {rs(BUNDLE.price)}.</em></h2>
-          <div className="of-groups">
-            <div>
-              <h3>Executive Career Branding</h3>
-              <ul>{EXEC.map((i) => <li key={i}>{i}</li>)}</ul>
-            </div>
-            <div>
-              <h3>Portfolio website</h3>
-              <ul>{SITE.map((i) => <li key={i}>{i}</li>)}</ul>
-            </div>
-          </div>
-        </div>
-        <div className="of-card">
-          <dl>
-            <div><dt>Executive Career Branding</dt><dd>{rs(7500)}</dd></div>
-            <div><dt>Portfolio website</dt><dd>{rs(20000)}</dd></div>
-            <div className="of-rule"><dt>Total value</dt><dd><s>{rs(BUNDLE.compareAt)}</s></dd></div>
-            <div className="of-sale"><dt>{BUNDLE.title} price</dt><dd>{rs(BUNDLE.price)}</dd></div>
-            <div className="of-saved"><dt>You save</dt><dd>{rs(SAVE)}</dd></div>
-          </dl>
-          <Countdown t={t} dark />
-          <SlotsBar remaining={remaining} dark />
-          <Claim slot="home_bundle" className="of-white-btn" />
-        </div>
+        <Link href={OFFER_HREF} className="of-btn" data-cta={`offer-claim-${slot}`} onClick={claim(slot)}>Claim 11.11 offer →</Link>
+        {remaining !== null && remaining <= SHOW_SLOTS_AT && <p className="of-band-slots">Only {remaining} slots left</p>}
+        <p className="of-band-note">Premium CV, LinkedIn makeover and a portfolio website. 100% money back guarantee.</p>
       </div>
     </section>
   );
 }
 
-/** Executive pricing card: under its button. */
-export function PricingOfferBox({ market }: { market: MarketKey }) {
-  const { live, t } = useLive(market);
+/** Executive card: a ribbon across the top. */
+export function ExecRibbon({ market }: { market: MarketKey }) {
+  const { live } = useLive(market, 60_000);
+  return live ? <span className="of-ribbon">11.11: + Website for Rs 12,500 more</span> : null;
+}
+
+/** Executive card: one line under the price. */
+export function ExecLine({ market }: { market: MarketKey }) {
+  const { live } = useLive(market, 60_000);
   if (!live) return null;
-  return (
-    <div className="of-box">
-      <p>Add your website: {rs(7500)} + {rs(20000)} = <s>{rs(BUNDLE.compareAt)}</s></p>
-      <p className="of-box-big">Get both for <b>{rs(BUNDLE.price)}</b></p>
-      <p className="of-box-row"><span suppressHydrationWarning>Ends in {inline(t)}</span><Claim slot="pricing_card" className="of-box-link" /></p>
-    </div>
-  );
+  return <Link href={OFFER_HREF} className="of-exec-line" data-cta="offer-claim-pricing_card" onClick={claim("pricing_card")}>Or get Executive + website for Rs 20,000 →</Link>;
 }
 
-/** Executive card tag. */
-export function OfferTag({ market }: { market: MarketKey }) {
-  const { live } = useLive(market);
-  return live ? <OfferBadge className="of-badge-card" /> : null;
-}
-
-/** /pricing: navy strip under the cards, a compact version of the homepage section. */
-export function OfferStrip({ market }: { market: MarketKey }) {
-  const { live, remaining, t } = useLive(market);
-  const ref = useSeen("pricing_strip");
-  if (!live) return null;
-  return (
-    <div ref={ref} className="of-strip" role="region" aria-label={BUNDLE.title}>
-      <div>
-        <OfferBadge />
-        <p className="of-strip-title">{BUNDLE.headline}: <s>{rs(BUNDLE.compareAt)}</s> <b>{rs(BUNDLE.price)}</b></p>
-        <p className="of-strip-meta" suppressHydrationWarning>Ends in {inline(t)}{remaining !== null && ` · ${remaining} slots left`}</p>
-      </div>
-      <Claim slot="pricing_strip" className="of-white-btn of-strip-btn" />
-    </div>
-  );
-}
-
-/** Final CTA on pk: an offer line and Claim as the main button while the sale is on; otherwise the normal buttons. */
+/** Final CTA on pk: a compact offer card under the subtext and Claim as the main button while the sale is on. */
 export function FinalCtaOffer({ market, children }: { market: MarketKey; children: ReactNode }) {
-  const { live, t } = useLive(market);
+  const { live, t } = useLive(market, 60_000);
   if (!live) return <>{children}</>;
   return (
     <>
-      <p className="of-final-line" suppressHydrationWarning>{BUNDLE.title}: Executive + website for {rs(BUNDLE.price)} · ends in {inline(t)}</p>
+      <div className="of-final-card">
+        <span className="of-tag">11.11 Sale</span>
+        <b>Executive + website</b>
+        <span className="of-final-price"><s>27,500</s> <strong>{rs(BUNDLE.price)}</strong></span>
+        <span className="of-final-time" suppressHydrationWarning>{inline(t)}</span>
+      </div>
       <div className="final-actions">
-        <Claim slot="final_cta" className="btn btn-white min-h-14 px-8 text-[1.0625rem]" />
+        <Link href={OFFER_HREF} className="btn btn-white min-h-14 px-8 text-[1.0625rem]" data-cta="offer-claim-final_cta" onClick={claim("final_cta")}>Claim 11.11 offer →</Link>
         <Link href="/order?market=pk" className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="home-final-order">Start your order</Link>
       </div>
     </>
+  );
+}
+
+/** Mobile sticky bar content while the sale is on. */
+export function StickyOffer() {
+  return (
+    <div className="of-sticky">
+      <div>
+        <span className="of-sticky-k">11.11 Sale</span>
+        <span className="of-sticky-t">Executive + website · Rs 20,000</span>
+      </div>
+      <Link href={OFFER_HREF} className="of-sticky-btn" data-cta="offer-claim-sticky" onClick={claim("sticky")}>Claim →</Link>
+    </div>
+  );
+}
+
+/** Announcement bar ticker: the same line twice for a seamless loop. */
+export function Ticker({ t }: { t: { d: number; h: number; m: number } }) {
+  const item = (
+    <span className="of-tick-item" suppressHydrationWarning>
+      <b>11.11 SALE</b>  ·  Executive package + website  ·  Rs 27,500 → Rs 20,000  ·  Ends in {inline(t)}  ·  Claim offer →
+    </span>
+  );
+  return (
+    <span className="of-ticker">
+      <span className="of-tick-track" aria-hidden="true">{item}{item}{item}{item}</span>
+      <span className="of-tick-static">11.11 Sale · Executive + website · Rs 20,000 →</span>
+    </span>
   );
 }

@@ -1,4 +1,4 @@
-import { BundleSection } from "@/components/offer/Offer";
+import { OfferBand } from "@/components/offer/Offer";
 import { Suspense } from "react";
 import { getHomeFaq, type Market } from "@/config/markets";
 import Hero from "@/components/hero/Hero";
@@ -39,9 +39,9 @@ export default function HomePage({ market }: { market: Market }) {
       <HeroRise free>
         <Hero market={market} centerMobileHeadline />
       </HeroRise>
+      {market.key === "pk" && <OfferBand market={market.key} />}
       {/* The Facebook page is the Pakistan page, so its links show on /pk only. */}
       <HomeTrustStrip reviewsUrl={market.key === "pk" ? FACEBOOK_REVIEWS_URL : undefined} />
-      {market.key === "pk" && <BundleSection market={market.key} />}
       <HomeProblem marketKey={market.key} />
       <Suspense>
         <HomeServices marketKey={market.key} />

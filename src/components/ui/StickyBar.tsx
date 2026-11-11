@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { MARKETS, orderHref } from "@/config/markets";
 import { useMarket } from "./useMarket";
+import { StickyOffer, useLive } from "@/components/offer/Offer";
 
 /** Small screen order bar on every page except /order: appears once the hero has scrolled out, hides near the final call to action. */
 export default function StickyBar() {
@@ -11,6 +12,8 @@ export default function StickyBar() {
   const path = usePathname();
   const [show, setShow] = useState(false);
   const off = path === "/order" || path.startsWith("/order/");
+  // pk: the 11.11 Sale replaces "Start your order" while it is on, and hides while the offer band is in view.
+  const { live: sale } = useLive(market, 60_000);
 
   useEffect(() => {
     if (off) return;
@@ -19,7 +22,9 @@ export default function StickyBar() {
       const cta = document.getElementById("final-cta");
       const heroGone = hero ? hero.getBoundingClientRect().bottom < 0 : window.scrollY > 600;
       const ctaNear = cta ? cta.getBoundingClientRect().top <= window.innerHeight - 80 : false;
-      const visible = heroGone && !ctaNear;
+      const band = document.getElementById("offer")?.getBoundingClientRect();
+      const bandInView = !!band && band.top < window.innerHeight && band.bottom > 0;
+      const visible = heroGone && !ctaNear && !(sale && bandInView);
       setShow(visible);
       document.documentElement.classList.toggle("has-sticky-bar", visible);
     };
@@ -31,17 +36,17 @@ export default function StickyBar() {
       window.removeEventListener("resize", onScroll);
       document.documentElement.classList.remove("has-sticky-bar");
     };
-  }, [off, path]);
+  }, [off, path, sale]);
 
   if (off) return null;
   return (
     <div
       inert={!show}
-      className={`fixed inset-x-0 bottom-0 z-40 border-t border-navy/10 bg-white px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))] transition-transform duration-300 ease-out-soft lg:hidden ${show ? "translate-y-0" : "translate-y-full"}`}
+      className={`fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ease-out-soft lg:hidden ${sale ? "" : "border-t border-navy/10 bg-white px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]"} ${show ? "translate-y-0" : "translate-y-full"}`}
     >
-      <Link href={orderHref(MARKETS[market])} className="btn btn-primary w-full" data-cta="sticky-order">
+      {sale ? <StickyOffer /> : <Link href={orderHref(MARKETS[market])} className="btn btn-primary w-full" data-cta="sticky-order">
         Start your order →
-      </Link>
+      </Link>}
     </div>
   );
 }
