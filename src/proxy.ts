@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 const MONTH = 60 * 60 * 24 * 30;
-const ATTR = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid", "gclid"] as const;
+const ATTR = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "fbclid", "gclid", "campaign_id", "adset_id", "ad_id", "campaign_name", "adset_name", "ad_name"] as const;
 
 /**
  * Every page:
@@ -23,6 +23,17 @@ export function proxy(request: NextRequest) {
   if (!request.cookies.has("pc_geo")) {
     const country = request.headers.get("x-vercel-ip-country") ?? request.headers.get("cf-ipcountry") ?? request.headers.get("x-country-code");
     if (country) response.cookies.set("pc_geo", country.toUpperCase(), { path: "/", maxAge: MONTH, sameSite: "lax" });
+  }
+  // Last touch: every visit that arrives with campaign parameters replaces it (30 days).
+  {
+    const q = request.nextUrl.searchParams;
+    const last: Record<string, string> = {};
+    for (const k of ATTR) { const v = q.get(k); if (v) last[k] = v.slice(0, 300); }
+    if (Object.keys(last).length) {
+      last.landing_page = `${request.nextUrl.pathname}${request.nextUrl.search}`.slice(0, 500);
+      last.at = new Date().toISOString();
+      response.cookies.set("px_last", JSON.stringify(last), { path: "/", maxAge: MONTH, sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production" });
+    }
   }
   if (!request.cookies.has("px_attr")) {
     const q = request.nextUrl.searchParams;

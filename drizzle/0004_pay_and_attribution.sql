@@ -1,0 +1,9 @@
+-- Additive only: new nullable columns in schema "website". Nothing existing is changed or deleted.
+ALTER TABLE "website"."orders" ADD COLUMN IF NOT EXISTS "pay_amount_type" text NULL;
+ALTER TABLE "website"."orders" ADD COLUMN IF NOT EXISTS "amount_paid_now" integer NULL;
+ALTER TABLE "website"."orders" ADD COLUMN IF NOT EXISTS "balance_due" integer NULL;
+ALTER TABLE "website"."orders" ADD COLUMN IF NOT EXISTS "external_id" text NULL;
+-- Ad source (first touch) + last touch, on all three lead tables
+ALTER TABLE "website"."orders"     ADD COLUMN IF NOT EXISTS "campaign_id" text NULL, ADD COLUMN IF NOT EXISTS "adset_id" text NULL, ADD COLUMN IF NOT EXISTS "ad_id" text NULL, ADD COLUMN IF NOT EXISTS "campaign_name" text NULL, ADD COLUMN IF NOT EXISTS "adset_name" text NULL, ADD COLUMN IF NOT EXISTS "ad_name" text NULL, ADD COLUMN IF NOT EXISTS "last_touch" jsonb NULL;
+ALTER TABLE "website"."cv_reviews" ADD COLUMN IF NOT EXISTS "campaign_id" text NULL, ADD COLUMN IF NOT EXISTS "adset_id" text NULL, ADD COLUMN IF NOT EXISTS "ad_id" text NULL, ADD COLUMN IF NOT EXISTS "campaign_name" text NULL, ADD COLUMN IF NOT EXISTS "adset_name" text NULL, ADD COLUMN IF NOT EXISTS "ad_name" text NULL, ADD COLUMN IF NOT EXISTS "last_touch" jsonb NULL, ADD COLUMN IF NOT EXISTS "lead_event_id" text NULL, ADD COLUMN IF NOT EXISTS "external_id" text NULL;
+ALTER TABLE "website"."partners"   ADD COLUMN IF NOT EXISTS "campaign_id" text NULL, ADD COLUMN IF NOT EXISTS "adset_id" text NULL, ADD COLUMN IF NOT EXISTS "ad_id" text NULL, ADD COLUMN IF NOT EXISTS "campaign_name" text NULL, ADD COLUMN IF NOT EXISTS "adset_name" text NULL, ADD COLUMN IF NOT EXISTS "ad_name" text NULL, ADD COLUMN IF NOT EXISTS "last_touch" jsonb NULL, ADD COLUMN IF NOT EXISTS "lead_event_id" text NULL, ADD COLUMN IF NOT EXISTS "external_id" text NULL;

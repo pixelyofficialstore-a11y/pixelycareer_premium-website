@@ -41,6 +41,11 @@ export default function Analytics({ allowLocal = false }: { allowLocal?: boolean
       return { name, ids: [id || name.toLowerCase().replace(/\s+/g, "-")], value: Number(price.replace(/[^\d]/g, "")) || 0, currency: pk ? "PKR" : /£/.test(price) ? "GBP" : /AED/.test(price) ? "AED" : /SAR/.test(price) ? "SAR" : "USD" };
     };
     const onClick = (e: MouseEvent) => {
+      const wa = (e.target as Element).closest<HTMLAnchorElement>("a[href*='wa.me'], a[href*='whatsapp.com']");
+      if (wa) {
+        const where = wa.dataset.cta || wa.closest<HTMLElement>("[data-cta]")?.dataset.cta || wa.closest("section,header,footer,aside")?.getAttribute("aria-label") || (wa.closest("footer") ? "footer" : path);
+        track("Contact", { content_name: String(where).slice(0, 60) });
+      }
       const cta = (e.target as Element).closest<HTMLElement>("[data-cta]")?.dataset.cta ?? "";
       const card = (e.target as Element).closest<HTMLElement>(".price-card");
       const chosen = cta.match(/-(?:choose|order)-(ats-career|international-pro|executive)$/)?.[1];

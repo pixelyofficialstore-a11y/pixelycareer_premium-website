@@ -45,6 +45,9 @@ export const orders = website.table("orders", {
   lastActivityAt: timestamp("last_activity_at", { withTimezone: true }).notNull().defaultNow(),
   eventId: text("event_id"),
   leadEventId: text("lead_event_id"), eventSourceUrl: text("event_source_url"),
+  payAmountType: text("pay_amount_type"), amountPaidNow: integer("amount_paid_now"), balanceDue: integer("balance_due"),
+  campaignId: text("campaign_id"), adsetId: text("adset_id"), adId: text("ad_id"), campaignName: text("campaign_name"), adsetName: text("adset_name"), adName: text("ad_name"),
+  lastTouch: jsonb("last_touch").$type<Record<string, string>>(), externalId: text("external_id"),
   paidAt: timestamp("paid_at", { withTimezone: true }),
 }, (t) => [index("orders_status_idx").on(t.status), index("orders_created_at_idx").on(t.createdAt), index("orders_whatsapp_idx").on(t.whatsapp)]).enableRLS();
 
@@ -58,6 +61,9 @@ export const calls = website.table("calls", {
 
 export const cvReviews = website.table("cv_reviews", {
   ...base(),
+  campaignId: text("campaign_id"), adsetId: text("adset_id"), adId: text("ad_id"), campaignName: text("campaign_name"), adsetName: text("adset_name"), adName: text("ad_name"),
+  lastTouch: jsonb("last_touch").$type<Record<string, string>>(), externalId: text("external_id"),
+  leadEventId: text("lead_event_id"),
   status: reviewStatus("status").notNull().default("new"),
   name: text("name").notNull(), whatsapp: text("whatsapp").notNull(), email: text("email"),
   targetRole: text("target_role"), targetCountry: text("target_country"), targetCountries: text("target_countries").array(),
@@ -66,6 +72,9 @@ export const cvReviews = website.table("cv_reviews", {
 
 export const partners = website.table("partners", {
   ...base(),
+  campaignId: text("campaign_id"), adsetId: text("adset_id"), adId: text("ad_id"), campaignName: text("campaign_name"), adsetName: text("adset_name"), adName: text("ad_name"),
+  lastTouch: jsonb("last_touch").$type<Record<string, string>>(), externalId: text("external_id"),
+  leadEventId: text("lead_event_id"),
   status: partnerStatus("status").notNull().default("new"),
   orgName: text("org_name").notNull(), orgType: text("org_type"), contactName: text("contact_name").notNull(), designation: text("designation"),
   whatsapp: text("whatsapp").notNull(), email: text("email"), countryHq: text("country_hq"), destinations: text("destinations"),

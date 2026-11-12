@@ -51,3 +51,6 @@
   .agency-page .agency-choice, .agency-page .agency-button-arrow { transition: none; }
   .agency-page :is(button,a):hover > .agency-button-arrow { transform: none; }
 }
+
+.agency-wa-alt { margin: 12px 0 0; font-size: 13px; text-align: center; }
+.agency-wa-alt a, .agency-form-confirmation p a { color: #0048ff; text-decoration: underline; }

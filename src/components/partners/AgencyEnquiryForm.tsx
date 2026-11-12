@@ -8,19 +8,21 @@ import { trackEvent } from "@/lib/analytics";
 import Turnstile from "@/components/forms/Turnstile";
 import "./enquiry-form.css";
 
-const ORGANIZATIONS = ["Recruitment agency", "OEP", "Career coach", "Employer or HR", "Training institute", "Other"];
+const ORGANIZATIONS = ["Recruitment agency", "Visa consultant", "Training institute", "Other"];
+const DESTINATIONS = ["Saudi Arabia", "UAE", "Qatar", "Kuwait", "Oman", "Bahrain", "UK", "Europe", "Canada", "USA", "Australia", "Other"];
+const MODELS = ["Per CV", "Monthly retainer", "White label"];
 const COUNTRIES = ["Pakistan", "Qatar", "Saudi Arabia", "UAE", "Kuwait", "Oman", "Bahrain", "UK", "Other"];
-const VOLUMES = ["1 to 10", "10 to 30", "30 to 100", "100+"];
+const VOLUMES = ["1–20", "21–50", "51–100", "100+"];
 const CODES = [["PK", "+92"], ["SA", "+966"], ["AE", "+971"], ["QA", "+974"], ["OM", "+968"], ["KW", "+965"], ["BH", "+973"], ["UK", "+44"], ["US / CA", "+1"], ["IN", "+91"], ["BD", "+880"], ["PH", "+63"], ["NP", "+977"], ["LK", "+94"], ["EG", "+20"]];
 
 type Enquiry = {
-  organization: string; organizationType: string; name: string;
+  organization: string; organizationType: string; name: string; designation: string; destinations: string[];
   code: string; phone: string; email: string; country: string;
   volume: string; model: string; notes: string;
 };
 type Errors = Partial<Record<keyof Enquiry, string>>;
 const initial: Enquiry = {
-  organization: "", organizationType: "", name: "", code: "+92", phone: "", email: "",
+  organization: "", organizationType: "", name: "", designation: "", destinations: [], code: "+92", phone: "", email: "",
   country: "", volume: "", model: "", notes: "",
 };
 
@@ -37,6 +39,7 @@ function validate(form: Enquiry, step: number): Errors {
   } else {
     if (!form.volume) errors.volume = "Choose your monthly volume.";
     if (!form.model) errors.model = "Choose a partnership model.";
+    if (!form.destinations.length) errors.destinations = "Choose at least one destination.";
   }
   return errors;
 }
@@ -44,7 +47,8 @@ function validate(form: Enquiry, step: number): Errors {
 function messageFor(form: Enquiry) {
   return [
     "New agency enquiry",
-    `Contact: ${form.name.trim()}`,
+    `Contact: ${form.name.trim()}${form.designation.trim() ? `, ${form.designation.trim()}` : ""}`,
+    `Destinations: ${form.destinations.join(", ")}`,
     `Agency: ${form.organization.trim()} (type: ${form.organizationType})`,
     `WhatsApp: ${form.code} ${form.phone.trim()} | Email: ${form.email.trim()}`,
     `Country: ${form.country}`,
@@ -59,7 +63,9 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
-  const [handoffUrl, setHandoffUrl] = useState("");
+  const [handoffUrl, setHandoffUrl] = useState(whatsappMessage("Hi Pixely Careers, I'd like to talk about a partnership."));
+  const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState("");
   const [ts, setTs] = useState("");
   const hp = useRef<HTMLInputElement>(null);
   const [storageUnavailable, setStorageUnavailable] = useState(false);
@@ -94,25 +100,27 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
     const firstStepErrors = validate(form, 1);
     if (Object.keys(firstStepErrors).length) { setErrors(firstStepErrors); setStep(1); return; }
     const message = messageFor(form);
-    const url = whatsappMessage(message);
-    setHandoffUrl(url);
+    setHandoffUrl(whatsappMessage(message));
+    setSending(true);
+    setSendError("");
     // Saved for the CRM in the background; the WhatsApp handoff never waits for it.
     const ck = (n: string) => document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? null;
     const leadId = newEventId();
     track("Lead", { content_name: "partner", content_ids: ["partner"], content_type: "product", value: 0, currency: "PKR" }, undefined, { eventId: leadId, server: false });
-    fetch("/api/partners", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify({
+    fetch("/api/partners", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
       turnstile: ts, name: form.name, orgName: form.organization, orgType: form.organizationType || null, code: form.code, whatsapp: form.phone, email: form.email || null,
-      countryHq: form.country || null, monthlyVolume: form.volume || null, model: form.model || null, notes: form.notes || null, website: hp.current?.value ?? "", fbp: ck("_fbp"), fbc: ck("_fbc"), eventId: leadId,
-    }) }).catch(() => {});
+      designation: form.designation.trim() || null, destinations: form.destinations.join(", ") || null, countryHq: form.country || null, monthlyVolume: form.volume || null, model: form.model || null, notes: form.notes || null, website: hp.current?.value ?? "", fbp: ck("_fbp"), fbc: ck("_fbc"), eventId: leadId,
+    }) })
+      .then(async (r) => {
+        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "We could not send this. Please try again.");
+        try { trackEvent("generate_lead", { form_name: "agency_partnership", method: "form" }); } catch {}
+        setSubmitted(true);
+      })
+      .catch((e: Error) => { setSendError(e.message || "We could not send this. Please try again."); })
+      .finally(() => setSending(false));
     try {
       localStorage.setItem("pixely:agency-enquiry", JSON.stringify({ ...form, message, createdAt: new Date().toISOString() }));
     } catch { setStorageUnavailable(true); }
-    try {
-      trackEvent("generate_lead", { form_name: "agency_partnership", method: "WhatsApp" });
-    } catch { /* Optional analytics must never block the enquiry. */ }
-    setSubmitted(true);
-    const handoff = window.open(url, "_blank");
-    if (handoff) handoff.opener = null;
   };
 
   const error = (field: keyof Enquiry) => errors[field] ? <span className="agency-input-error" id={`error-${field}`} role="alert">{errors[field]}</span> : null;
@@ -144,17 +152,15 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
   if (submitted) return (
     <div className="agency-enquiry agency-form-card agency-form-confirmation" role="status">
       <svg className="agency-success-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="2" /><path d="m14 24 7 7 14-15" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" /></svg>
-      <h3 ref={headingRef} tabIndex={-1}>Thanks, {form.name.trim()}. We&apos;ll reply on WhatsApp shortly.</h3>
-      <p>Send the prepared message in WhatsApp to complete your enquiry.</p>
-      <a href={handoffUrl} target="_blank" rel="noopener noreferrer" className="agency-form-submit">Open WhatsApp now <span className="agency-button-arrow">→</span></a>
-      {storageUnavailable && <p className="agency-backup-note">Your browser could not save a backup. Your WhatsApp message is still ready.</p>}
+      <h3 ref={headingRef} tabIndex={-1}>Thanks, our partnerships team will contact you within 24 hours.</h3>
+      <p><a href={handoffUrl} target="_blank" rel="noopener noreferrer" data-cta="agency-success-whatsapp">Prefer WhatsApp? Chat with us</a></p>
     </div>
   );
 
   return (
     <div className="agency-enquiry">
       <form className="agency-form-card" onSubmit={submit} noValidate aria-label="Agency partnership enquiry">
-        <h2 className="agency-form-heading">Book a 15 minute partner call</h2>
+        <h2 className="agency-form-heading">Become a partner</h2>
         <ol className="agency-form-progress" aria-label="Enquiry progress">
           <li aria-current={step === 1 ? "step" : undefined} data-complete={step > 1}><span aria-hidden="true">1</span>About you</li>
           <li aria-current={step === 2 ? "step" : undefined}><span aria-hidden="true">2</span>Your needs</li>
@@ -163,25 +169,38 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
           <h3 ref={headingRef} tabIndex={-1} className="agency-form-step-title">Step {step} of 2: {step === 1 ? "About you" : "Your needs"}</h3>
           {step === 1 ? (
             <div className="agency-form-grid">
-              <div className="agency-field"><label htmlFor="your-name">Your name *</label><input id="your-name" autoComplete="name" value={form.name} onChange={(e) => update("name", e.target.value)} required {...fieldProps("name")} />{error("name")}</div>
-              <div className="agency-field"><label htmlFor="agency-name">Agency name *</label><input id="agency-name" name="organization" autoComplete="organization" value={form.organization} onChange={(e) => update("organization", e.target.value)} required {...fieldProps("organization")} />{error("organization")}</div>
-              <div className="agency-field agency-field-wide"><label htmlFor="organization-type">Agency type *</label><select id="organization-type" value={form.organizationType} onChange={(e) => update("organizationType", e.target.value)} required {...fieldProps("organizationType")}><option value="">Select agency type</option>{ORGANIZATIONS.map((item) => <option key={item}>{item}</option>)}</select>{error("organizationType")}</div>
-              <div className="agency-field agency-field-wide"><label htmlFor="agency-country">Country *</label><select id="agency-country" value={form.country} autoComplete="country-name" onChange={(e) => update("country", e.target.value)} required {...fieldProps("country")}><option value="">Select country</option>{COUNTRIES.map((item) => <option key={item}>{item}</option>)}</select>{error("country")}</div>
-              <div className="agency-field agency-field-wide"><label htmlFor="agency-email">Work email *</label><input id="agency-email" type="email" autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} required {...fieldProps("email")} />{error("email")}</div>
+              <div className="agency-field"><label htmlFor="your-name">Contact name *</label><input id="your-name" autoComplete="name" value={form.name} onChange={(e) => update("name", e.target.value)} required {...fieldProps("name")} />{error("name")}</div>
+              <div className="agency-field"><label htmlFor="agency-name">Organization name *</label><input id="agency-name" name="organization" autoComplete="organization" value={form.organization} onChange={(e) => update("organization", e.target.value)} required {...fieldProps("organization")} />{error("organization")}</div>
+              <div className="agency-field"><label htmlFor="designation">Designation</label><input id="designation" autoComplete="organization-title" value={form.designation} onChange={(e) => update("designation", e.target.value)} /></div>
+              <div className="agency-field agency-field-wide"><label htmlFor="organization-type">Type *</label><select id="organization-type" value={form.organizationType} onChange={(e) => update("organizationType", e.target.value)} required {...fieldProps("organizationType")}><option value="">Select type</option>{ORGANIZATIONS.map((item) => <option key={item}>{item}</option>)}</select>{error("organizationType")}</div>
+              <div className="agency-field agency-field-wide"><label htmlFor="agency-country">Country (HQ) *</label><select id="agency-country" value={form.country} autoComplete="country-name" onChange={(e) => update("country", e.target.value)} required {...fieldProps("country")}><option value="">Select country</option>{COUNTRIES.map((item) => <option key={item}>{item}</option>)}</select>{error("country")}</div>
+              <div className="agency-field agency-field-wide"><label htmlFor="agency-email">Email *</label><input id="agency-email" type="email" autoComplete="email" value={form.email} onChange={(e) => update("email", e.target.value)} required {...fieldProps("email")} />{error("email")}</div>
               <div className="agency-field agency-field-wide"><label htmlFor="whatsapp-number">WhatsApp number *</label><div className="agency-phone-input"><select aria-label="Country calling code" autoComplete="tel-country-code" value={form.code} onChange={(e) => update("code", e.target.value)}>{CODES.map(([country, code]) => <option value={code} key={country}>{country} {code}</option>)}</select><input id="whatsapp-number" type="tel" inputMode="tel" autoComplete="tel-national" value={form.phone} onChange={(e) => update("phone", e.target.value)} required {...fieldProps("phone")} /></div>{error("phone")}</div>
             </div>
           ) : (
             <div className="agency-needs-fields">
-              {choices("volume", "Monthly candidates", VOLUMES, true)}
-              {choices("model", "Preferred model", ["White label", "Referral", "Both"], true)}
+              <fieldset className="agency-choice-group" aria-describedby={errors.destinations ? "error-destinations" : undefined}>
+                <legend>Destinations you place candidates in<span aria-hidden="true"> *</span></legend>
+                <div className="agency-choice-list">
+                  {DESTINATIONS.map((d) => {
+                    const on = form.destinations.includes(d);
+                    return <button type="button" key={d} className="agency-choice" role="checkbox" aria-checked={on} onClick={() => update("destinations", on ? form.destinations.filter((x) => x !== d) : [...form.destinations, d])}>{d}</button>;
+                  })}
+                </div>
+                {error("destinations")}
+              </fieldset>
+              {choices("volume", "Monthly CV volume", VOLUMES, true)}
+              {choices("model", "Preferred model", MODELS, true)}
               <div className="agency-field"><label htmlFor="agency-notes">Notes (optional)</label><textarea id="agency-notes" rows={2} value={form.notes} onChange={(e) => update("notes", e.target.value)} /></div>
             </div>
           )}
           <div className="agency-form-navigation">
             {step === 2 && <button type="button" className="agency-form-back" onClick={() => { setErrors({}); setStep(1); }}>Back</button>}
             {step === 2 && <><input ref={hp} type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1 }} /><Turnstile onToken={setTs} /></>}
-            <button className="agency-form-submit" type="submit" data-cta={step === 1 ? "agency-form-next" : "agency-form-schedule"}>{step === 1 ? "Next" : "Schedule my call"} <span className="agency-button-arrow">→</span></button>
+            <button className="agency-form-submit" type="submit" data-cta={step === 1 ? "agency-form-next" : "agency-form-submit"} disabled={sending}>{step === 1 ? "Next" : sending ? "Sending" : "Become a partner"} <span className="agency-button-arrow">→</span></button>
           </div>
+          {sendError && <p className="agency-input-error" role="alert">{sendError}</p>}
+          <p className="agency-wa-alt"><a href={handoffUrl} target="_blank" rel="noopener noreferrer" data-cta="agency-form-whatsapp">Prefer WhatsApp? Chat with us</a></p>
         </div>
       </form>
     </div>

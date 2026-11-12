@@ -64,3 +64,24 @@ export function timeLeft(endsAt: string, now = Date.now()) {
 }
 
 export type OfferState = { id: string; open: boolean; remaining: number; total: number; endsAt: string };
+
+/**
+ * Pay now rules (pk). Add-ons are in the total before the discount.
+ * advance: pay 50% now, 5% off (max Rs 500). full: pay everything now, 10% off (max Rs 1,000).
+ * The discount and the discounted total are rounded to the nearest Rs 50; the 50% advance is rounded up to the next Rs 50.
+ */
+export const PAY_NOW = {
+  advance: { pct: 5, cap: 500 },
+  full: { pct: 10, cap: 1000 },
+  round: 50,
+} as const;
+export type PayAmountType = "advance" | "full";
+
+export function payPlan(subtotal: number, type: PayAmountType) {
+  const r = PAY_NOW.round;
+  const rule = PAY_NOW[type];
+  const off = Math.round(Math.min((subtotal * rule.pct) / 100, rule.cap) / r) * r;
+  const total = Math.round((subtotal - off) / r) * r;
+  const today = type === "full" ? total : Math.ceil(total / 2 / r) * r;
+  return { type, subtotal, discount: subtotal - total, total, today, balance: total - today };
+}

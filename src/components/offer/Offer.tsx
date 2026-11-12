@@ -47,7 +47,7 @@ function useSeen(slot: string) {
 
 export const inline = (t: { d: number; h: number; m: number }) => `${t.d}d ${pad(t.h)}h ${pad(t.m)}m`;
 const OFFER_ITEM: Commerce = { name: BUNDLE.title, ids: [BUNDLE.packageId, BUNDLE.addonId], value: BUNDLE.price, currency: "PKR", items: 2 };
-const claim = (slot: string) => () => { trackPromotion("select_promotion", BUNDLE.id, slot); trackFunnel("cart", OFFER_ITEM); };
+const claim = (slot: string) => () => { trackPromotion("select_promotion", BUNDLE.id, slot); if (slot.endsWith("_band")) trackFunnel("view", OFFER_ITEM); trackFunnel("cart", OFFER_ITEM); };
 
 export function Flame({ size = 14 }: { size?: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true"><path d="M12 2c1 3.5-1.5 5.2-1.5 7.6 0 1.3.9 2.2 2 2.2 1.4 0 2.2-1.2 1.9-3.1 2.6 1.8 4.6 4.5 4.6 7.6A7 7 0 0 1 12 23a7 7 0 0 1-7-6.7c0-4.3 3.2-6.8 4.5-9.6.6 1 .9 2 .8 3.2C12.3 8.4 12.9 5.5 12 2Z" /></svg>;

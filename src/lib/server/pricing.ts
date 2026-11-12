@@ -1,11 +1,11 @@
 import "server-only";
 import { calcOrder } from "@/config/addons";
 import { MARKETS, getPackages, isMarketKey, type PackageId } from "@/config/markets";
-import { OFFERS } from "@/config/offers";
+import { OFFERS, payPlan, type PayAmountType } from "@/config/offers";
 import { getOfferState } from "@/lib/offer-server";
 import type { AddonLine } from "@/lib/db/schema";
 
-export type PriceInput = { market: string; package: string; addons: Record<string, number>; sameDay: boolean; bundle: boolean; payChoice: "now" | "later" | null };
+export type PriceInput = { market: string; package: string; addons: Record<string, number>; sameDay: boolean; bundle: boolean; payChoice: "now" | "later" | null; payAmountType?: PayAmountType | null };
 
 /** Prices are always worked out here from config. Anything the browser says about money is ignored. */
 export async function priceOrder(i: PriceInput) {
@@ -25,9 +25,11 @@ export async function priceOrder(i: PriceInput) {
   const sameDay = i.sameDay && !isBundle && pkgId !== "executive";
   const { pkg, list, total } = calcOrder(m, pkgId, sameDay, selection);
   const addons: AddonLine[] = list.map((a) => ({ id: a.id, name: a.name, qty: a.qty, price: a.total }));
-  const discount = isBundle && i.payChoice === "now" ? offer!.payNowDiscount : 0;
+  // Pay now (pk only): 50% advance or full, with the discount from config. Talk first pays the full price.
+  const plan = m.key === "pk" && i.payChoice === "now" ? payPlan(total, i.payAmountType ?? "full") : null;
   return {
     market: m.key, package: isBundle ? "executive_bundle" : pkgId, packagePrice: pkg.price, addons, sameDay, offer: isBundle ? offer!.id : null, isBundle,
-    discount, subtotal: total, total: total - discount, currency: m.currency,
+    discount: plan?.discount ?? 0, subtotal: total, total: plan?.total ?? total, currency: m.currency,
+    payAmountType: plan?.type ?? null, amountPaidNow: plan?.today ?? null, balanceDue: plan ? plan.balance : m.key === "pk" ? total : null,
   };
 }

@@ -3,9 +3,8 @@ import { dbError } from "@/lib/db";
 import { isConfigError } from "@/lib/server/env";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { cookies } from "next/headers";
 import { sendCapi } from "./capi";
-import { attribution, fail, honeypot, limited, normalizePhone, opt, readJson, turnstileOk } from "./request";
+import { adSource, attribution, fail, honeypot, limited, normalizePhone, opt, readJson, turnstileOk } from "./request";
 
 /** Common fields of every lead form: contact, market, Turnstile token, honeypot, Meta browser ids. */
 export const leadBase = {
@@ -35,13 +34,13 @@ export async function handleLead<S extends z.ZodObject<typeof leadBase & z.ZodRa
   if (!whatsapp) return fail(400, "Enter a valid WhatsApp number.");
   try {
     if (!(await turnstileOk(b.turnstile, req))) return fail(400, "Please complete the security check.");
-    const attr = await attribution(req, { fbp: b.fbp, fbc: b.fbc, market: (b as { market?: string }).market });
+    const ad = await adSource();
+    const attr = { ...(await attribution(req, { fbp: b.fbp, fbc: b.fbc, market: (b as { market?: string }).market })), ...ad, leadEventId: b.eventId ?? null };
     const row = await insert({ ...b, whatsapp }, attr);
     if (!row) return fail();
     // Conversions API Lead, same event_id as the browser Pixel. Fire and forget.
     const lead = bucket === "partners" ? "partner" : "cv_review";
-    const vid = (await cookies()).get("px_vid")?.value ?? null;
-    void sendCapi("Lead", b.eventId ?? `Lead_${row.id}`, { phone: whatsapp, email: b.email, name: b.name, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, row.id] },
+    void sendCapi("Lead", b.eventId ?? `Lead_${row.id}`, { phone: whatsapp, email: b.email, name: b.name, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [ad.externalId, row.id] },
       { content_name: lead, content_ids: [lead], content_type: "product", value: 0, currency: "PKR" }, req.headers.get("referer"));
     return NextResponse.json({ ref: row.id.slice(0, 8).toUpperCase() });
   } catch (e) {

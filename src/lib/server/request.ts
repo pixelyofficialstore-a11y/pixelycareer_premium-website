@@ -69,6 +69,18 @@ export async function attribution(req: Request, browser: { fbp?: string | null; 
   };
 }
 
+/** Ad source for the lead tables: first touch ad ids and names, the last touch, and the visitor id (external_id). */
+export async function adSource() {
+  const jar = await cookies();
+  const read = (n: string) => { try { return JSON.parse(jar.get(n)?.value ?? "{}") as Record<string, string>; } catch { return {}; } };
+  const a = read("px_attr"), last = read("px_last");
+  const s = (k: string) => (typeof a[k] === "string" ? a[k].slice(0, 300) : null) || null;
+  return {
+    campaignId: s("campaign_id"), adsetId: s("adset_id"), adId: s("ad_id"), campaignName: s("campaign_name"), adsetName: s("adset_name"), adName: s("ad_name"),
+    lastTouch: Object.keys(last).length ? last : null, externalId: jar.get("px_vid")?.value?.slice(0, 80) ?? null,
+  };
+}
+
 /** Shared zod pieces. `website` is the honeypot: real visitors never fill it. */
 export const opt = (max = 200) => z.string().trim().max(max).optional().nullable().transform((v) => v || null);
 export const req_ = (max = 200) => z.string().trim().min(1).max(max);

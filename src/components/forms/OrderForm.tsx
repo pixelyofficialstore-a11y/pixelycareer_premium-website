@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { availableAddons, calcOrder, totalFor, unitAt, type Selection } from "@/config/addons";
 import { MARKETS, formatPricingPrice, getPackages, localize, type MarketKey, type PackageId } from "@/config/markets";
 import { PAYMENTS } from "@/config/payments";
+import { payPlan, type PayAmountType } from "@/config/offers";
 import { cartId, setCartId, trackFunnel, type Commerce } from "@/lib/analytics";
 import { useCountdown, useOffer } from "@/components/offer/useOffer";
 import { inline } from "@/components/offer/Offer";
@@ -24,11 +25,11 @@ const CHECKLIST = (key: string, id: PackageId) => {
   if (id === "international-pro") return ["Everything in ATS", "International CV", "LinkedIn makeover", gulf ? "Indeed + Naukrigulf" : "Indeed", "Bio statement", "Contact card"];
   return ["Everything in Pro", "Executive CV", "Visual profile", "10 LinkedIn posts", "Interview guide"];
 };
-const PACKAGE_ORDER: PackageId[] = ["international-pro", "executive", "ats-career"];
+const PACKAGE_ORDER: PackageId[] = ["executive", "international-pro", "ats-career"];
 const AUDIENCE: Record<PackageId, string> = {
-  "ats-career": "For beginners and early careers",
-  "international-pro": "For 3+ years of experience or applying abroad",
-  executive: "For senior and leadership roles",
+  "ats-career": "Beginners & early careers",
+  "international-pro": "3+ years or applying abroad",
+  executive: "Senior & leadership roles",
 };
 const CV_MAX = 5 * 1024 * 1024;
 const SHOT_MAX = 4 * 1024 * 1024;
@@ -140,6 +141,9 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   });
   const [cv, setCv] = useState<File | null>(null);
   const [later, setLater] = useState(false);
+  const [payType, setPayType] = useState<PayAmountType>("full");
+  const [extrasOpen, setExtrasOpen] = useState(false);
+  const [incOpen, setIncOpen] = useState<string | null>(null);
   const [method, setMethod] = useState<"easypaisa" | "ubl">("easypaisa");
   const [txn, setTxn] = useState("");
   const [shot, setShot] = useState<File | null>(null);
@@ -181,7 +185,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
 
   const set = (k: keyof typeof v, value: string) => setV((s) => ({ ...s, [k]: value }));
   // Personal Brand Bundle (pk): Executive + portfolio at the normal add-on price, shown as one line.
-  const { offer, open: offerOpenNow } = useOffer(market);
+  const { offer, open: offerOpenNow, remaining: slotsLeft } = useOffer(market);
   const offerClock = useCountdown();
   const offerLive = offerOpenNow && !offerClock.done;
   // An offer link wins over every default: applied once, on load (URL beats anything restored).
@@ -227,10 +231,12 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       .finally(() => clearTimeout(t));
   };
   const payNow = pk && !later;
-  // Paying now on the 11.11 offer saves the pay now discount. It shows from the payment step on.
-  const payOff = bundle ? offer.payNowDiscount : 0;
-  const due = total - (payNow && step >= 3 ? payOff : 0);
-  const item: Commerce = { name: bundle ? offer.title : pkg.name, ids: [packageId, ...list.map((a) => a.id)], value: due, currency: m.currency, items: 1 + list.length };
+  // Pay now (pk): 50% advance or in full, with the discount from config/offers. Shown from the payment step on.
+  const planOf = (t: PayAmountType) => payPlan(total, t);
+  const plan = payNow && step >= 3 ? planOf(payType) : null;
+  const due = plan ? plan.total : total;
+  const payCategory = !pk ? undefined : later ? "talk_first" : payType === "full" ? "pay_full" : "pay_advance";
+  const item: Commerce = { name: bundle ? offer.title : pkg.name, ids: [bundle ? "executive_bundle" : packageId, ...list.filter((a) => !(bundle && a.id === offer.addonId)).map((a) => a.id)], value: due, currency: m.currency, items: 1 + list.length };
   const byEmail = !pk && v.contact === "email";
   const channel = byEmail ? "email" : "WhatsApp";
 
@@ -316,14 +322,14 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [packageId, JSON.stringify(addons), sameDay]);
   useEffect(() => { if (step === 2) trackFunnel("checkout", item); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [step]);
-  useEffect(() => { if (payNow && shot) trackFunnel("payment", item); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [shot, payNow]);
+  useEffect(() => { if (payNow && shot) trackFunnel("payment", { ...item, value: planOf(payType).today, category: payType }); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [shot, payNow]);
 
   // Draft: the open order is saved on every package, bundle, add-on, step or contact change (debounced). The server prices it.
   useEffect(() => { if (restore?.id) setCartId(restore.id.replace(/-/g, "").slice(0, 20)); }, [restore?.id]);
   const orderPayload = () => {
     const u = readUtm();
     return {
-      market, package: bundle ? "executive_bundle" : packageId, addons, sameDay, bundle, payChoice: pk ? (payNow ? "now" : "later") : null, step,
+      market, package: bundle ? "executive_bundle" : packageId, addons, sameDay, bundle, payChoice: pk ? (payNow ? "now" : "later") : null, payAmountType: pk && payNow ? payType : null, step,
       name: v.name || null, code: v.code, whatsapp: v.whatsapp || null, email: v.email.trim() || null,
       targetCountry: countries[0] || null, targetCountries: countries, targetRole: v.role || null, notes: v.notes || null,
       fbp: u.fbp || null, fbc: u.fbc || null, eventId: cartId() || undefined, resume: restore?.id ?? null,
@@ -335,7 +341,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     }, 900);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, v.whatsapp, v.code, v.email, v.name, v.country, JSON.stringify(countries), v.role, packageId, JSON.stringify(addons), sameDay, bundle, later]);
+  }, [step, v.whatsapp, v.code, v.email, v.name, v.country, JSON.stringify(countries), v.role, packageId, JSON.stringify(addons), sameDay, bundle, later, payType]);
   const cont = () => { if (validate(step)) go(step + 1); };
 
   const submit = async () => {
@@ -356,9 +362,9 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ref) throw new Error(data.error || "failed");
       clearTimeout(timer);
-      trackFunnel("lead", { ...item, value: data.total ?? due });
+      trackFunnel("lead", { ...item, value: data.total ?? due, category: payCategory });
       try { sessionStorage.removeItem("pixely-cart-id"); } catch {}
-      const q = new URLSearchParams({ id: data.ref, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1" } : {}) });
+      const q = new URLSearchParams({ id: data.ref, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1" } : { talk: "1" }) });
       router.push(`/order/success?${q}`);
     } catch (err) {
       clearTimeout(timer);
@@ -376,7 +382,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     `Total: ${money(due)}`,
     v.name && `Name: ${v.name}`,
     v.role && `Role: ${v.role}, ${countries.join(", ")}`,
-    pk ? (payNow ? `Paid by ${method === "ubl" ? "UBL Bank" : "Easypaisa / JazzCash"}${txn ? `, ID ${txn}` : ""}` : "Pay later") : "",
+    pk ? (payNow ? `${payType === "full" ? "Paid in full" : "Paid 50%"} by ${method === "ubl" ? "UBL Bank" : "Easypaisa / JazzCash"}${txn ? `, ID ${txn}` : ""}` : "Pay later") : "",
   ].filter(Boolean).join("\n"));
 
   const last = step === 4;
@@ -400,13 +406,20 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
           </div>
         ))}
         {sameDay && <div className={styles.sumLine}><dt>Same day delivery</dt><dd>{pkg.sameDayLabel}</dd></div>}
-        {payNow && step >= 3 && payOff > 0 && <div className={styles.sumLine}><dt>Pay now discount</dt><dd className={styles.sumSave}>−{money(payOff)}</dd></div>}
+        {plan && <div className={styles.sumLine}><dt>Subtotal</dt><dd>{money(plan.subtotal)}</dd></div>}
+        {plan && plan.discount > 0 && <div className={styles.sumLine}><dt>Pay now discount</dt><dd className={styles.sumSave}>−{money(plan.discount)}</dd></div>}
         <div className={styles.sumMuted}><dt>Delivery</dt><dd>{sameDay ? "Same day" : bundle ? "5 days" : pkg.deliveryDays}</dd></div>
       </dl>
       <div className={styles.sumTotal}>
         <span>Total</span>
         <strong key={due} className={styles.totalNum}>{money(due)}</strong>
       </div>
+      {plan && (
+        <dl className={styles.sumPay}>
+          <div><dt>Paying now</dt><dd>{money(plan.today)}{plan.type === "advance" ? " (50%)" : ""}</dd></div>
+          {plan.balance > 0 && <div><dt>Balance before delivery</dt><dd>{money(plan.balance)}</dd></div>}
+        </dl>
+      )}
       <p className={styles.guarantee}><Shield /> 100% money back guarantee</p>
     </>
   );
@@ -451,124 +464,93 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         <form ref={formRef} className={styles.form} noValidate onSubmit={(e) => e.preventDefault()}>
           {step === 1 && (
             <>
-              {bundle && (
-                <div className={styles.offerApplied}>
-                  <span className={styles.offerCheck} aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg></span>
-                  <b>11.11 Sale applied</b>
-                  <em>You save {money(bundleSave)}</em>
-                </div>
-              )}
-              {pk && offerLive && !bundle && (
-                <div className={styles.offerStrip}>
-                  <i aria-hidden="true" />
-                  <p>11.11: {offer.headline}, {money(offer.price)}</p>
-                  <button type="button" onClick={() => { choosePackage(offer.packageId); toggleBundle(true); setTimeout(() => document.getElementById("pk-executive")?.scrollIntoView({ behavior: "smooth", block: "center" }), 60); }} data-cta="offer-order-switch">Switch →</button>
-                </div>
-              )}
+              <h2 className={styles.stepTitle}>Choose your package</h2>
               {offerParam && !offerLive && <p className={styles.offerEnded}>This offer has ended. You can continue at normal prices.</p>}
-              <div className={styles.packs} role="radiogroup" aria-label="Package">
-                {pk && offerLive && (
-                  <div id="pk-executive_bundle" className={`${styles.card} ${styles.pcard} ${bundle ? styles.cardOn : styles.prow} ${styles.hasBadge} ${styles.bundleCard}`}>
-                    <span className={`${styles.pbadge} ${styles.bundleBadge}`}>11.11 Sale</span>
-                    <label className={styles.ptop}>
-                      <input type="radio" name="package" checked={bundle} onChange={() => { choosePackage(offer.packageId); toggleBundle(true); }} data-cta="order-package-executive_bundle" />
-                      <b className={styles.pname}>11.11 Bundle</b>
-                      <strong className={styles.pprice}><s className={styles.bundleWas}>{money(offer.compareAt)}</s> {money(offer.price)}</strong>
-                      <small className={styles.paud}>{offer.headline}. Only {offer.totalSlots} slots, ends in <span suppressHydrationWarning>{inline(offerClock)}</span></small>
+              <div className={styles.pgrid} role="radiogroup" aria-label="Package">
+                {[
+                  ...(pk && offerLive ? [{
+                    id: "executive_bundle", name: "Executive + Website Bundle", line: "Senior roles + your own website", price: offer.price, was: offer.compareAt as number | undefined,
+                    meta: `5 days · ${slotsLeft ?? offer.totalSlots} slot${(slotsLeft ?? offer.totalSlots) === 1 ? "" : "s"} left`, badge: "11.11 Sale", tone: styles.pkSale,
+                    items: [...CHECKLIST(m.key, "executive"), "Personal portfolio website", "Free domain and hosting for 1 year"], sel: bundle,
+                    pick: () => { choosePackage(offer.packageId); toggleBundle(true); },
+                  }] : []),
+                  ...PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => ({
+                    id: p.id as string, name: p.name, line: AUDIENCE[p.id], price: p.price, was: undefined as number | undefined, meta: p.deliveryDays,
+                    badge: p.id === "executive" ? "Best Results" : p.id === "international-pro" ? "Most Popular" : "", tone: p.id === "executive" ? styles.pkBest : p.id === "international-pro" ? styles.pkPop : "",
+                    items: CHECKLIST(m.key, p.id), sel: p.id === packageId && !bundle,
+                    pick: () => { choosePackage(p.id); setBundleOn(false); },
+                  })),
+                ].map((c) => (
+                  <div key={c.id} id={`pk-${c.id}`} className={`${styles.card} ${styles.pk} ${c.tone} ${c.sel ? styles.pkOn : ""}`}>
+                    {c.badge && <span className={styles.pkBadge}>{c.badge}</span>}
+                    <label className={styles.pkMain}>
+                      <input type="radio" name="package" checked={c.sel} onChange={c.pick} data-cta={`order-package-${c.id}`} />
+                      {c.sel && <span className={styles.pkCheck}><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8.5 3.2 3L13 4.5" /></svg></span>}
+                      <b className={styles.pkName}>{c.name}</b>
+                      <small className={styles.pkLine}>{c.line}</small>
+                      <span className={styles.pkPrice}>{c.was ? <s>{money(c.was)}</s> : null}<strong>{money(c.price)}</strong></span>
                     </label>
+                    <div className={styles.pkFoot}>
+                      <span suppressHydrationWarning>{c.meta}</span>
+                      <span aria-hidden="true">·</span>
+                      <button type="button" onClick={() => setIncOpen((o) => (o === c.id ? null : c.id))} aria-expanded={incOpen === c.id}>What&apos;s included <i aria-hidden="true">⌄</i></button>
+                    </div>
+                    {incOpen === c.id && <ul className={styles.pkList}>{c.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul>}
+                  </div>
+                ))}
+              </div>
+              <p className={styles.formatLine}>Your CV format is chosen for your target country: Europass for Europe, ATS format everywhere else.</p>
+
+              <section className={`${styles.card} ${styles.extras}`} aria-label="Extras">
+                <button type="button" className={styles.extrasHead} onClick={() => setExtrasOpen((o) => !o)} aria-expanded={extrasOpen}>
+                  <span className={styles.extrasTitle}><b>+ Add extras (optional)</b>{!extrasOpen && <span>: {[...options.map((o) => o.name), ...(sameDayOk ? ["same day"] : [])].join(", ")}</span>}</span>
+                  <em>{extrasOpen ? "Hide" : "Show"} <i aria-hidden="true" className={extrasOpen ? styles.flip : ""}>⌄</i></em>
+                </button>
+                {extrasOpen && (
+                  <div className={styles.extrasBody}>
+                    {sameDayOk && (
+                      <label className={`${styles.card} ${styles.toggle}`}>
+                        <input type="checkbox" role="switch" checked={sameDay} onChange={(e) => setSameDay(e.target.checked)} />
+                        <span className={styles.switch} aria-hidden="true" />
+                        <span className={styles.toggleText}>Same day delivery</span>
+                        <span className={styles.toggleFee}>{pkg.sameDayLabel}</span>
+                      </label>
+                    )}
+                    <div className={styles.addons}>
+                      {options.map((o) => {
+                        const qty = addons[o.id] ?? 0;
+                        const on = qty > 0;
+                        const set1 = (n: number) => setAddons((s) => { const next = { ...s }; if (n < 1) delete next[o.id]; else next[o.id] = Math.min(10, n); return next; });
+                        let sub: string;
+                        if (!o.qty) sub = `${o.benefit} · ${money(totalFor(m.key, o.id, 1, packageId))}`;
+                        else if (!on) sub = `${o.benefit} · ${money(unitAt(m.key, o.id, 1, packageId))}`;
+                        else sub = `${money(totalFor(m.key, o.id, qty, packageId))} for ${qty}${qty < 10 ? ` · next ${money(unitAt(m.key, o.id, qty + 1, packageId))}` : ""}`;
+                        return (
+                          <div key={o.id} className={`${styles.arow} ${on ? styles.arowOn : ""}`}>
+                            <div className={styles.aleft}>
+                              {o.badge && <span className={styles.apill}>{o.badge}</span>}
+                              <b>{o.name}</b>
+                              <small>{sub}</small>
+                            </div>
+                            <div className={styles.actrl}>
+                              {!on ? (
+                                <button type="button" className={`${styles.addBtn} ${styles.ghost}`} onClick={() => set1(1)} aria-label={`Add ${o.name}`}>+ Add</button>
+                              ) : o.qty ? (
+                                <span className={styles.stepper}>
+                                  <button type="button" onClick={() => set1(qty - 1)} aria-label={`Fewer ${o.name}`}>–</button>
+                                  <output aria-live="polite">{qty}</output>
+                                  <button type="button" onClick={() => set1(qty + 1)} disabled={qty >= 10} aria-label={`More ${o.name}`}>+</button>
+                                </span>
+                              ) : (
+                                <button type="button" className={`${styles.addBtn} ${styles.added}`} onClick={() => set1(0)} aria-label={`Remove ${o.name}`}>✓ Added</button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
-                {PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => {
-                  const sel = p.id === packageId && !bundle;
-                  const items = CHECKLIST(m.key, p.id);
-                  return (
-                    <div key={p.id} id={`pk-${p.id}`} className={`${styles.card} ${styles.pcard} ${sel ? styles.cardOn : styles.prow} ${p.id === "international-pro" || p.id === "executive" ? styles.hasBadge : ""}`}>
-                      {p.id === "international-pro" && <span className={styles.pbadge}>Most Popular</span>}
-                      {p.id === "executive" && <span className={`${styles.pbadge} ${styles.bestBadge}`}>Best Results</span>}
-                      <label className={styles.ptop}>
-                        <input type="radio" name="package" checked={sel} onChange={() => { choosePackage(p.id); setBundleOn(false); }} />
-                        <b className={styles.pname}>{p.name}</b>
-                        <strong className={styles.pprice}>{p.priceLabel}</strong>
-                        <small className={styles.paud}>{AUDIENCE[p.id]}</small>
-                        {p.id === "executive" && !offerLive && addons.portfolio ? <small className={styles.ptag}>Best value with a website</small> : null}
-                      </label>
-                      <div className={`${styles.collapse} ${sel ? styles.collapseOpen : ""}`}>
-                        <div className={styles.collapseIn}>
-                          <ul className={styles.checks}>
-                            {items.map((x) => <li key={x}>{localize(m, x)}</li>)}
-                          </ul>
-                        </div>
-                      </div>
-                      {p.id === offer.packageId && pk && offerLive && (
-                        <div className={`${styles.collapse} ${sel ? styles.collapseOpen : ""}`}>
-                          <div className={styles.collapseIn}>
-                            <label className={`${styles.up} ${bundle ? styles.upOn : ""}`}>
-                              <input type="checkbox" checked={bundle} onChange={(e) => toggleBundle(e.target.checked)} data-cta="order-bundle-toggle" />
-                              <span className={styles.upBox} aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg></span>
-                              <span className={styles.upBody}>
-                                <span className={styles.upHead}><span className={styles.upTag}>11.11 Bundle</span><span className={styles.upPill}>Save {money(bundleSave)}</span></span>
-                                <span className={styles.upMain}>
-                                  <b className={styles.upTitle}>{offer.headline}</b>
-                                  <span className={styles.upPrice}><s>{money(offer.compareAt)}</s><strong>{money(offer.price)}</strong></span>
-                                </span>
-                                <span className={styles.upFoot}><span className={styles.upInc}><span><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg>Everything in Executive</span><span><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg>Personal portfolio website</span></span><span className={styles.upEnds} suppressHydrationWarning>Ends in {inline(offerClock)}</span></span>
-                              </span>
-                            </label>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {sameDayOk && <div className={styles.group}>
-                <label className={`${styles.card} ${styles.toggle}`}>
-                  <input type="checkbox" role="switch" checked={sameDay} onChange={(e) => setSameDay(e.target.checked)} />
-                  <span className={styles.switch} aria-hidden="true" />
-                  <span className={styles.toggleText}>Same day delivery</span>
-                  <span className={styles.toggleFee}>{pkg.sameDayLabel}</span>
-                </label>
-              </div>}
-
-              <section className={styles.group} aria-labelledby="extras-title">
-                <div className={styles.groupHead}>
-                  <h2 id="extras-title">Add extras</h2>
-                  <span>Optional</span>
-                </div>
-                <div className={styles.addons}>
-                  {options.map((o) => {
-                    const qty = addons[o.id] ?? 0;
-                    const on = qty > 0;
-                    const set1 = (n: number) => setAddons((s) => { const next = { ...s }; if (n < 1) { if (!(offerParam && offerLive && o.id === offer.addonId && packageId === offer.packageId)) delete next[o.id]; } else next[o.id] = Math.min(10, n); return next; });
-                    let sub: string;
-                    if (!o.qty) sub = `${o.benefit} · ${money(totalFor(m.key, o.id, 1, packageId))}`;
-                    else if (!on) sub = `${o.benefit} · ${money(unitAt(m.key, o.id, 1, packageId))}`;
-                    else sub = `${money(totalFor(m.key, o.id, qty, packageId))} for ${qty}${qty < 10 ? ` · next ${money(unitAt(m.key, o.id, qty + 1, packageId))}` : ""}`;
-                    return (
-                      <div key={o.id} className={`${styles.arow} ${on ? styles.arowOn : ""}`}>
-                        <div className={styles.aleft}>
-                          {o.badge && <span className={styles.apill}>{o.badge}</span>}
-                          <b>{o.name}</b>
-                          <small>{sub}</small>
-                        </div>
-                        <div className={styles.actrl}>
-                          {!on ? (
-                            <button type="button" className={`${styles.addBtn} ${styles.ghost}`} onClick={() => set1(1)} aria-label={`Add ${o.name}`}>+ Add</button>
-                          ) : o.qty ? (
-                            <span className={styles.stepper}>
-                              <button type="button" onClick={() => set1(qty - 1)} aria-label={`Fewer ${o.name}`}>–</button>
-                              <output aria-live="polite">{qty}</output>
-                              <button type="button" onClick={() => set1(qty + 1)} disabled={qty >= 10} aria-label={`More ${o.name}`}>+</button>
-                            </span>
-                          ) : (
-                            <button type="button" className={`${styles.addBtn} ${styles.added}`} onClick={() => set1(0)} aria-label={`Remove ${o.name}`}>✓ Added</button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
               </section>
             </>
           )}
@@ -628,7 +610,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
 
           {step === 3 && (
             <section aria-labelledby="pay-title">
-              <h2 id="pay-title" className={styles.stepTitle}>Payment</h2>
+              <h2 id="pay-title" className={styles.stepTitle}>{pk ? "How would you like to start?" : "Payment"}</h2>
               {!pk ? (
                 <div className={`${styles.card} ${styles.info}`}>
                   <Shield />
@@ -636,45 +618,60 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 </div>
               ) : (
                 <>
-                <div className={styles.payChoice} role="radiogroup" aria-label="When do you want to pay?">
-                  <button type="button" role="radio" aria-checked={!later} className={`${styles.payOpt} ${!later ? styles.payOptOn : ""}`} onClick={() => setLater(false)} data-cta="order-pay-now">
-                    <span className={styles.payOptHead}><b>Pay now</b>{payOff > 0 && <em>Best price</em>}</span>
-                    <strong>{money(total - payOff)}{payOff > 0 && <s>{money(total)}</s>}</strong>
-                    <small>{payOff > 0 ? `Save ${money(payOff)} and lock your slot` : "Work starts as soon as we verify it."}</small>
-                  </button>
-                  <button type="button" role="radio" aria-checked={later} className={`${styles.payOpt} ${later ? styles.payOptOn : ""}`} onClick={() => setLater(true)} data-cta="order-pay-later">
-                    <span className={styles.payOptHead}><b>Pay later</b></span>
-                    <strong>{money(total)}</strong>
-                    <small>Talk to us first. Pay after we confirm.</small>
+                <div className={styles.payStack} role="radiogroup" aria-label="How would you like to start?">
+                  <div className={`${styles.card} ${styles.payBox} ${!later ? styles.payBoxOn : ""}`}>
+                    <button type="button" role="radio" aria-checked={!later} className={styles.payBoxHead} onClick={() => setLater(false)} data-cta="order-pay-now">
+                      <span><b>Pay now</b><em className={styles.savePill}>Save {money(planOf(payType).discount)}</em></span>
+                      <strong>{money(planOf(payType).today)}</strong>
+                    </button>
+                    {!later && (
+                      <div className={styles.chips} role="radiogroup" aria-label="How much do you want to pay now?">
+                        {(["advance", "full"] as const).map((t) => {
+                          const p = planOf(t);
+                          return (
+                            <button key={t} type="button" role="radio" aria-checked={payType === t} className={`${styles.chip} ${payType === t ? styles.chipOn : ""}`} onClick={() => setPayType(t)} data-cta={`order-pay-${t}`}>
+                              <b>{t === "advance" ? <>Pay 50% now · {money(p.today)} today</> : <>Pay in full · {money(p.today)}</>}</b>
+                              <small>{t === "advance" ? <>Save {money(p.discount)} · balance {money(p.balance)} before delivery</> : <>Save {money(p.discount)} · <span className={styles.bestTag}>Best value</span></>}</small>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                  <button type="button" role="radio" aria-checked={later} className={`${styles.card} ${styles.payBox} ${styles.payBoxHead} ${later ? styles.payBoxOn : ""}`} onClick={() => setLater(true)} data-cta="order-pay-later">
+                    <span><b>Talk to a CV consultant first</b></span>
+                    <strong className={styles.muted}>{money(total)}</strong>
+                    <small>We&apos;ll message you on WhatsApp within minutes. Work starts after a 50% advance.</small>
                   </button>
                 </div>
-                {later ? (
-                  <p className={styles.laterLine}>We&apos;ll confirm on WhatsApp and share payment details.</p>
-                ) : (
+                {!later && (
                 <div className={`${styles.card} ${styles.payCard}`}>
                   <div className={styles.due}>
-                    <span>Amount due</span>
-                    <strong>{money(due)}</strong>
+                    <span>Amount due today</span>
+                    <strong>{money(planOf(payType).today)}</strong>
                   </div>
                   <div className={styles.tabs} role="tablist" aria-label="Payment method">
                     <button type="button" role="tab" aria-selected={method === "easypaisa"} className={method === "easypaisa" ? styles.tabOn : ""} onClick={() => setMethod("easypaisa")}>Easypaisa / JazzCash</button>
                     <button type="button" role="tab" aria-selected={method === "ubl"} className={method === "ubl" ? styles.tabOn : ""} onClick={() => setMethod("ubl")}>UBL Bank</button>
                   </div>
-                  {method === "easypaisa" && qrOk && (
-                    <figure className={styles.qr}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={PAYMENTS.easypaisa.qr} alt="Easypaisa QR code" width={150} height={150} onError={() => setQrOk(false)} />
-                    </figure>
-                  )}
-                  <div className={styles.acct}>
-                    <PayRow label="Account title" value="Muhammad Hamza" copy="Muhammad Hamza" />
-                    {method === "easypaisa" ? (
-                      <PayRow label="Account number" value={PAYMENTS.easypaisa.number} copy={PAYMENTS.easypaisa.copy} />
-                    ) : (
-                      <>
-                        <PayRow label="Account number" value={PAYMENTS.ubl.number} copy={PAYMENTS.ubl.number} />
-                        <PayRow label="IBAN" value={PAYMENTS.ubl.iban.replace(/(.{4})(?=.)/g, "$1 ")} copy={PAYMENTS.ubl.iban} mono />
-                      </>
+                  <div className={styles.payGrid}>
+                    <div className={styles.acct}>
+                      <PayRow label="Account title" value="Muhammad Hamza" copy="Muhammad Hamza" />
+                      {method === "easypaisa" ? (
+                        <PayRow label="Account number" value={PAYMENTS.easypaisa.number} copy={PAYMENTS.easypaisa.copy} />
+                      ) : (
+                        <>
+                          <PayRow label="Account number" value={PAYMENTS.ubl.number} copy={PAYMENTS.ubl.number} />
+                          <PayRow label="IBAN" value={PAYMENTS.ubl.iban.replace(/(.{4})(?=.)/g, "$1 ")} copy={PAYMENTS.ubl.iban} mono />
+                        </>
+                      )}
+                    </div>
+                    {method === "easypaisa" && qrOk && (
+                      <figure className={styles.qr}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={PAYMENTS.easypaisa.qr} alt="Payment QR code" width={140} height={140} loading="lazy" onError={() => setQrOk(false)} />
+                        <figcaption>Scan with your phone to pay</figcaption>
+                      </figure>
                     )}
                   </div>
                   <div className={styles.payUpload}>
@@ -683,6 +680,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                       <input id="txn" className={styles.input} value={txn} onChange={(e) => setTxn(e.target.value)} />
                     </Field>
                   </div>
+                  <p className={styles.payNote}>Work starts as soon as we verify your payment (usually within minutes).</p>
                 </div>
                 )}
                 </>
@@ -716,9 +714,12 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 <div className={styles.rSec}>
                   <div className={styles.rHead}><h3>Payment</h3><button type="button" onClick={() => go(3)}>Edit</button></div>
                   <dl className={styles.rList}>
-                    {!pk ? <div><dt>Method</dt><dd>Payment link on {channel}</dd></div> : later ? <div><dt>Method</dt><dd>Pay after confirmation</dd></div> : (
+                    {!pk ? <div><dt>Method</dt><dd>Payment link on {channel}</dd></div> : later ? <div><dt>Method</dt><dd>Talk to a CV consultant first</dd></div> : (
                       <>
                         <div><dt>Method</dt><dd>{method === "ubl" ? "UBL Bank" : "Easypaisa / JazzCash"}</dd></div>
+                        <div><dt>Paying</dt><dd>{payType === "full" ? "In full" : "50% now"}</dd></div>
+                        <div><dt>Amount paying now</dt><dd>{money(planOf(payType).today)}</dd></div>
+                        {planOf(payType).balance > 0 && <div><dt>Balance before delivery</dt><dd>{money(planOf(payType).balance)}</dd></div>}
                         {shot && <div><dt>Screenshot</dt><dd className={styles.ok}>✓</dd></div>}
                         {txn && <div><dt>Transaction ID</dt><dd>{txn}</dd></div>}
                       </>

@@ -7,10 +7,9 @@ import { ownUpload } from "@/lib/server/cloudinary";
 import { and, eq, notInArray } from "drizzle-orm";
 import { db, orders } from "@/lib/db";
 import { ORDER_COOKIE, orderBody, saveOrder } from "@/lib/server/orders";
-import { cookies } from "next/headers";
 import { MARKETS } from "@/config/markets";
 import { sendCapi } from "@/lib/server/capi";
-import { attribution, fail, limited, normalizePhone, opt, readJson, turnstileOk } from "@/lib/server/request";
+import { adSource, attribution, fail, limited, normalizePhone, opt, readJson, turnstileOk } from "@/lib/server/request";
 
 export const runtime = "nodejs";
 
@@ -50,10 +49,11 @@ export async function POST(req: Request) {
     if (pk && b.payChoice === "now" && !shotOk && !b.transactionId) return fail(400, "Upload your payment screenshot.");
     const paid = pk && b.payChoice === "now" && (shotOk || !!b.transactionId);
     const attr = await attribution(req, { fbp: b.fbp, fbc: b.fbc, market: b.market });
+    const ad = await adSource();
     const sourceUrl = (req.headers.get("referer") ?? "").slice(0, 500) || null;
     const leadEventId = b.eventId ? `Lead_${b.eventId}` : null;
     const row = await saveOrder(req, { ...b, step: 4 }, {
-      fbp: attr.fbp, fbc: attr.fbc, clientIp: attr.clientIp, userAgent: attr.userAgent, eventSourceUrl: sourceUrl, leadEventId,
+      fbp: attr.fbp, fbc: attr.fbc, clientIp: attr.clientIp, userAgent: attr.userAgent, eventSourceUrl: sourceUrl, leadEventId, ...ad,
       status: paid ? "payment_submitted" : "new",
       cvUrl: cvOk ? b.cvUrl : null, cvPublicId: cvOk ? b.cvPublicId : null,
       paymentMethod: paid ? b.paymentMethod ?? null : null,
@@ -63,10 +63,9 @@ export async function POST(req: Request) {
     if (!row) return fail();
     clearOfferCache();
     // Conversions API Lead with the order total; the browser Pixel fires the same event_id. Fire and forget.
-    const vid = (await cookies()).get("px_vid")?.value ?? null;
     if (!leadEventId) await db().update(orders).set({ leadEventId: `Lead_${row.eventId}` }).where(eq(orders.id, row.id));
-    void sendCapi("Lead", `Lead_${row.eventId}`, { phone: normalizePhone(b.whatsapp, b.code ?? ""), email: b.email, name: b.name, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [row.id, vid] },
-      { value: row.total, currency: MARKETS[b.market as keyof typeof MARKETS]?.currency ?? "PKR", content_ids: [b.package], content_name: b.package, content_type: "product" }, sourceUrl);
+    void sendCapi("Lead", `Lead_${row.eventId}`, { phone: normalizePhone(b.whatsapp, b.code ?? ""), email: b.email, name: b.name, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [row.id, ad.externalId] },
+      { value: row.total, currency: MARKETS[b.market as keyof typeof MARKETS]?.currency ?? "PKR", content_ids: [b.package], content_name: b.package, content_type: "product", content_category: b.market !== "pk" ? undefined : b.payChoice === "later" ? "talk_first" : b.payAmountType === "advance" ? "pay_advance" : "pay_full" }, sourceUrl);
     const res = NextResponse.json({ ref: row.id.slice(0, 8).toUpperCase(), eventId: row.eventId, total: row.total });
     res.cookies.delete(ORDER_COOKIE);
     return res;

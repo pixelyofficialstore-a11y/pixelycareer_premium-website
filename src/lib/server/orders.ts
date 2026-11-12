@@ -29,6 +29,7 @@ export const orderBody = z.object({
   resume: z.string().uuid().optional().nullable(),
   /** The browser's cart id: the Pixel and the Conversions API share it as the event id. */
   eventId: z.string().regex(/^[a-z0-9]{6,40}$/i).optional(),
+  payAmountType: z.enum(["advance", "full"]).optional().nullable(),
 });
 export type OrderBody = z.infer<typeof orderBody>;
 
@@ -42,7 +43,7 @@ export async function currentOrderId(resume?: string | null) {
 
 /** Insert or update the open order. Returns its id and event id, or null when the package or market is invalid. */
 export async function saveOrder(req: Request, b: OrderBody, extra: Partial<typeof orders.$inferInsert> = {}) {
-  const price = await priceOrder({ market: b.market, package: b.package, addons: b.addons, sameDay: b.sameDay, bundle: b.bundle, payChoice: b.payChoice ?? null });
+  const price = await priceOrder({ market: b.market, package: b.package, addons: b.addons, sameDay: b.sameDay, bundle: b.bundle, payChoice: b.payChoice ?? null, payAmountType: b.payAmountType ?? null });
   if (!price) return null;
   const whatsapp = b.whatsapp ? normalizePhone(b.whatsapp, b.code ?? "") : null;
   const values = {

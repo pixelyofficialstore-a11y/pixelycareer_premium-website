@@ -25,9 +25,9 @@ export function visitorId() {
 export const newEventId = (_name?: string) => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`);
 export type MetaUser = { email?: string | null; phone?: string | null; firstName?: string | null; lastName?: string | null };
 
-const SERVER_NAMES = { PageView: "page_view", ViewContent: "view_content", AddToCart: "add_to_cart", InitiateCheckout: "initiate_checkout", AddPaymentInfo: "add_payment_info", Lead: "lead" } as const;
+const SERVER_NAMES = { PageView: "page_view", ViewContent: "view_content", AddToCart: "add_to_cart", InitiateCheckout: "initiate_checkout", AddPaymentInfo: "add_payment_info", Lead: "lead", Contact: "contact", Schedule: "schedule" } as const;
 export type MetaEvent = keyof typeof SERVER_NAMES;
-export type MetaParams = { value?: number; currency?: string; content_ids?: string[]; content_name?: string; content_type?: string; num_items?: number };
+export type MetaParams = { value?: number; currency?: string; content_ids?: string[]; content_name?: string; content_type?: string; content_category?: string; num_items?: number };
 
 /** Browser Pixel + server mirror. Never throws, never blocks. `server: false` when the server sends it itself (Lead). */
 export function track(eventName: MetaEvent, params: MetaParams = {}, userData?: MetaUser, opts: { eventId?: string; server?: boolean } = {}) {
@@ -43,7 +43,7 @@ export function track(eventName: MetaEvent, params: MetaParams = {}, userData?: 
   try {
     fetch("/api/track", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, signal: AbortSignal.timeout(5000), body: JSON.stringify({
       name: SERVER_NAMES[eventName], eventId, value: params.value, currency: params.currency, page: location.href.slice(0, 500),
-      meta: { ...(params.content_name ? { content_name: params.content_name } : {}), ...(params.content_ids ? { content_ids: params.content_ids } : {}) },
+      meta: { ...(params.content_category ? { content_category: params.content_category } : {}), ...(params.num_items ? { num_items: params.num_items } : {}), ...(params.content_name ? { content_name: params.content_name } : {}), ...(params.content_ids ? { content_ids: params.content_ids } : {}) },
       fbp: cookie("_fbp"), fbc: cookie("_fbc"), ...(userData ? { user: userData } : {}),
     }) }).catch(() => {});
   } catch {}

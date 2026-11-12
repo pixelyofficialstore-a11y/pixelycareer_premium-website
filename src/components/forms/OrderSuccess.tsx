@@ -9,7 +9,11 @@ export default function OrderSuccess({ id, contact, market, paid }: { id: string
   const [copied, setCopied] = useState(false);
   const m = MARKETS[isMarketKey(market) ? market : "us"];
   const orderId = /^[A-F0-9]{8}$/.test(id) ? id : "";
-  const url = whatsappMessage(orderId ? `Hi Pixely Careers, I just placed order ${orderId}.` : "Hi Pixely Careers, I just placed an order.");
+  // pk "Talk first": no payment yet, so a consultant reaches out.
+  const talk = m.key === "pk" && !paid;
+  const url = whatsappMessage(talk
+    ? `Hi, I just placed order ${orderId || ""} and want to talk first`.replace("  ", " ")
+    : orderId ? `Hi Pixely Careers, I just placed order ${orderId}.` : "Hi Pixely Careers, I just placed an order.");
   return (
     <div className={styles.success}>
       <svg className={styles.check} viewBox="0 0 56 56" aria-hidden="true">
@@ -29,7 +33,9 @@ export default function OrderSuccess({ id, contact, market, paid }: { id: string
         </button>
       )}
       <p className={styles.successText}>
-        {contact === "email" ? "We\u2019ll confirm your payment by email within a few minutes." : "We\u2019ll confirm your payment on WhatsApp within a few minutes."}
+        {talk ? "Thanks! A CV consultant will message you on WhatsApp within a few minutes."
+          : m.key === "pk" ? "Payment received for verification. We\u2019ll confirm on WhatsApp within a few minutes."
+          : contact === "email" ? "We\u2019ll confirm your payment by email within a few minutes." : "We\u2019ll confirm your payment on WhatsApp within a few minutes."}
       </p>
       <ol className={styles.timeline}>
         <li><span>1</span>We confirm your order</li>
@@ -37,7 +43,7 @@ export default function OrderSuccess({ id, contact, market, paid }: { id: string
         <li><span>3</span>Revisions until you&apos;re satisfied</li>
       </ol>
       <div className={styles.successActions}>
-        <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-primary min-h-14 px-8" data-cta="order-success-whatsapp">Message us on WhatsApp</a>
+        <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-primary min-h-14 px-8" data-cta="order-success-whatsapp">{talk ? "Message us now on WhatsApp" : "Message us on WhatsApp"}</a>
         <Link href={m.path} className={styles.textLink}>Back to home</Link>
       </div>
     </div>

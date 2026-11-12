@@ -34,7 +34,7 @@ export function setCartId(id: string) {
   try { sessionStorage.setItem("pixely-cart-id", id); } catch {}
 }
 
-export type Commerce = { name: string; ids: string[]; value: number; currency: string; items?: number; orderId?: string };
+export type Commerce = { name: string; ids: string[]; value: number; currency: string; items?: number; orderId?: string; category?: string };
 
 const FUNNEL = {
   view: ["ViewContent", "view_item"],
@@ -56,7 +56,7 @@ export function trackFunnel(step: keyof typeof FUNNEL, c: Commerce) {
   const eventId = c.orderId ?? cartId();
   // Lead: the server sends the Conversions API event itself (with the contact details), so the browser only fires the Pixel.
   track(meta, {
-    content_name: c.name, content_ids: c.ids, content_type: "product", value: c.value, currency: c.currency, ...(c.items ? { num_items: c.items } : {}),
+    content_name: c.name, content_ids: c.ids, content_type: "product", value: c.value, currency: c.currency, ...(c.items ? { num_items: c.items } : {}), ...(c.category ? { content_category: c.category } : {}),
   }, undefined, { eventId: `${meta}_${eventId}`, server: step !== "lead" });
   w.gtag?.("event", ga, {
     value: c.value, currency: c.currency, ...(c.orderId ? { transaction_id: c.orderId } : {}), event_id: `${ga}_${eventId}`,

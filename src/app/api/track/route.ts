@@ -11,11 +11,11 @@ import { cookies } from "next/headers";
 
 export const runtime = "nodejs";
 
-const META = { page_view: "PageView", view_content: "ViewContent", add_to_cart: "AddToCart", initiate_checkout: "InitiateCheckout", add_payment_info: "AddPaymentInfo", lead: "Lead" } as const;
+const META = { page_view: "PageView", view_content: "ViewContent", add_to_cart: "AddToCart", initiate_checkout: "InitiateCheckout", add_payment_info: "AddPaymentInfo", lead: "Lead", contact: "Contact", schedule: "Schedule" } as const;
 
 const body = z.object({
   ...honeypot,
-  name: z.enum(["page_view", "view_content", "add_to_cart", "initiate_checkout", "add_payment_info", "lead"]),
+  name: z.enum(["page_view", "view_content", "add_to_cart", "initiate_checkout", "add_payment_info", "lead", "contact", "schedule"]),
   eventId: z.string().trim().min(4).max(120),
   sessionId: opt(80),
   market: opt(4),
@@ -50,7 +50,7 @@ export async function POST(req: Request) {
       value: b.value != null ? String(b.value) : null, currency: b.currency, page: b.page, meta: { ...(b.meta ?? {}), event_id: b.eventId },
     });
     await sendCapi(META[b.name], b.eventId, { phone: user.whatsapp ?? b.user?.phone, email: user.email ?? b.user?.email, name: [b.user?.firstName, b.user?.lastName].filter(Boolean).join(" ") || null, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, orderId] },
-      { ...(b.value != null ? { value: b.value, currency: b.currency } : {}), ...(b.meta?.content_name ? { content_name: b.meta.content_name } : {}), ...(Array.isArray(b.meta?.content_ids) ? { content_ids: b.meta.content_ids, content_type: "product" } : {}) },
+      { ...(b.value != null ? { value: b.value, currency: b.currency } : {}), ...(b.meta?.content_name ? { content_name: b.meta.content_name } : {}), ...(b.meta?.content_category ? { content_category: b.meta.content_category } : {}), ...(b.meta?.num_items ? { num_items: b.meta.num_items } : {}), ...(Array.isArray(b.meta?.content_ids) ? { content_ids: b.meta.content_ids, content_type: "product" } : {}) },
       b.page);
     return NextResponse.json({ ok: true });
   } catch (e) {
