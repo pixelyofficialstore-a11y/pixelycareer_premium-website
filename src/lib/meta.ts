@@ -40,11 +40,16 @@ export function track(eventName: MetaEvent, params: MetaParams = {}, userData?: 
   };
   fire();
   if (opts.server === false) return;
-  try {
+  // Server copy (Conversions API), same event_id. Waits up to 3s for the Pixel to set _fbp so both carry the same browser id.
+  const send = (tries = 0) => {
+    if (!cookie("_fbp") && tries < 15) { setTimeout(() => send(tries + 1), 200); return; }
+    try {
     fetch("/api/track", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, signal: AbortSignal.timeout(5000), body: JSON.stringify({
       name: SERVER_NAMES[eventName], eventId, value: params.value, currency: params.currency, page: location.href.slice(0, 500),
       meta: { ...(params.content_category ? { content_category: params.content_category } : {}), ...(params.num_items ? { num_items: params.num_items } : {}), ...(params.content_name ? { content_name: params.content_name } : {}), ...(params.content_ids ? { content_ids: params.content_ids } : {}) },
       fbp: cookie("_fbp"), fbc: cookie("_fbc"), ...(userData ? { user: userData } : {}),
     }) }).catch(() => {});
-  } catch {}
+    } catch {}
+  };
+  send();
 }

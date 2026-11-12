@@ -49,10 +49,10 @@ export async function POST(req: Request) {
       ...attr, market: b.market, sessionId: b.sessionId, orderId, name: b.name,
       value: b.value != null ? String(b.value) : null, currency: b.currency, page: b.page, meta: { ...(b.meta ?? {}), event_id: b.eventId },
     });
-    await sendCapi(META[b.name], b.eventId, { phone: user.whatsapp ?? b.user?.phone, email: user.email ?? b.user?.email, name: [b.user?.firstName, b.user?.lastName].filter(Boolean).join(" ") || null, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, orderId] },
+    const capi = await sendCapi(META[b.name], b.eventId, { phone: user.whatsapp ?? b.user?.phone, email: user.email ?? b.user?.email, name: [b.user?.firstName, b.user?.lastName].filter(Boolean).join(" ") || null, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, orderId] },
       { ...(b.value != null ? { value: b.value, currency: b.currency } : {}), ...(b.meta?.content_name ? { content_name: b.meta.content_name } : {}), ...(b.meta?.content_category ? { content_category: b.meta.content_category } : {}), ...(b.meta?.num_items ? { num_items: b.meta.num_items } : {}), ...(Array.isArray(b.meta?.content_ids) ? { content_ids: b.meta.content_ids, content_type: "product" } : {}) },
       b.page);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, capi });
   } catch (e) {
     console.error("track failed:", dbError(e));
     if (isConfigError(e)) return fail(503, "This is not configured yet. Please message us on WhatsApp.");
