@@ -218,3 +218,5 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
 .of-extra { margin: 10px 0 0; color: rgb(255 255 255 / 0.7); font-size: 13px; line-height: 1.4; }
 .of-fcard .of-extra { text-align: center; }
 .of-foot-line { margin: 24px 0 0; color: rgb(255 255 255 / 0.8); font-size: 13px; }
+
+.of-price-card .of-was s { text-decoration-color: #f4733c; text-decoration-thickness: 2px; }

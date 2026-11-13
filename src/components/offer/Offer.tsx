@@ -100,7 +100,7 @@ export function OfferBand({ market, slot = "home_band" }: { market: MarketKey; s
         </div>
         <div className="of-price-card">
           <p className="of-was"><s>{rs(BUNDLE.compareAt)}</s></p>
-          <p className="of-now">{rs(BUNDLE_NOW)}</p>
+          <p className="of-now">{rs(BUNDLE.price)}</p>
           <p className="of-extra">{BUNDLE_EXTRA_LINE}</p>
           <p className="of-ends" suppressHydrationWarning>Ends in {inline(t)}</p>
           <Countdown t={t} />
@@ -154,7 +154,7 @@ export function FinalCtaOffer({ market, blog = false, children }: { market: Mark
         <div className="of-fcard-top"><span className="of-tag">11.11 BUNDLE</span><span suppressHydrationWarning>Ends in {inline(t)}</span></div>
         <p className="of-fcard-title">Executive Career Branding <em>& Personal Website</em></p>
         <p className="of-fcard-was"><s>Worth {rs(BUNDLE.compareAt)}</s></p>
-        <p className="of-fcard-price"><b>{rs(BUNDLE_NOW)}</b></p>
+        <p className="of-fcard-price"><b>{rs(BUNDLE.price)}</b></p>
         <Link href={OFFER_HREF} className="of-exec-claim" data-cta="offer-claim-final_cta" onClick={claim("final_cta")}>Claim 11.11 Bundle</Link>
         <p className="of-extra">{BUNDLE_EXTRA_LINE}</p>
         <p className="of-fcard-alt">Just need a CV? <Link href="/pricing?m=pk" data-cta={blog ? "blog-final-packages" : "final-packages"}>See all packages</Link></p>
