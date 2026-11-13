@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MARKETS, orderHref } from "@/config/markets";
 import { useMarket } from "./useMarket";
 import { StickyOffer, useLive } from "@/components/offer/Offer";
@@ -11,6 +11,7 @@ export default function StickyBar() {
   const market = useMarket();
   const path = usePathname();
   const [show, setShow] = useState(false);
+  const footerIn = useRef(false);
   const off = path === "/order" || path.startsWith("/order/");
   // pk: the 11.11 Sale replaces "Start your order" while it is on, and hides while the offer band is in view.
   const { live: sale } = useLive(market, 60_000);
@@ -24,16 +25,21 @@ export default function StickyBar() {
       const ctaNear = cta ? cta.getBoundingClientRect().top <= window.innerHeight - 80 : false;
       const band = document.getElementById("offer")?.getBoundingClientRect();
       const bandInView = !!band && band.top < window.innerHeight && band.bottom > 0;
-      const visible = heroGone && !ctaNear && !(sale && bandInView);
+      const visible = heroGone && !ctaNear && !(sale && bandInView) && !footerIn.current;
       setShow(visible);
       document.documentElement.classList.toggle("has-sticky-bar", visible);
     };
+    // Hidden while the footer is on screen, so the page ends at the footer with no blank space under it.
+    const footer = document.querySelector("footer");
+    const io = footer ? new IntersectionObserver(([e]) => { footerIn.current = e.isIntersecting; onScroll(); }) : null;
+    if (footer && io) io.observe(footer);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
+      io?.disconnect();
       document.documentElement.classList.remove("has-sticky-bar");
     };
   }, [off, path, sale]);
@@ -42,7 +48,7 @@ export default function StickyBar() {
   return (
     <div
       inert={!show}
-      className={`fixed inset-x-0 bottom-0 z-40 transition-transform duration-300 ease-out-soft lg:hidden ${sale ? "" : "border-t border-navy/10 bg-white px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]"} ${show ? "translate-y-0" : "translate-y-full"}`}
+      className={`fixed inset-x-0 bottom-0 z-40 transition-[transform,opacity] duration-200 ease-out-soft lg:hidden ${sale ? "" : "border-t border-navy/10 bg-white px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]"} ${show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
     >
       {sale ? <StickyOffer /> : <Link href={orderHref(MARKETS[market])} className="btn btn-primary w-full" data-cta="sticky-order">
         Start your order →

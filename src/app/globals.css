@@ -2652,3 +2652,9 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
   main .hero-copy h1:not(#_) { font-size: 8.9vw !important; }
   main .sv-content h2:not(#_) { font-size: 6.8vw !important; }
 }
+
+/* Mobile section headlines on the market homepages and /pricing: heavier, tighter. Line counts checked at 390px. */
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(h1, h2) { font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) h1, #main:is(:has(#home-problem-title), :has([data-pricing-page])) h1 * { font-weight: 800 !important; }
+}

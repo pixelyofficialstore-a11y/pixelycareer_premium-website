@@ -224,9 +224,9 @@ export default function Pricing({
                   <hr className={styles.divider} />
                   <div className={styles.includedContent}>
                     <ul className={styles.itemList}>
-                      <li className={styles.listLead}>Everything in Executive, plus:</li>
-                      <li><span className={styles.textCheck} aria-hidden="true">✓</span>Personal portfolio website</li>
-                      <li><span className={styles.textCheck} aria-hidden="true">✓</span>Free domain &amp; hosting for the first year</li>
+                      <li className={styles.listLead}>What you get:</li>
+                      {["Premium executive CV", "Personal portfolio website", "Free domain & hosting for 1 year", "Executive bio statement", "LinkedIn makeover + content pack (10 posts)", "Interview preparation guide"].map((x) => <li key={x}><span className={styles.textCheck} aria-hidden="true">✓</span>{x}</li>)}
+                      <li className={styles.bundleAll}>Includes everything in Executive Career Branding.</li>
                     </ul>
                   </div>
                   <div className={styles.supportRow}>

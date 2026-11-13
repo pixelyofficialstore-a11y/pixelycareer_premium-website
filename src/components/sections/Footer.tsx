@@ -73,7 +73,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="on-dark bg-navy pt-12 pb-20 text-white lg:pt-[72px] lg:pb-8">
+    <footer className="on-dark bg-navy pt-12 pb-8 text-white lg:pt-[72px] lg:pb-8">
       <div className="wrap">
         <div className="grid12 gap-y-0 lg:gap-y-14">
           <div className="col-span-12 mb-6 lg:col-span-4 lg:mb-0">
