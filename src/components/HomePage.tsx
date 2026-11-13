@@ -10,7 +10,7 @@ import Pricing from "@/components/sections/Pricing";
 import HomeProblem from "@/components/sections/HomeProblem";
 import HomeProcess from "@/components/sections/HomeProcess";
 import HomeTestimonials from "@/components/sections/HomeTestimonials";
-import PkReviews from "@/components/sections/PkReviews";
+import { PK_REVIEW_SHOTS } from "@/lib/pk-reviews";
 import HomeServices from "@/components/sections/HomeServices";
 import HomeTrustStrip from "@/components/sections/HomeTrustStrip";
 import MarketSync from "@/components/ui/MarketSync";
@@ -54,7 +54,7 @@ export default function HomePage({ market }: { market: Market }) {
         <HomeProcess marketKey={market.key} />
       </Suspense>
       {/* A market without approved screenshots of its own shows the shared ones. */}
-      {market.key === "pk" ? <PkReviews /> : <HomeTestimonials facebookLink={false} items={getTestimonials(market.key).some((t) => t.screenshot) ? getTestimonials(market.key) : getTestimonials("us")} />}
+      {market.key === "pk" ? <HomeTestimonials facebookLink ordered rightward items={PK_REVIEW_SHOTS} /> : <HomeTestimonials facebookLink={false} items={getTestimonials(market.key).some((t) => t.screenshot) ? getTestimonials(market.key) : getTestimonials("us")} />}
       <Suspense>
         <Pricing market={market.key} variant="compact" />
       </Suspense>

@@ -6,7 +6,7 @@ import { createPortal } from "react-dom";
 import { availableAddons, calcOrder, totalFor, unitAt, type Selection } from "@/config/addons";
 import { MARKETS, formatPricingPrice, getPackages, localize, type MarketKey, type PackageId } from "@/config/markets";
 import { PAYMENTS } from "@/config/payments";
-import { onlineOpen, onlinePrice, payPlan, type PayAmountType } from "@/config/offers";
+import { BUNDLE_ALL_LINE, BUNDLE_ITEMS, onlineOpen, onlinePrice, payPlan, type PayAmountType } from "@/config/offers";
 import { cartId, setCartId, trackFunnel, type Commerce } from "@/lib/analytics";
 import { useCountdown, useOffer } from "@/components/offer/useOffer";
 import { inline } from "@/components/offer/Offer";
@@ -442,13 +442,13 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   ...(pk && offerLive ? [{
                     id: "executive_bundle", name: "11.11 Bundle · Executive Branding + Website", line: "", price: payPlan(offer.price, "full", { bundle: true }).total, was: offer.compareAt as number | undefined,
                     meta: `5 days · ${slotsLeft ?? offer.totalSlots} slot${(slotsLeft ?? offer.totalSlots) === 1 ? "" : "s"} left`, badge: "11.11 Sale", tone: styles.pkSale,
-                    items: [...CHECKLIST(m.key, "executive"), "Personal portfolio website", "Free domain and hosting for 1 year"], sel: bundle,
+                    items: [...BUNDLE_ITEMS] as string[], note: BUNDLE_ALL_LINE as string | undefined, sel: bundle,
                     pick: () => { choosePackage(offer.packageId); toggleBundle(true); },
                   }] : []),
                   ...PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => ({
                     id: p.id as string, name: p.name, line: "", price: online ? onlinePrice(p.price) : p.price, was: (online ? p.price : undefined) as number | undefined, meta: p.deliveryDays,
                     badge: p.id === "executive" ? "Best Results" : p.id === "international-pro" ? "Most Popular" : "", tone: p.id === "executive" ? styles.pkBest : p.id === "international-pro" ? styles.pkPop : "",
-                    items: CHECKLIST(m.key, p.id), sel: p.id === packageId && !bundle,
+                    items: CHECKLIST(m.key, p.id), note: undefined as string | undefined, sel: p.id === packageId && !bundle,
                     pick: () => { choosePackage(p.id); setBundleOn(false); },
                   })),
   ];
@@ -488,7 +488,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                       <span aria-hidden="true">·</span>
                       <button type="button" data-inc onClick={(e) => { e.stopPropagation(); setIncOpen((o) => (o === c.id ? null : c.id)); }} aria-expanded={incOpen === c.id} aria-haspopup="dialog">What&apos;s included <Chevron open={incOpen === c.id} /></button>
                     </div>
-                    {incOpen === c.id && !narrow && <div className={styles.incPop} role="dialog" aria-label={`${c.name}: what's included`} onClick={(e) => e.stopPropagation()}><ul className={styles.pkList}>{c.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul></div>}
+                    {incOpen === c.id && !narrow && <div className={styles.incPop} role="dialog" aria-label={`${c.name}: what's included`} onClick={(e) => e.stopPropagation()}><ul className={styles.pkList}>{c.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul>{c.note && <p className={styles.incNote}>{c.note}</p>}</div>}
                   </div>
                 ))}
               </div>
@@ -696,7 +696,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
               <div className={`${styles.sheet} ${styles.sheetOn}`} role="dialog" aria-modal="true" aria-label={incCard.name} onClick={(e) => e.stopPropagation()}>
                 <span className={styles.handle} aria-hidden="true" />
                 <h2>{incCard.name}</h2>
-                <div className={styles.incSheetBody}><ul className={styles.pkList}>{incCard.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul></div>
+                <div className={styles.incSheetBody}><ul className={styles.pkList}>{incCard.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul>{incCard.note && <p className={styles.incNote}>{incCard.note}</p>}</div>
                 <button type="button" className={`btn btn-primary ${styles.continue} ${styles.sheetContinue}`} onClick={() => { incCard.pick(); setIncOpen(null); }}>Select this package</button>
               </div>
             </>

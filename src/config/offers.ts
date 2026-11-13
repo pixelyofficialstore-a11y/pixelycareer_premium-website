@@ -92,4 +92,8 @@ export const onlinePrice = (price: number, type: PayAmountType = "full", now?: n
 
 /** The bundle price shown everywhere: the pay in full online price. */
 export const BUNDLE_NOW = BUNDLE.price - ONLINE.bundleOff.full;
-export const BUNDLE_EXTRA_LINE = `Book your slot online and save an extra Rs ${ONLINE.bundleOff.full.toLocaleString("en-US")}.`;
+export const BUNDLE_EXTRA_LINE = `Book your slot online and save an extra Rs ${ONLINE.bundleOff.full.toLocaleString("en-US")}.`;
+
+/** What the 11.11 Bundle includes. The pricing card and the order page both read this, so they never differ. */
+export const BUNDLE_ITEMS = ["Premium executive CV", "Personal portfolio website", "Free domain & hosting for 1 year", "Executive bio statement", "LinkedIn makeover + content pack (10 posts)", "Interview preparation guide"] as const;
+export const BUNDLE_ALL_LINE = "Includes everything in Executive Career Branding.";

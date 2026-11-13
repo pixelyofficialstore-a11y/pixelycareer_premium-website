@@ -193,8 +193,3 @@ export function Ticker({ i }: { i: number }) {
   );
 }
 
-/** Footer line while the sale runs (pk). */
-export function SaleFooterLine({ market }: { market: MarketKey }) {
-  const { live } = useLive(market, 60_000);
-  return live ? <p className="of-foot-line">11.11 Sale: Flat 20% off all packages when you order online. Ends 30 Nov.</p> : null;
-}

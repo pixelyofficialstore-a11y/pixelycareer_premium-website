@@ -6,7 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { saveMarket } from "@/components/ui/useMarket";
 import Faq from "@/components/sections/Faq";
 import { OfferBand, inline, useLive } from "@/components/offer/Offer";
-import { BUNDLE, BUNDLE_NOW, onlineOpen, onlinePrice } from "@/config/offers";
+import { BUNDLE, BUNDLE_ALL_LINE, BUNDLE_ITEMS, BUNDLE_NOW, onlineOpen, onlinePrice } from "@/config/offers";
 import { MARKETS, formatPricingPrice, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
 import { WHATSAPP_URL , whatsappMessage } from "@/lib/site";
 import styles from "./Pricing.module.css";
@@ -225,8 +225,8 @@ export default function Pricing({
                   <div className={styles.includedContent}>
                     <ul className={styles.itemList}>
                       <li className={styles.listLead}>What you get:</li>
-                      {["Premium executive CV", "Personal portfolio website", "Free domain & hosting for 1 year", "Executive bio statement", "LinkedIn makeover + content pack (10 posts)", "Interview preparation guide"].map((x) => <li key={x}><span className={styles.textCheck} aria-hidden="true">✓</span>{x}</li>)}
-                      <li className={styles.bundleAll}>Includes everything in Executive Career Branding.</li>
+                      {BUNDLE_ITEMS.map((x) => <li key={x}><span className={styles.textCheck} aria-hidden="true">✓</span>{x}</li>)}
+                      <li className={styles.bundleAll}>{BUNDLE_ALL_LINE}</li>
                     </ul>
                   </div>
                   <div className={styles.supportRow}>

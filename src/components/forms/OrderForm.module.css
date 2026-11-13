@@ -534,3 +534,6 @@ button.payBox { cursor: pointer; }
   .mtotal span:first-child { color: #6b7280; font-size: 12px; }
 }
 .btnOff { opacity: .5; }
+
+.incNote { margin: 8px 0 0; color: #6b7280; font-size: 13px; line-height: 1.4; }
+.incSheetBody .incNote { margin: -12px 0 20px; }

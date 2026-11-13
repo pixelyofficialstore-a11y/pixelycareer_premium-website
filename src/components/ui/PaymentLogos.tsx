@@ -1,7 +1,7 @@
 "use client";
 import { useMarket } from "./useMarket";
 
-/** White monochrome logos in public/payments/logos, saved at 40px tall (2x) and shown at 20px. UBL stands for bank transfer. */
+/** Brand colour logos (dark background versions) in public/payments/logos, saved at 40px tall (2x) and shown at 20px. UBL stands for bank transfer. */
 const PK: [string, string, number][] = [["jazzcash", "JazzCash", 97], ["easypaisa", "Easypaisa", 84], ["ubl", "UBL bank transfer", 44]];
 
 /** pk only: "We accept" and three small white logo chips, always on one line. */

@@ -2639,9 +2639,9 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
 .pay-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: rgb(255 255 255 / 0.7); font-size: 13px; }
 .pay-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid rgb(255 255 255 / 0.15); border-radius: 999px; background: rgb(255 255 255 / 0.06); color: rgb(255 255 255 / 0.8); font-size: 12px; }
 
-/* Mobile headings: bolder and tighter, same line count. Section headings only (not cards, forms or the footer). */
+/* Mobile headings: brand weight, tighter, same line count. Section headings only (not cards, forms or the footer). */
 @media (max-width: 767px) {
-  main :is(h1, h2):not(.card-title, form *, aside *, .lg-section h2) { font-weight: 700 !important; letter-spacing: -0.03em !important; line-height: 1.08 !important; text-wrap: balance; }
+  main :is(h1, h2):not(.card-title, form *, aside *, .lg-section h2) { letter-spacing: -0.03em !important; line-height: 1.08 !important; text-wrap: balance; }
   main h1:not(form *) { font-size: clamp(34px, 9.5vw, 42px) !important; }
   main h2:not(.card-title, form *, aside *, .lg-section h2) { font-size: clamp(28px, 8vw, 34px) !important; }
   /* Intended breaks: "Invest once." / "Apply with confidence." and "Compare" / "every detail." */
@@ -2653,14 +2653,19 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
   main .sv-content h2:not(#_) { font-size: 6.8vw !important; }
 }
 
-/* Mobile section headlines on the market homepages and /pricing: heavier, tighter. Line counts checked at 390px. */
-@media (max-width: 767px) {
-  #main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(h1, h2) { font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
-  #main:is(:has(#home-problem-title), :has([data-pricing-page])) h1, #main:is(:has(#home-problem-title), :has([data-pricing-page])) h1 * { font-weight: 800 !important; }
-}
 
-/* Footer payment logos: one 20px row, 12px gaps, centred with "We accept". Files are 2x, never upscaled. */
-.pay-logos { gap: 12px; }
+/* Footer payment logos: one 20px row, 16px gaps, centred with "We accept". Files are 2x, never upscaled. */
+.pay-logos { gap: 16px; }
 .pay-logo { height: 20px; }
 .pay-logo img { width: auto; height: 20px; opacity: 1; }
-@media (max-width: 767px) { .pay-logos { gap: 12px; } .pay-logo { height: 20px; } .pay-logo img { height: 20px; } }
+@media (max-width: 767px) { .pay-logos { gap: 16px; } .pay-logo { height: 20px; } .pay-logo img { height: 20px; } }
+/* Mobile footer: "We accept" sits above the copyright line. */
+@media (max-width: 767px) { .pay-logos { order: -1; } }
+/* Mobile headlines on the market homepages and /pricing: 8% larger at brand weight. Every one keeps its line count from 360 to 430px. */
+@media (max-width: 767px) {
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) h2:not(.card-title, form *, aside *, .lg-section h2) { font-size: clamp(30.24px, 8.64vw, 36.72px) !important; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) .hero-copy h1:not(#_) { font-size: 9.61vw !important; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) [class*="compactHeroTitle"]:not(#_) { font-size: 7.45vw !important; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) #process-title:not(#_) { font-size: 8.1vw !important; }
+  #main:is(:has(#home-problem-title), :has([data-pricing-page])) #of-band-title:not(#_) { font-size: 6.8vw !important; }
+}
