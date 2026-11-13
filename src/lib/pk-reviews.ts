@@ -3,7 +3,7 @@ import type { Testimonial } from "@/lib/home-content";
 /** The nine approved screenshots in public/reviews/pk, shown on /pk in this exact order. */
 const shot = (n: string, source: Testimonial["source"], name: string, alt: string): Testimonial => ({
   id: `pk-review-${n}`, type: source === "whatsapp" ? "result" : "review", quote: "", name, source, location: "Pakistan", markets: ["pk"],
-  screenshot: `/reviews/pk/${n}.png`, screenshotAlt: alt,
+  screenshot: `/reviews/pk/${n}.webp`, screenshotAlt: alt,
 });
 
 export const PK_REVIEW_SHOTS: Testimonial[] = [

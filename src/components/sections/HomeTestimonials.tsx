@@ -52,8 +52,8 @@ function CardView({ card, onOpen, clone }: { card: Card; onOpen: (item: Testimon
   );
 }
 
-/** ordered: keep the given order instead of alternating sources. rightward: the row travels left to right. */
-export default function HomeTestimonials({ items, facebookLink = false, ordered = false, rightward = false }: { items: Testimonial[]; facebookLink?: boolean; ordered?: boolean; rightward?: boolean }) {
+/** ordered: keep the given order instead of alternating sources. */
+export default function HomeTestimonials({ items, facebookLink = false, ordered = false }: { items: Testimonial[]; facebookLink?: boolean; ordered?: boolean }) {
   const group = useRef<HTMLUListElement>(null);
   const viewer = useRef<HTMLDialogElement>(null);
   const [selected, setSelected] = useState<Testimonial | null>(null);
@@ -85,7 +85,7 @@ export default function HomeTestimonials({ items, facebookLink = false, ordered 
       </div>
       <div className={styles.viewport} onMouseEnter={() => setHeld(true)} onMouseLeave={() => setHeld(false)}
         onTouchStart={() => setHeld(true)} onTouchEnd={() => setHeld(false)} onTouchCancel={() => setHeld(false)}>
-        <div className={`${styles.track} ${rightward ? styles.rightward : ""}`} style={{ "--review-duration": `${duration}s`, "--review-play-state": held ? "paused" : "running" } as CSSProperties}>
+        <div className={styles.track} style={{ "--review-duration": `${duration}s`, "--review-play-state": held ? "paused" : "running" } as CSSProperties}>
           <ul ref={group} className={styles.group} aria-label="Customer reviews">
             {cards.map((card) => <li key={card.id} className={styles.slide}><CardView card={card} onOpen={open} /></li>)}
           </ul>
