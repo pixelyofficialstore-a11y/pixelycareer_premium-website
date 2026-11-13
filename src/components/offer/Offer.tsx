@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, type ReactNode } from "react";
-import { BUNDLE, offerHref } from "@/config/offers";
+import { BUNDLE, BUNDLE_EXTRA_LINE, BUNDLE_NOW, offerHref } from "@/config/offers";
 import type { MarketKey } from "@/config/markets";
 import { trackFunnel, trackPromotion, type Commerce } from "@/lib/analytics";
 import { useCountdown, useOffer } from "./useOffer";
@@ -60,8 +60,8 @@ export function HeroPill({ market }: { market: MarketKey }) {
   return (
     <a href="#offer" className="of-pill" data-cta="offer-hero-pill">
       <span className="of-pill-chip">11.11</span>
-      <span className="of-pill-long">{BUNDLE.short} · {rs(BUNDLE.price)}</span>
-      <span className="of-pill-short">Executive & Website · {rs(BUNDLE.price)}</span>
+      <span className="of-pill-long">{BUNDLE.short} · {rs(BUNDLE_NOW)}</span>
+      <span className="of-pill-short">Executive & Website · {rs(BUNDLE_NOW)}</span>
       <span className="of-pill-arrow" aria-hidden="true">→</span>
     </a>
   );
@@ -73,7 +73,7 @@ function Countdown({ t }: { t: { d: number; h: number; m: number; s: number } })
     <div className="of-count" role="timer" aria-label={`${t.d} days, ${t.h} hours and ${t.m} minutes left`}>
       {([["Days", t.d], ["Hours", t.h], ["Min", t.m], ["Sec", t.s]] as const).map(([label, n]) => (
         <div key={label}>
-          <b key={label === "Sec" ? n : label} className={label === "Sec" ? "of-flip" : undefined} suppressHydrationWarning>{pad(n)}</b>
+          <b suppressHydrationWarning>{pad(n)}</b>
           <span>{label}</span>
         </div>
       ))}
@@ -99,9 +99,9 @@ export function OfferBand({ market, slot = "home_band" }: { market: MarketKey; s
           </ul>
         </div>
         <div className="of-price-card">
-          <p className="of-was">Total value <s>{rs(BUNDLE.compareAt)}</s></p>
-          <p className="of-now">{rs(BUNDLE.price)}</p>
-          <span className="of-save">You save {rs(BUNDLE.compareAt - BUNDLE.price)}</span>
+          <p className="of-was"><s>{rs(BUNDLE.compareAt)}</s></p>
+          <p className="of-now">{rs(BUNDLE_NOW)}</p>
+          <p className="of-extra">{BUNDLE_EXTRA_LINE}</p>
           <p className="of-ends" suppressHydrationWarning>Ends in {inline(t)}</p>
           <Countdown t={t} />
           <Link href={OFFER_HREF} className="of-btn" data-cta={`offer-claim-${slot}`} onClick={claim(slot)}>Claim 11.11 offer →</Link>
@@ -129,7 +129,7 @@ export function ExecUpgrade({ on, onChange }: { on: boolean; onChange: (v: boole
         <b>Upgrade to the 11.11 Bundle</b>
         <span className="of-up-row"><span>Executive Career Branding</span><span>7,500</span></span>
         <span className="of-up-row"><span>Personal Website + domain</span><span>20,000</span></span>
-        <span className="of-up-row of-up-total"><span>Worth <s>27,500</s></span><strong>Both for {rs(BUNDLE.price)}</strong></span>
+        <span className="of-up-row of-up-total"><span>Worth <s>27,500</s></span><strong>Both for {rs(BUNDLE_NOW)}</strong></span>
       </span>
     </label>
   );
@@ -153,9 +153,10 @@ export function FinalCtaOffer({ market, blog = false, children }: { market: Mark
       <div className="of-fcard">
         <div className="of-fcard-top"><span className="of-tag">11.11 BUNDLE</span><span suppressHydrationWarning>Ends in {inline(t)}</span></div>
         <p className="of-fcard-title">Executive Career Branding <em>& Personal Website</em></p>
-        <p className="of-fcard-was">Worth <s>{rs(BUNDLE.compareAt)}</s></p>
-        <p className="of-fcard-price"><b>{rs(BUNDLE.price)}</b><span>Save 7,500</span></p>
-        <Link href={OFFER_HREF} className="of-exec-claim" data-cta="offer-claim-final_cta" onClick={claim("final_cta")}>Claim 11.11 Bundle →</Link>
+        <p className="of-fcard-was"><s>Worth {rs(BUNDLE.compareAt)}</s></p>
+        <p className="of-fcard-price"><b>{rs(BUNDLE_NOW)}</b></p>
+        <Link href={OFFER_HREF} className="of-exec-claim" data-cta="offer-claim-final_cta" onClick={claim("final_cta")}>Claim 11.11 Bundle</Link>
+        <p className="of-extra">{BUNDLE_EXTRA_LINE}</p>
         <p className="of-fcard-alt">Just need a CV? <Link href="/pricing?m=pk" data-cta={blog ? "blog-final-packages" : "final-packages"}>See all packages</Link></p>
       </div>
     </>
@@ -167,7 +168,7 @@ export function StickyOffer() {
   return (
     <div className="of-sticky">
       <div>
-        <span className="of-sticky-k">11.11 SALE<b>{rs(BUNDLE.price)}</b></span>
+        <span className="of-sticky-k">11.11 SALE<b>{rs(BUNDLE_NOW)}</b></span>
         <span className="of-sticky-t">{BUNDLE.short}</span>
       </div>
       <Link href={OFFER_HREF} className="of-sticky-btn" data-cta="offer-claim-sticky" onClick={claim("sticky")}>Claim →</Link>
@@ -175,21 +176,25 @@ export function StickyOffer() {
   );
 }
 
-/** Announcement bar ticker: the same line repeated for a seamless loop. */
-export function Ticker({ t }: { t: { d: number; h: number; m: number } }) {
-  const item = (
-    <span className="of-tick-item">
-      <span className="of-tick-name">11.11 SALE</span><i />
-      {BUNDLE.short}<i />
-      <s>Rs 27,500</s><b>Rs 20,000</b><i />
-      <span suppressHydrationWarning>Ends in {inline(t)}</span><i />
-      Claim offer →<i />
-    </span>
-  );
+/** Announcement bar: one static line that fades between two messages. */
+export const BAR_MESSAGES = [
+  { href: "/pricing?m=pk", long: <><span className="of-hl">11.11 Sale:</span> Flat 20% off all packages · Order now →</>, short: <><span className="of-hl">11.11:</span> Flat 20% off →</> },
+  { href: "/pk#offer", long: <><span className="of-hl">11.11 Bundle:</span> Executive Branding + Personal Website, Rs {BUNDLE_NOW.toLocaleString("en-US")} · See offer →</>, short: <><span className="of-hl">11.11 Bundle</span> Rs {BUNDLE_NOW.toLocaleString("en-US")} →</> },
+];
+export function Ticker({ i }: { i: number }) {
   return (
     <span className="of-ticker">
-      <span className="of-tick-track" aria-hidden="true">{item}{item}{item}{item}</span>
-      <span className="of-tick-static">11.11 Sale · {BUNDLE.short} · {rs(BUNDLE.price)} →</span>
+      {BAR_MESSAGES.map((m, k) => (
+        <span key={k} className={`of-msg${k === i ? " of-msg-on" : ""}`} aria-hidden={k !== i}>
+          <span className="of-msg-long">{m.long}</span><span className="of-msg-short">{m.short}</span>
+        </span>
+      ))}
     </span>
   );
+}
+
+/** Footer line while the sale runs (pk). */
+export function SaleFooterLine({ market }: { market: MarketKey }) {
+  const { live } = useLive(market, 60_000);
+  return live ? <p className="of-foot-line">11.11 Sale: Flat 20% off all packages when you order online. Ends 30 Nov.</p> : null;
 }

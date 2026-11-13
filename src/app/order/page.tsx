@@ -30,7 +30,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
     return (
       <OrderForm key={`cart-${cart.id}`} market={m.key} initial={cart.package as PackageId} initialAddons={kept} offerParam={cart.isBundle}
         restore={{ id: cart.id, name: cart.name ?? "", email: cart.email ?? "", whatsapp: cart.whatsapp ?? "", contact: "whatsapp", country: cart.targetCountry ?? "", countries: cart.targetCountries ?? (cart.targetCountry ? [cart.targetCountry] : []), role: cart.targetRole ?? "", sameDay: cart.sameDay }}
-        hasQr={existsSync(path.join(process.cwd(), "public/payments/easypaisa-qr.png"))} />
+        hasQr={existsSync(path.join(process.cwd(), "public/payments/qr.png"))} />
     );
   }
   // The 11.11 offer is a PK offer: an offer link opens the PK order form even without a PK geo or market cookie.
@@ -42,6 +42,6 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
   const allowed = new Set(availableAddons(market, initial ?? "international-pro").map((a) => a.id));
   const initialAddons = Object.fromEntries((q.addons ?? "").split(",").filter((id) => allowed.has(id) && !(offer && id === "portfolio")).map((id) => [id, 1]));
   return (
-    <OrderForm key={`${market.key}-${initial ?? ""}-${q.addons ?? ""}-${offer}`} market={market.key} initial={initial} initialAddons={initialAddons} offerParam={offer} hasQr={existsSync(path.join(process.cwd(), "public/payments/easypaisa-qr.png"))} />
+    <OrderForm key={`${market.key}-${initial ?? ""}-${q.addons ?? ""}-${offer}`} market={market.key} initial={initial} initialAddons={initialAddons} offerParam={offer} hasQr={existsSync(path.join(process.cwd(), "public/payments/qr.png"))} />
   );
 }

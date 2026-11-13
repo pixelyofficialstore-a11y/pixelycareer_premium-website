@@ -26,10 +26,10 @@ export async function priceOrder(i: PriceInput) {
   const { pkg, list, total } = calcOrder(m, pkgId, sameDay, selection);
   const addons: AddonLine[] = list.map((a) => ({ id: a.id, name: a.name, qty: a.qty, price: a.total }));
   // Pay now (pk only): 50% advance or full, with the discount from config. Talk first pays the full price.
-  const plan = m.key === "pk" && i.payChoice === "now" ? payPlan(total, i.payAmountType ?? "full") : null;
+  const plan = m.key === "pk" && i.payChoice === "now" ? payPlan(total, i.payAmountType ?? "full", { bundle: isBundle }) : null;
   return {
     market: m.key, package: isBundle ? "executive_bundle" : pkgId, packagePrice: pkg.price, addons, sameDay, offer: isBundle ? offer!.id : null, isBundle,
     discount: plan?.discount ?? 0, subtotal: total, total: plan?.total ?? total, currency: m.currency,
-    payAmountType: plan?.type ?? null, amountPaidNow: plan?.today ?? null, balanceDue: plan ? plan.balance : m.key === "pk" ? total : null,
+    payAmountType: plan?.type ?? null, discountType: plan?.discountType ?? "none", amountPaidNow: plan?.today ?? null, balanceDue: plan ? plan.balance : m.key === "pk" ? total : null,
   };
 }

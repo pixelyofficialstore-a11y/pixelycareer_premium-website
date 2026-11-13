@@ -86,8 +86,8 @@ export const MARKETS: Record<MarketKey, Market> = {
     phoneCode: "+92",
     approved: true,
     prices: { "ats-career": 2999, "international-pro": 4999, executive: 7500 },
-    compareAt: { "ats-career": 3999, "international-pro": 5999, executive: 9999 },
-    showCompareAt: true,
+    compareAt: { "ats-career": 2999, "international-pro": 4999, executive: 7500 },
+    showCompareAt: false,
     sameDay: { "ats-career": 500, "international-pro": 500, executive: 700 },
     pricingResults: {
       "ats-career": "A CV that passes ATS and gets you your first interviews.",
@@ -104,8 +104,8 @@ export const MARKETS: Record<MarketKey, Market> = {
     ],
     meta: {
       title: "CV Writing for Global Recruiters | Pixely Careers",
-      description: "ATS-optimized CVs, cover letters and LinkedIn profiles for jobs in Pakistan and abroad. From PKR 2,999. First draft in 2 days. Order on WhatsApp.",
-      ogDescription: "ATS-optimized CVs for jobs in Pakistan and abroad. From PKR 2,999.",
+      description: "ATS-optimized CVs, cover letters and LinkedIn profiles for jobs in Pakistan and abroad. Flat 20% off when you pay online until 30 Nov. First draft in 2 days.",
+      ogDescription: "ATS-optimized CVs for jobs in Pakistan and abroad. 20% off online until 30 Nov.",
     },
   },
   ae: {

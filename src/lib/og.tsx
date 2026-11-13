@@ -81,7 +81,7 @@ export function ogOfferImage() {
           <div style={{ display: "flex", fontSize: 46, lineHeight: 1.15, letterSpacing: "-0.02em", color: NAVY }}>{BUNDLE.headline}</div>
           <div style={{ display: "flex", alignItems: "baseline", marginTop: 22 }}>
             <div style={{ fontSize: 28, color: GREY, textDecoration: "line-through", marginRight: 18 }}>{rs(BUNDLE.compareAt)}</div>
-            <div style={{ fontSize: 44, color: NAVY, marginRight: 22 }}>{rs(BUNDLE.price)}</div>
+            <div style={{ fontSize: 44, color: NAVY, marginRight: 22 }}>{rs(BUNDLE.price - 1000)}</div>
             <div style={{ fontSize: 22, color: ORANGE }}>{`Only ${BUNDLE.totalSlots} slots`}</div>
           </div>
         </div>

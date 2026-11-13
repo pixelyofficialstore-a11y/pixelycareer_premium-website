@@ -206,3 +206,15 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
 #final-cta:has(.of-fcard) { padding-block: 56px !important; }
 .of-fstats { margin-top: 28px; }
 @media (min-width: 901px) { .final-grid:has(.of-fcard) { grid-template-columns: minmax(0, 1fr) 380px; } }
+
+/* v4: static fading bar */
+.of-ticker { position: relative; display: block; width: 100%; height: 36px; }
+.of-msg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 0 40px; color: #fff; font-size: 13px; font-weight: 500; white-space: nowrap; opacity: 0; transition: opacity .6s ease; }
+.of-msg-on { opacity: 1; }
+.of-hl { color: #ff9a68; font-weight: 700; margin-right: 4px; }
+.of-msg-short { display: none; }
+@media (max-width: 640px) { .of-msg-long { display: none; } .of-msg-short { display: inline; } }
+.ann-bar:has(.of-ticker) { background: #010c28; }
+.of-extra { margin: 10px 0 0; color: rgb(255 255 255 / 0.7); font-size: 13px; line-height: 1.4; }
+.of-fcard .of-extra { text-align: center; }
+.of-foot-line { margin: 24px 0 0; color: rgb(255 255 255 / 0.8); font-size: 13px; }

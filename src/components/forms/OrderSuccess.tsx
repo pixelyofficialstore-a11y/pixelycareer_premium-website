@@ -5,7 +5,7 @@ import { MARKETS, isMarketKey } from "@/config/markets";
 import { whatsappMessage } from "@/lib/site";
 import styles from "./OrderForm.module.css";
 
-export default function OrderSuccess({ id, contact, market, paid }: { id: string; contact: string; market?: string; paid: boolean }) {
+export default function OrderSuccess({ id, contact, market, paid, amounts }: { id: string; contact: string; market?: string; paid: boolean; amounts?: { total: number; paid: number; discount: number } }) {
   const [copied, setCopied] = useState(false);
   const m = MARKETS[isMarketKey(market) ? market : "us"];
   const orderId = /^[A-F0-9]{8}$/.test(id) ? id : "";
@@ -20,7 +20,7 @@ export default function OrderSuccess({ id, contact, market, paid }: { id: string
         <circle cx="28" cy="28" r="25" />
         <path d="m18 29 7 7 13-14" />
       </svg>
-      <h1 className="display">Order received</h1>
+      <h1 className="display">Order received.</h1>
       {orderId && (
         <button
           type="button"
@@ -33,17 +33,18 @@ export default function OrderSuccess({ id, contact, market, paid }: { id: string
         </button>
       )}
       <p className={styles.successText}>
-        {talk ? "Thanks! A CV consultant will message you on WhatsApp within a few minutes."
+        {talk ? "A consultant will WhatsApp you in a few minutes."
           : m.key === "pk" ? "Payment received for verification. We\u2019ll confirm on WhatsApp within a few minutes."
           : contact === "email" ? "We\u2019ll confirm your payment by email within a few minutes." : "We\u2019ll confirm your payment on WhatsApp within a few minutes."}
       </p>
+      {paid && amounts && amounts.paid > 0 && <p className={styles.successText}>Paid Rs {amounts.paid.toLocaleString("en-US")}{amounts.discount > 0 ? ` · You saved Rs ${amounts.discount.toLocaleString("en-US")}` : ""}{amounts.total > amounts.paid ? ` · Balance Rs ${(amounts.total - amounts.paid).toLocaleString("en-US")}` : ""}</p>}
       <ol className={styles.timeline}>
         <li><span>1</span>We confirm your order</li>
         <li><span>2</span>First draft in 2 days</li>
         <li><span>3</span>Revisions until you&apos;re satisfied</li>
       </ol>
       <div className={styles.successActions}>
-        <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-primary min-h-14 px-8" data-cta="order-success-whatsapp">{talk ? "Message us now on WhatsApp" : "Message us on WhatsApp"}</a>
+        <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-primary min-h-14 px-8" data-cta="order-success-whatsapp">{talk ? "Chat now" : "Message us on WhatsApp"}</a>
         <Link href={m.path} className={styles.textLink}>Back to home</Link>
       </div>
     </div>

@@ -6,7 +6,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { saveMarket } from "@/components/ui/useMarket";
 import Faq from "@/components/sections/Faq";
 import { OfferBand, inline, useLive } from "@/components/offer/Offer";
-import { BUNDLE } from "@/config/offers";
+import { BUNDLE, BUNDLE_NOW, onlineOpen, onlinePrice } from "@/config/offers";
 import { MARKETS, formatPricingPrice, getComparison, getComparisonGroups, getPackages, orderHref, type MarketKey } from "@/config/markets";
 import { WHATSAPP_URL , whatsappMessage } from "@/lib/site";
 import styles from "./Pricing.module.css";
@@ -111,8 +111,9 @@ export default function Pricing({
   const packages = getPackages(m);
   const doc = market === "us" ? "resume" : "CV";
   // 11.11 Sale (pk): a 4th card (first on mobile) and a bundle column. Gone after endsAt.
-  const { live: saleLive, t: saleT } = useLive(market, 60_000);
+  const { live: saleLive, t: saleT, remaining: saleLeft } = useLive(market, 60_000);
   const showBundle = market === "pk" && saleLive;
+  const online = market === "pk" && onlineOpen();
   const base = getComparison(m);
   const comparison = (showBundle
     ? base.flatMap((r) => (r[0] === "Digital contact card" ? [[...r, r[3]], ["Personal website", "✕", "✕", "✕", "✓"]] : [r[0] === "Delivery" ? [...r, "5 days"] : [...r, r[3]]]))
@@ -120,8 +121,8 @@ export default function Pricing({
   const GROUPS = getComparisonGroups(comparison as [string, string, string, string][]);
   const cardContent = getCardContent(market);
   const cols = [
-    ...packages.map((p) => ({ id: p.id as string, name: p.name, price: p.priceLabel, href: orderHref(m, p.id), button: cardContent[p.id].button })),
-    ...(showBundle ? [{ id: "executive_bundle", name: "11.11 Sale Bundle", price: "Rs 20,000", href: "/order?market=pk&package=executive&offer=brand-bundle", button: "Claim My Bundle" }] : []),
+    ...packages.map((p) => ({ id: p.id as string, name: p.name, price: online ? formatPricingPrice(m, onlinePrice(p.price)) : p.priceLabel, href: orderHref(m, p.id), button: cardContent[p.id].button })),
+    ...(showBundle ? [{ id: "executive_bundle", name: "11.11 Sale Bundle", price: formatPricingPrice(m, BUNDLE_NOW), href: "/order?market=pk&package=executive&offer=brand-bundle", button: "Claim My Bundle" }] : []),
   ];
   const HeroHeading = standalone ? "h1" : "h2";
   const [selectedPackage, setSelectedPackage] = useState(1);
@@ -174,10 +175,11 @@ export default function Pricing({
                     {tag?.id === p.id && <span className="sp-includes">{tag.text}</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
+                    {online && <p className={styles.saleLabel}>11.11 Sale · Flat 20% off</p>}
                     <div className={styles.pricePair}>
-                      {p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}<PriceAmount label={p.priceLabel} />
+                      {online ? <><s className={styles.compareAt}><PriceAmount label={p.priceLabel} /></s><PriceAmount label={formatPricingPrice(m, onlinePrice(p.price))} /></> : <>{p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}<PriceAmount label={p.priceLabel} /></>}
                     </div>
-                    <p className={styles.priceNote}>{p.showCompareAt && p.compareAt > p.price ? `Save ${formatPricingPrice(m, p.compareAt - p.price)}` : "\u00a0"}</p>
+                    {online ? null : <p className={styles.priceNote}>{p.showCompareAt && p.compareAt > p.price ? `Save ${formatPricingPrice(m, p.compareAt - p.price)}` : "\u00a0"}</p>}
                     <Link href={orderHref(m, p.id)} className={`${styles.choose} ${recommended ? styles.choosePrimary : ""}`} data-cta={compact ? `home-pricing-order-${p.id}` : `pricing-choose-${p.id}`}>
                       {content.button}<ArrowIcon />
                     </Link>
@@ -216,8 +218,9 @@ export default function Pricing({
                   <span className={`${styles.badge} ${styles.badgeSale}`}>11.11 Sale</span>
                   <h3 className={`${styles.packageName} price-name`}>11.11 Sale Bundle</h3>
                   <p className={styles.audience}>{BUNDLE.headline}</p>
-                  <div className={styles.pricePair}><s className={styles.compareAt}><PriceAmount label="Rs 27,500" /></s><PriceAmount label="Rs 20,000" /></div>
-                  <p className={`${styles.priceNote} ${styles.bundleMeta}`} suppressHydrationWarning>Only {BUNDLE.totalSlots} slots · {inline(saleT)}</p>
+                  <p className={styles.saleLabel}>11.11 Sale</p>
+                  <div className={styles.pricePair}><s className={styles.compareAt}><PriceAmount label={formatPricingPrice(m, BUNDLE.compareAt)} /></s><PriceAmount label={formatPricingPrice(m, BUNDLE_NOW)} /></div>
+                  <p className={`${styles.priceNote} ${styles.bundleMeta}`} suppressHydrationWarning>Only {saleLeft ?? BUNDLE.totalSlots} slots left · {inline(saleT)}</p>
                   <Link href="/order?market=pk&package=executive&offer=brand-bundle" className={`of-exec-claim ${styles.bundleCta}`} data-cta="pricing-claim-bundle">Claim My Bundle<ArrowIcon /></Link>
                   <hr className={styles.divider} />
                   <div className={styles.includedContent}>
@@ -225,7 +228,6 @@ export default function Pricing({
                       <li className={styles.listLead}>Everything in Executive, plus:</li>
                       <li><span className={styles.textCheck} aria-hidden="true">✓</span>Personal portfolio website</li>
                       <li><span className={styles.textCheck} aria-hidden="true">✓</span>Free domain &amp; hosting for the first year</li>
-                      <li><span className={styles.textCheck} aria-hidden="true">✓</span>You save Rs 7,500</li>
                     </ul>
                   </div>
                   <div className={styles.supportRow}>

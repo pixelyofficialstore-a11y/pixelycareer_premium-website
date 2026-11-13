@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { MARKETS, localizeTitle } from "@/config/markets";
 import PaymentLogos from "@/components/ui/PaymentLogos";
 import { useMarket } from "@/components/ui/useMarket";
+import { SaleFooterLine } from "@/components/offer/Offer";
 import { CONTACT_EMAIL, FACEBOOK_URL, FOOTER_SERVICES, LINKEDIN_URL, WHATSAPP_URL } from "@/lib/site";
 
 const colTitle = "font-head text-sm font-medium text-white";
@@ -113,6 +114,7 @@ export default function Footer() {
             ))}
           </nav>
         )}
+        <SaleFooterLine market={market.key} />
         <div className="mt-8 flex flex-col gap-1 border-t border-white/15 pt-4 text-sm text-white/75 md:flex-row md:items-center md:justify-between md:gap-3 md:pt-6">
           <p>
             © 2026 Pixely Careers ·{" "}

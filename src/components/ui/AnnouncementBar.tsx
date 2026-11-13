@@ -6,7 +6,7 @@ import { getAnnouncement, isBarHidden } from "@/config/announcements";
 import { MARKETS } from "@/config/markets";
 import { useMarket } from "./useMarket";
 import { useCountdown, useOffer } from "@/components/offer/useOffer";
-import { Ticker } from "@/components/offer/Offer";
+import { BAR_MESSAGES, Ticker } from "@/components/offer/Offer";
 import "@/components/offer/offer.css";
 
 const CAMPAIGN_KEY = "pixely-campaign";
@@ -33,7 +33,9 @@ export default function AnnouncementBar() {
   const [campaign, setCampaign] = useState<string | null>(null);
   const hidden = isBarHidden(path);
   const { open: offerOpen, remaining } = useOffer(market.key);
-  const left = useCountdown();
+  const left = useCountdown(60_000);
+  const [msg, setMsg] = useState(0);
+  useEffect(() => { const id = setInterval(() => setMsg((n) => (n + 1) % BAR_MESSAGES.length), 5000); return () => clearInterval(id); }, []);
 
   // Moving between pages with and without a bar: the header and page spacing follow --bar-h.
   useLayoutEffect(() => {
@@ -58,10 +60,10 @@ export default function AnnouncementBar() {
 
   // pk: the Personal Brand Bundle replaces the page message while it is open (also for utm_campaign "bundle").
   const bundle = offerOpen && !left.done;
-  const message = bundle ? { key: "brand-bundle", text: "", href: "/pk#offer", ctaLabel: undefined } : getAnnouncement(market, path, campaign);
+  const message = bundle ? { key: "brand-bundle", text: "", href: BAR_MESSAGES[msg].href, ctaLabel: undefined } : getAnnouncement(market, path, campaign);
   const inner = bundle ? (
     <>
-      <Ticker t={left} />
+      <Ticker i={msg} />
     </>
   ) : (
     <>

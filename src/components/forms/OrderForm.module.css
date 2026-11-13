@@ -487,3 +487,33 @@ button.payBox { cursor: pointer; }
 .sumPay div { display: flex; justify-content: space-between; gap: 8px; }
 .sumPay dt { color: #4b5563; }
 .sumPay dd { margin: 0; color: #010c28; font-weight: 600; }
+
+.offerStrip { margin: 12px auto 0; width: fit-content; max-width: 100%; padding: 8px 16px; border-radius: 999px; background: #e7f8ee; color: #0a7a3d; font-size: 14px; font-weight: 600; text-align: center; }
+.payHint { margin: 12px 0 24px; font-size: 13px; color: #6b7587; }
+.payStack .payBoxHead { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 12px; text-align: left; }
+.payStack .payBoxHead small, .payStack .payBoxHead .savePill { grid-column: 1 / -1; justify-self: start; }
+.payStack .bestTag { margin-left: 8px; }
+.form .input { font-size: 16px; min-height: 48px; }
+
+/* v4 cleanup */
+.steps { margin: 24px auto 0; justify-content: center; gap: 0; }
+.steps li + li::before { content: ""; width: 32px; height: 1px; margin: 0 12px; background: #d5dce8; }
+.backLink { display: inline-block; margin: 0 0 12px; padding: 4px 0; border: 0; background: none; color: #4b5563; font: inherit; font-size: 14px; cursor: pointer; }
+.backLink:hover { color: #0048ff; }
+.pgrid { align-items: start; }
+.pk { padding: 16px 18px 14px; }
+.pkFoot { margin-top: 8px; padding-top: 0; }
+.pkFoot button { display: inline-flex; align-items: center; gap: 4px; }
+.chev { transition: transform 200ms ease; }
+.chevOpen { transform: rotate(180deg); }
+.extrasHead { align-items: center; }
+.payStack .payBoxHead { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; text-align: left; }
+.radioDot { width: 18px; height: 18px; border: 1.5px solid #c3cbd8; border-radius: 50%; }
+.payBoxOn .radioDot { border: 5px solid #0048ff; }
+.payName { display: grid; gap: 2px; }
+.payName small { color: #6b7587; font-size: 13px; font-weight: 400; }
+.payStack .payBoxHead strong { font-variant-numeric: tabular-nums; font-weight: 600; }
+.sumList .sumLine { display: flex; justify-content: space-between; gap: 12px; font-weight: 400; }
+.sumList dd { font-variant-numeric: tabular-nums; text-align: right; font-weight: 400; color: inherit; }
+.sumTotal strong { font-variant-numeric: tabular-nums; }
+.qr img { width: 180px; height: 180px; padding: 8px; border-radius: 12px; background: #fff; }
