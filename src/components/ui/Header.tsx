@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { MARKETS, orderHref } from "@/config/markets";
-import { CONTACT_EMAIL, NAV, WHATSAPP_URL } from "@/lib/site";
+import { NAV, WHATSAPP_URL } from "@/lib/site";
 import { useMarket } from "./useMarket";
 
 export default function Header() {
@@ -146,7 +146,6 @@ export default function Header() {
                   Start your order
                 </Link>
                 <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn mt-3 min-h-14 w-full border border-navy/15 text-navy" data-cta="menu-whatsapp">Ask on WhatsApp</a>
-                <p className="mt-5 text-center text-sm text-navy/55"><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
               </div>
             </nav>
           </div>

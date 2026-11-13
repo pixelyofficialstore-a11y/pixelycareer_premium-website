@@ -5,7 +5,6 @@ import "./globals.css";
 import SmoothScroll from "@/components/ui/SmoothScroll";
 import ScrollReset from "@/components/ui/ScrollReset";
 import Header from "@/components/ui/Header";
-import Intro from "@/components/ui/Intro";
 import Footer from "@/components/sections/Footer";
 import Analytics from "@/components/ui/Analytics";
 import StickyBar from "@/components/ui/StickyBar";
@@ -63,7 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Script id="pixely-market-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: SET_LANG }} />
         <script id="pixely-structured-data" type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA).replace(/</g, "\\u003c") }} />
-        <Intro />
+
         <a href="#main" className="skip-link">
           Skip to content
         </a>

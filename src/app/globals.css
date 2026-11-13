@@ -2669,3 +2669,17 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
   #main:is(:has(#home-problem-title), :has([data-pricing-page])) #process-title:not(#_) { font-size: 8.1vw !important; }
   #main:is(:has(#home-problem-title), :has([data-pricing-page])) #of-band-title:not(#_) { font-size: 6.8vw !important; }
 }
+
+/* ===== Header on the hero's container: the logo and the hero headline share one left edge at every width ===== */
+body:has(#home-problem-title) header .wrap { max-width: 1760px; padding-inline: clamp(20px, 4vw, 64px); }
+
+/* ===== Phones: the whole first screen in view (bar, header, headline, subtext, CTA, See packages, CV) ===== */
+@media (max-width: 767px) {
+  body:has(#home-problem-title) #main .rise-free #top .hero-copy { padding-top: calc(var(--bar-h) + 72px + 20px); }
+  body:has(#home-problem-title) #main #top .wrap { padding-inline: 16px; }
+  body:has(#home-problem-title) #main #top h1.h1:not(#_) { font-size: clamp(26px, 7.5vw, 32px) !important; line-height: 1.1 !important; font-weight: 600; text-align: center; white-space: nowrap; }
+  body:has(#home-problem-title) #main #top .hero-copy .hero-sub:not(#_) { max-width: 260px; margin: 10px auto 0; font-size: 14px; line-height: 1.5; }
+  body:has(#home-problem-title) #main #top .hero-copy .hero-actions:not(#_) { margin-top: 18px; gap: 4px; }
+  body:has(#home-problem-title) #main #top .hero-copy .hero-cue { display: none; }
+  body:has(#home-problem-title) #main .rise-free #top .hero-visual:not(#_) { margin: 8px auto 0; }
+}

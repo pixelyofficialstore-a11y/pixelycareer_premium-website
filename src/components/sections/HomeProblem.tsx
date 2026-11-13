@@ -18,12 +18,6 @@ const markers = [
 ] as const;
 
 
-/** Annotations: over the Before side only the bad ones, over the After side only the good ones. */
-const NOTES = {
-  before: ["No keywords", "Photo & personal info", "Duties, no results", "Messy layout"],
-  after: ["Role keywords", "Clean ATS headings", "Quantified results", "Clear summary"],
-} as const;
-const NOTE_Y = [12, 34, 56, 78];
 
 type Drag = { pointerId: number; x: number; y: number; position: number; horizontal: boolean };
 
@@ -51,26 +45,6 @@ export default function HomeProblem({ marketKey = "us" }: { marketKey?: MarketKe
   const tweenRef = useRef<number | null>(null);
   const positionRef = useRef(50);
   positionRef.current = position;
-  const [side, setSide] = useState<"before" | "after" | null>(null);
-  const hoverSide = (e: PointerEvent<HTMLDivElement>) => {
-    if (e.pointerType !== "mouse") return;
-    const r = e.currentTarget.getBoundingClientRect();
-    setSide(((e.clientX - r.left) / r.width) * 100 < positionRef.current ? "before" : "after");
-  };
-  // Touch screens: once in view, Before for 2s, then After. A tap switches sides.
-  useEffect(() => {
-    const el = comparisonRef.current;
-    if (!el || !window.matchMedia("(hover: none)").matches) return;
-    let t: ReturnType<typeof setTimeout> | undefined;
-    const io = new IntersectionObserver(([en]) => {
-      if (!en.isIntersecting) return;
-      io.disconnect();
-      setSide("before");
-      t = setTimeout(() => setSide((s) => (s === "before" ? "after" : s)), 2000);
-    }, { threshold: 0.5 });
-    io.observe(el);
-    return () => { io.disconnect(); if (t) clearTimeout(t); };
-  }, []);
 
   // Moves the slider to a point over 400ms with an ease.
   const slideTo = useCallback((target: number) => {
@@ -221,9 +195,7 @@ export default function HomeProblem({ marketKey = "us" }: { marketKey?: MarketKe
           className={styles.comparison}
           style={{ "--position": `${position}%` } as CSSProperties}
           onPointerDown={pointerDown}
-          onPointerMove={(e) => { pointerMove(e); hoverSide(e); }}
-          onPointerLeave={(e) => { if (e.pointerType === "mouse") setSide(null); }}
-          onClick={() => { if (window.matchMedia("(hover: none)").matches) setSide((s) => (s === "before" ? "after" : "before")); }}
+          onPointerMove={pointerMove}
           onPointerUp={pointerEnd}
           onPointerCancel={pointerEnd}
           onLostPointerCapture={() => { dragRef.current = null; }}
@@ -242,14 +214,6 @@ export default function HomeProblem({ marketKey = "us" }: { marketKey?: MarketKe
               ))}
             </div>
           )}
-
-          <div className={styles.notes} aria-hidden="true">
-            {(["before", "after"] as const).map((k) => NOTES[k].map((t, i) => (
-              <span key={t} className={`${styles.note} ${k === "before" ? styles.noteBad : styles.noteGood}`} data-on={side === k} style={{ top: `${NOTE_Y[i]}%`, transitionDelay: side === k ? `${i * 60}ms` : "0ms" }}>
-                {k === "before" ? "✕" : "✓"} {t}
-              </span>
-            )))}
-          </div>
 
           <span className={`${styles.chip} ${styles.beforeChip}`} style={{ opacity: Math.max(0, Math.min(1, (position * width / 100 - 14) / 80)) }} aria-hidden="true">✕ Before</span>
           <span className={`${styles.chip} ${styles.afterChip}`} style={{ opacity: Math.max(0, Math.min(1, ((100 - position) * width / 100 - 14) / 80)) }} aria-hidden="true">✓ After</span>

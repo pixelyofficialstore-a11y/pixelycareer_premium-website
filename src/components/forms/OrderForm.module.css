@@ -537,3 +537,14 @@ button.payBox { cursor: pointer; }
 
 .incNote { margin: 8px 0 0; color: #6b7280; font-size: 13px; line-height: 1.4; }
 .incSheetBody .incNote { margin: -12px 0 20px; }
+
+/* Phones: the terms tick sits in the sticky bar, just above the button */
+.mterms { display: none; }
+@media (max-width: 767px) {
+  .mbar:has(.mterms) { flex-wrap: wrap; row-gap: 8px; }
+  .mterms { display: block; flex: 0 0 100%; }
+  .mterms .terms { margin-top: 0; font-size: 13px; line-height: 1.4; }
+  .termsShake { animation: shake 400ms ease; }
+  .termsShake input { outline: 2px solid #d92d20; outline-offset: 1px; }
+  .mtermsErr { margin: 4px 0 0 28px; color: #d92d20; font-size: 13px; font-weight: 500; }
+}

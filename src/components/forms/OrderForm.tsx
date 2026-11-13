@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { availableAddons, calcOrder, totalFor, unitAt, type Selection } from "@/config/addons";
 import { MARKETS, formatPricingPrice, getPackages, localize, type MarketKey, type PackageId } from "@/config/markets";
@@ -167,6 +167,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const [footerSeen, setFooterSeen] = useState(false);
   const [narrow, setNarrow] = useState(false);
   const [termsHint, setTermsHint] = useState(false);
+  const [termsShake, setTermsShake] = useState(0);
   useEffect(() => { const q = window.matchMedia("(max-width: 767px)"); const f = () => setNarrow(q.matches); f(); q.addEventListener("change", f); return () => q.removeEventListener("change", f); }, []);
   useEffect(() => {
     if (!incOpen) return;
@@ -425,11 +426,11 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const extrasCount = list.length + (sameDay ? 1 : 0);
   const finish = (
     <>
-      <label className={styles.terms}>
+      {!narrow && <><label className={styles.terms}>
         <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} aria-invalid={errors.terms ? true : undefined} />
         <span>I agree to the <Link href="/terms" target="_blank">Terms</Link> &amp; <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
       </label>
-      {(errors.terms || (termsHint && !terms)) && <p className={styles.error}>{errors.terms || "Tick the box to place your order."}</p>}
+      {(errors.terms || (termsHint && !terms)) && <p className={styles.error}>{errors.terms || "Tick the box to place your order."}</p>}</>}
       <p className={`${styles.tsStatus} ${styles["ts_" + tsStatus]}`} role="status" aria-live="polite" hidden={tsStatus !== "failed"}>
         {tsStatus === "failed" && <>Security check failed. <button type="button" onClick={() => setTsRetry((n) => n + 1)}>Try again</button></>}
       </p>
@@ -453,46 +454,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   })),
   ];
   const incCard = pkCards.find((c) => c.id === incOpen) ?? null;
-  return (
-    <div className={`${styles.page} ${step > 1 ? styles.inner : ""}`}>
-      <div className={styles.head}>
-        <h1 className={`display ${styles.title}`}>Let&apos;s get you <em>shortlisted.</em></h1>
-        <ol className={styles.steps} aria-label="Order steps">
-          {STEPS.map((s, i) => (
-            <li key={s} className={i + 1 === step ? styles.active : i + 1 < step ? styles.complete : ""} aria-current={i + 1 === step ? "step" : undefined}>
-              <span>{i + 1 < step ? "✓" : i + 1}</span> {s}
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      <div className={styles.layout}>
-        <form ref={formRef} className={styles.form} noValidate onSubmit={(e) => e.preventDefault()}>
-          {step > 1 && <button type="button" className={styles.backLink} onClick={() => go(step - 1)}>← Back</button>}
-          {step === 1 && (
-            <>
-              <h2 className={styles.stepTitle}>Choose your package</h2>
-              {offerParam && !offerLive && <p className={styles.offerEnded}>This offer has ended. You can continue at normal prices.</p>}
-              <div className={styles.pgrid} role="radiogroup" aria-label="Package">
-                {pkCards.map((c) => (
-                  <div key={c.id} id={`pk-${c.id}`} className={`${styles.card} ${styles.pk} ${c.tone} ${c.sel ? styles.pkOn : ""}`}>
-                    {c.badge && <span className={styles.pkBadge}>{c.badge}</span>}
-                    <label className={styles.pkMain}>
-                      <input type="radio" name="package" checked={c.sel} onChange={c.pick} data-cta={`order-package-${c.id}`} />
-                      {c.sel && <span className={styles.pkCheck}><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8.5 3.2 3L13 4.5" /></svg></span>}
-                      <b className={styles.pkName}>{c.name}</b>
-                      <span className={styles.pkPrice}>{c.was ? <s>{money(c.was)}</s> : null}<strong>{money(c.price)}</strong></span>
-                    </label>
-                    <div className={styles.pkFoot}>
-                      <span suppressHydrationWarning>{c.meta}</span>
-                      <span aria-hidden="true">·</span>
-                      <button type="button" data-inc onClick={(e) => { e.stopPropagation(); setIncOpen((o) => (o === c.id ? null : c.id)); }} aria-expanded={incOpen === c.id} aria-haspopup="dialog">What&apos;s included <Chevron open={incOpen === c.id} /></button>
-                    </div>
-                    {incOpen === c.id && !narrow && <div className={styles.incPop} role="dialog" aria-label={`${c.name}: what's included`} onClick={(e) => e.stopPropagation()}><ul className={styles.pkList}>{c.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul>{c.note && <p className={styles.incNote}>{c.note}</p>}</div>}
-                  </div>
-                ))}
-              </div>
-
+  const extras = (
               <section className={`${styles.card} ${styles.extras}`} aria-label="Extras">
                 <button type="button" className={styles.extrasHead} onClick={() => setExtrasOpen((o) => !o)} aria-expanded={extrasOpen}>
                   <span className={styles.extrasTitle}><b>+ Add extras</b></span>
@@ -544,6 +506,51 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                   </div>
                 )}
               </section>
+  );
+  return (
+    <div className={`${styles.page} ${step > 1 ? styles.inner : ""}`}>
+      <div className={styles.head}>
+        <h1 className={`display ${styles.title}`}>Let&apos;s get you <em>shortlisted.</em></h1>
+        <ol className={styles.steps} aria-label="Order steps">
+          {STEPS.map((s, i) => (
+            <li key={s} className={i + 1 === step ? styles.active : i + 1 < step ? styles.complete : ""} aria-current={i + 1 === step ? "step" : undefined}>
+              <span>{i + 1 < step ? "✓" : i + 1}</span> {s}
+            </li>
+          ))}
+        </ol>
+      </div>
+
+      <div className={styles.layout}>
+        <form ref={formRef} className={styles.form} noValidate onSubmit={(e) => e.preventDefault()}>
+          {step > 1 && <button type="button" className={styles.backLink} onClick={() => go(step - 1)}>← Back</button>}
+          {step === 1 && (
+            <>
+              <h2 className={styles.stepTitle}>Choose your package</h2>
+              {offerParam && !offerLive && <p className={styles.offerEnded}>This offer has ended. You can continue at normal prices.</p>}
+              <div className={styles.pgrid} role="radiogroup" aria-label="Package">
+                {pkCards.map((c) => (
+                  <Fragment key={c.id}>
+                  <div id={`pk-${c.id}`} className={`${styles.card} ${styles.pk} ${c.tone} ${c.sel ? styles.pkOn : ""}`}>
+                    {c.badge && <span className={styles.pkBadge}>{c.badge}</span>}
+                    <label className={styles.pkMain}>
+                      <input type="radio" name="package" checked={c.sel} onChange={c.pick} data-cta={`order-package-${c.id}`} />
+                      {c.sel && <span className={styles.pkCheck}><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8.5 3.2 3L13 4.5" /></svg></span>}
+                      <b className={styles.pkName}>{c.name}</b>
+                      <span className={styles.pkPrice}>{c.was ? <s>{money(c.was)}</s> : null}<strong>{money(c.price)}</strong></span>
+                    </label>
+                    <div className={styles.pkFoot}>
+                      <span suppressHydrationWarning>{c.meta}</span>
+                      <span aria-hidden="true">·</span>
+                      <button type="button" data-inc onClick={(e) => { e.stopPropagation(); setIncOpen((o) => (o === c.id ? null : c.id)); }} aria-expanded={incOpen === c.id} aria-haspopup="dialog">What&apos;s included <Chevron open={incOpen === c.id} /></button>
+                    </div>
+                    {incOpen === c.id && !narrow && <div className={styles.incPop} role="dialog" aria-label={`${c.name}: what's included`} onClick={(e) => e.stopPropagation()}><ul className={styles.pkList}>{c.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul>{c.note && <p className={styles.incNote}>{c.note}</p>}</div>}
+                  </div>
+                  {narrow && c.sel && extras}
+                  </Fragment>
+                ))}
+              </div>
+
+              {!narrow && extras}
             </>
           )}
 
@@ -702,13 +709,22 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
             </>
           )}
           <div className={styles.mbar} role="region" aria-label="Order total">
+            {last && (
+              <div className={styles.mterms}>
+                <label key={termsShake} className={`${styles.terms} ${termsHint && !terms ? styles.termsShake : ""}`}>
+                  <input type="checkbox" checked={terms} onChange={(e) => { setTerms(e.target.checked); if (e.target.checked) setTermsHint(false); }} aria-invalid={termsHint && !terms ? true : undefined} />
+                  <span>I agree to the <Link href="/terms" target="_blank">Terms</Link> &amp; <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
+                </label>
+                {termsHint && !terms && <p className={styles.mtermsErr} role="alert">Please accept the terms</p>}
+              </div>
+            )}
             <button type="button" className={styles.mtotal} onClick={() => setSheet((s) => !s)} aria-expanded={sheet}>
               <span>Total payable ⌃</span>
               <strong key={due}>{money(due)}</strong>
               {plan && plan.type === "advance" && <span>Pay today {money(plan.today)}</span>}
             </button>
             {last && !terms ? (
-              <button type="button" className={`btn btn-primary ${styles.continue} ${styles.mcontinue} ${styles.btnOff}`} aria-disabled="true" onClick={() => { setTermsHint(true); validate(3); }}>{label}</button>
+              <button type="button" className={`btn btn-primary ${styles.continue} ${styles.mcontinue} `} aria-disabled="true" onClick={() => { setTermsHint(true); setTermsShake((n) => n + 1); }}>{label}</button>
             ) : continueBtn(styles.mcontinue)}
           </div>
         </>,
