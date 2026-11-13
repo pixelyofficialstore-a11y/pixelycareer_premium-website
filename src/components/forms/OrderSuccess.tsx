@@ -37,7 +37,7 @@ export default function OrderSuccess({ id, contact, market, paid, amounts }: { i
           : m.key === "pk" ? "Payment received for verification. We\u2019ll confirm on WhatsApp within a few minutes."
           : contact === "email" ? "We\u2019ll confirm your payment by email within a few minutes." : "We\u2019ll confirm your payment on WhatsApp within a few minutes."}
       </p>
-      {paid && amounts && amounts.paid > 0 && <p className={styles.successText}>Paid Rs {amounts.paid.toLocaleString("en-US")}{amounts.discount > 0 ? ` · You saved Rs ${amounts.discount.toLocaleString("en-US")}` : ""}{amounts.total > amounts.paid ? ` · Balance Rs ${(amounts.total - amounts.paid).toLocaleString("en-US")}` : ""}</p>}
+      {paid && amounts && amounts.paid > 0 && <p className={styles.successText}>Paid Rs {amounts.paid.toLocaleString("en-US")}{amounts.discount > 0 ? ` (online discount Rs ${amounts.discount.toLocaleString("en-US")})` : ""}{amounts.total > amounts.paid ? ` · Balance Rs ${(amounts.total - amounts.paid).toLocaleString("en-US")}` : ""}</p>}
       <ol className={styles.timeline}>
         <li><span>1</span>We confirm your order</li>
         <li><span>2</span>First draft in 2 days</li>
