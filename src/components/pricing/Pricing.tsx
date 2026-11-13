@@ -217,10 +217,9 @@ export default function Pricing({
                 <article className={`${styles.card} price-card ${styles.cardBundle}`} aria-label="11.11 Sale Bundle package">
                   <span className={`${styles.badge} ${styles.badgeSale}`}>11.11 Sale</span>
                   <h3 className={`${styles.packageName} price-name`}>11.11 Sale Bundle</h3>
-                  <p className={styles.audience}>{BUNDLE.headline}</p>
-                  <p className={styles.saleLabel}>11.11 Sale</p>
+                  <p className={styles.audience}>Executive Branding + Website</p>
+                  <p className={styles.saleLabel} suppressHydrationWarning>Ends in {inline(saleT)} · {saleLeft ?? BUNDLE.totalSlots} slots left</p>
                   <div className={styles.pricePair}><s className={styles.compareAt}><PriceAmount label={formatPricingPrice(m, BUNDLE.compareAt)} /></s><PriceAmount label={formatPricingPrice(m, BUNDLE_NOW)} /></div>
-                  <p className={`${styles.priceNote} ${styles.bundleMeta}`} suppressHydrationWarning>Only {saleLeft ?? BUNDLE.totalSlots} slots left · {inline(saleT)}</p>
                   <Link href="/order?market=pk&package=executive&offer=brand-bundle" className={`of-exec-claim ${styles.bundleCta}`} data-cta="pricing-claim-bundle">Claim My Bundle<ArrowIcon /></Link>
                   <hr className={styles.divider} />
                   <div className={styles.includedContent}>

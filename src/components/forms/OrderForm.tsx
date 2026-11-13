@@ -165,6 +165,17 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const touchY = useRef<number | null>(null);
   const [mounted, setMounted] = useState(false);
   const [footerSeen, setFooterSeen] = useState(false);
+  const [narrow, setNarrow] = useState(false);
+  const [termsHint, setTermsHint] = useState(false);
+  useEffect(() => { const q = window.matchMedia("(max-width: 767px)"); const f = () => setNarrow(q.matches); f(); q.addEventListener("change", f); return () => q.removeEventListener("change", f); }, []);
+  useEffect(() => {
+    if (!incOpen) return;
+    const close = () => setIncOpen(null);
+    const key = (e: KeyboardEvent) => { if (e.key === "Escape") close(); };
+    document.addEventListener("click", close);
+    document.addEventListener("keydown", key);
+    return () => { document.removeEventListener("click", close); document.removeEventListener("keydown", key); };
+  }, [incOpen]);
 
   useEffect(() => { setMounted(true); }, []);
   // Hide the bar only once the footer is well into view. Measured on scroll, so it also holds after a step change.
@@ -418,7 +429,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} aria-invalid={errors.terms ? true : undefined} />
         <span>I agree to the <Link href="/terms" target="_blank">Terms</Link> &amp; <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
       </label>
-      {errors.terms && <p className={styles.error}>{errors.terms}</p>}
+      {(errors.terms || (termsHint && !terms)) && <p className={styles.error}>{errors.terms || "Tick the box to place your order."}</p>}
       <p className={`${styles.tsStatus} ${styles["ts_" + tsStatus]}`} role="status" aria-live="polite" hidden={tsStatus !== "failed"}>
         {tsStatus === "failed" && <>Security check failed. <button type="button" onClick={() => setTsRetry((n) => n + 1)}>Try again</button></>}
       </p>
@@ -427,6 +438,21 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     </>
   );
 
+  const pkCards = [
+                  ...(pk && offerLive ? [{
+                    id: "executive_bundle", name: "11.11 Bundle · Executive Branding + Website", line: "", price: payPlan(offer.price, "full", { bundle: true }).total, was: offer.compareAt as number | undefined,
+                    meta: `5 days · ${slotsLeft ?? offer.totalSlots} slot${(slotsLeft ?? offer.totalSlots) === 1 ? "" : "s"} left`, badge: "11.11 Sale", tone: styles.pkSale,
+                    items: [...CHECKLIST(m.key, "executive"), "Personal portfolio website", "Free domain and hosting for 1 year"], sel: bundle,
+                    pick: () => { choosePackage(offer.packageId); toggleBundle(true); },
+                  }] : []),
+                  ...PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => ({
+                    id: p.id as string, name: p.name, line: "", price: online ? onlinePrice(p.price) : p.price, was: (online ? p.price : undefined) as number | undefined, meta: p.deliveryDays,
+                    badge: p.id === "executive" ? "Best Results" : p.id === "international-pro" ? "Most Popular" : "", tone: p.id === "executive" ? styles.pkBest : p.id === "international-pro" ? styles.pkPop : "",
+                    items: CHECKLIST(m.key, p.id), sel: p.id === packageId && !bundle,
+                    pick: () => { choosePackage(p.id); setBundleOn(false); },
+                  })),
+  ];
+  const incCard = pkCards.find((c) => c.id === incOpen) ?? null;
   return (
     <div className={`${styles.page} ${step > 1 ? styles.inner : ""}`}>
       <div className={styles.head}>
@@ -448,20 +474,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
               <h2 className={styles.stepTitle}>Choose your package</h2>
               {offerParam && !offerLive && <p className={styles.offerEnded}>This offer has ended. You can continue at normal prices.</p>}
               <div className={styles.pgrid} role="radiogroup" aria-label="Package">
-                {[
-                  ...(pk && offerLive ? [{
-                    id: "executive_bundle", name: "11.11 Bundle · Executive Branding + Website", line: "", price: payPlan(offer.price, "full", { bundle: true }).total, was: offer.compareAt as number | undefined,
-                    meta: `5 days · ${slotsLeft ?? offer.totalSlots} slot${(slotsLeft ?? offer.totalSlots) === 1 ? "" : "s"} left`, badge: "11.11 Sale", tone: styles.pkSale,
-                    items: [...CHECKLIST(m.key, "executive"), "Personal portfolio website", "Free domain and hosting for 1 year"], sel: bundle,
-                    pick: () => { choosePackage(offer.packageId); toggleBundle(true); },
-                  }] : []),
-                  ...PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => ({
-                    id: p.id as string, name: p.name, line: "", price: online ? onlinePrice(p.price) : p.price, was: (online ? p.price : undefined) as number | undefined, meta: p.deliveryDays,
-                    badge: p.id === "executive" ? "Best Results" : p.id === "international-pro" ? "Most Popular" : "", tone: p.id === "executive" ? styles.pkBest : p.id === "international-pro" ? styles.pkPop : "",
-                    items: CHECKLIST(m.key, p.id), sel: p.id === packageId && !bundle,
-                    pick: () => { choosePackage(p.id); setBundleOn(false); },
-                  })),
-                ].map((c) => (
+                {pkCards.map((c) => (
                   <div key={c.id} id={`pk-${c.id}`} className={`${styles.card} ${styles.pk} ${c.tone} ${c.sel ? styles.pkOn : ""}`}>
                     {c.badge && <span className={styles.pkBadge}>{c.badge}</span>}
                     <label className={styles.pkMain}>
@@ -473,9 +486,9 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                     <div className={styles.pkFoot}>
                       <span suppressHydrationWarning>{c.meta}</span>
                       <span aria-hidden="true">·</span>
-                      <button type="button" onClick={() => setIncOpen((o) => (o === c.id ? null : c.id))} aria-expanded={incOpen === c.id}>What&apos;s included <Chevron open={incOpen === c.id} /></button>
+                      <button type="button" data-inc onClick={(e) => { e.stopPropagation(); setIncOpen((o) => (o === c.id ? null : c.id)); }} aria-expanded={incOpen === c.id} aria-haspopup="dialog">What&apos;s included <Chevron open={incOpen === c.id} /></button>
                     </div>
-                    {incOpen === c.id && <ul className={styles.pkList}>{c.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul>}
+                    {incOpen === c.id && !narrow && <div className={styles.incPop} role="dialog" aria-label={`${c.name}: what's included`} onClick={(e) => e.stopPropagation()}><ul className={styles.pkList}>{c.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul></div>}
                   </div>
                 ))}
               </div>
@@ -677,12 +690,26 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
             {summaryLines}
             {continueBtn(styles.sheetContinue)}
           </div>
-          <div className={`${styles.mbar} ${footerSeen && !sheet ? styles.mbarHidden : ""}`} role="region" aria-label="Order total">
+          {narrow && incCard && (
+            <>
+              <div className={`${styles.scrim} ${styles.scrimOn}`} aria-hidden="true" />
+              <div className={`${styles.sheet} ${styles.sheetOn}`} role="dialog" aria-modal="true" aria-label={incCard.name} onClick={(e) => e.stopPropagation()}>
+                <span className={styles.handle} aria-hidden="true" />
+                <h2>{incCard.name}</h2>
+                <div className={styles.incSheetBody}><ul className={styles.pkList}>{incCard.items.map((x) => <li key={x}>{localize(m, x)}</li>)}</ul></div>
+                <button type="button" className={`btn btn-primary ${styles.continue} ${styles.sheetContinue}`} onClick={() => { incCard.pick(); setIncOpen(null); }}>Select this package</button>
+              </div>
+            </>
+          )}
+          <div className={styles.mbar} role="region" aria-label="Order total">
             <button type="button" className={styles.mtotal} onClick={() => setSheet((s) => !s)} aria-expanded={sheet}>
+              <span>Total payable ⌃</span>
               <strong key={due}>{money(due)}</strong>
-              <span>{pkg.name}{extrasCount ? ` + ${extrasCount} extra${extrasCount > 1 ? "s" : ""}` : ""} ⌃</span>
+              {plan && plan.type === "advance" && <span>Pay today {money(plan.today)}</span>}
             </button>
-            {continueBtn(styles.mcontinue)}
+            {last && !terms ? (
+              <button type="button" className={`btn btn-primary ${styles.continue} ${styles.mcontinue} ${styles.btnOff}`} aria-disabled="true" onClick={() => { setTermsHint(true); validate(3); }}>{label}</button>
+            ) : continueBtn(styles.mcontinue)}
           </div>
         </>,
         document.body,

@@ -1161,3 +1161,20 @@
 .page .priceGrid .supportRow { position: static; margin-top: auto; align-self: stretch; }
 .page .packageName { min-height: 0; }
 .priceGrid .choose, .priceGrid .bundleCta { margin-top: 16px; }
+
+/* v5: header rows line up across cards (subgrid), old price style */
+.priceGrid .pricePair .compareAt .price,
+.priceGrid .pricePair .compareAt .priceUnit,
+.priceGrid .pricePair .compareAt .priceNumber,
+.page .priceGrid .pricePair .compareAt .price,
+.page .priceGrid .pricePair .compareAt .priceUnit,
+.page .priceGrid .pricePair .compareAt .priceNumber { font-size: 18px; font-weight: 400; color: #6b7280; text-decoration: line-through; text-decoration-color: #f4733c; text-decoration-thickness: 2px; }
+.priceGrid .pricePair { align-items: baseline; }
+@media (min-width: 768px) {
+  .priceGrid.priceGrid { grid-template-rows: repeat(6, auto) 1fr auto; align-items: stretch; }
+  .priceGrid.priceGrid > .cardSlot { display: grid; grid-row: span 8; grid-template-rows: subgrid; height: auto; }
+  .priceGrid.priceGrid > .cardSlot > .card { display: grid; grid-row: 1 / -1; grid-template-rows: subgrid; row-gap: 0; height: auto; }
+  .priceGrid.priceGrid .supportRow { align-self: end; margin-top: 0; }
+  .priceGrid.priceGrid .includedContent { align-self: start; }
+  .priceGrid.priceGrid .saleLabel, .priceGrid.priceGrid .pricePair { align-self: end; }
+}

@@ -517,3 +517,20 @@ button.payBox { cursor: pointer; }
 .sumList dd { font-variant-numeric: tabular-nums; text-align: right; font-weight: 400; color: inherit; }
 .sumTotal strong { font-variant-numeric: tabular-nums; }
 .qr img { width: 180px; height: 180px; padding: 8px; border-radius: 12px; background: #fff; }
+
+/* v5 */
+@media (min-width: 768px) { .pgrid { grid-auto-rows: auto; align-items: start; } }
+.pk { position: relative; }
+.incPop { position: absolute; z-index: 30; top: calc(100% - 8px); left: 12px; width: max-content; max-width: 280px; padding: 14px 16px; border: 1px solid #e6ecf5; border-radius: 12px; background: #fff; box-shadow: 0 16px 40px -12px rgb(1 12 40 / 0.25); }
+.incPop .pkList { margin: 0; }
+.incSheetBody .pkList { margin: 0 0 20px; }
+.backLink { display: inline-flex; align-items: center; min-height: 44px; margin: 0 0 12px; padding: 0; color: #5b6478; font-size: 14px; }
+.backLink:hover { color: #0048ff; }
+.backLink + h2, .backLink + section h2 { margin-top: 0; }
+@media (max-width: 1023px) {
+  .mbar { height: auto; min-height: 72px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .mbarHidden { transform: none; }
+  .page { padding-bottom: calc(140px + env(safe-area-inset-bottom)); }
+  .mtotal span:first-child { color: #6b7280; font-size: 12px; }
+}
+.btnOff { opacity: .5; }
