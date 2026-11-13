@@ -1,11 +1,11 @@
 "use client";
 import Script from "next/script";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { enableMeta, track, visitorId } from "@/lib/meta";
-import { GA4_ID, META_PIXEL_ID, trackFunnel } from "@/lib/analytics";
+import { GA4_ID, META_PIXEL_ID, gaAllowed, gaInit, trackEvent, trackFunnel } from "@/lib/analytics";
 
-/** Renders and does nothing until NEXT_PUBLIC_GA4_ID or NEXT_PUBLIC_META_PIXEL_ID is set. */
+/** Renders and does nothing until NEXT_PUBLIC_GA_ID or NEXT_PUBLIC_META_PIXEL_ID is set. */
 export default function Analytics({ allowLocal = false }: { allowLocal?: boolean }) {
   const path = usePathname();
   const enabled = !!(GA4_ID || META_PIXEL_ID);
@@ -19,6 +19,19 @@ export default function Analytics({ allowLocal = false }: { allowLocal?: boolean
     if (fbclid && !/(?:^|; )_fbc=/.test(document.cookie)) document.cookie = `_fbc=fb.1.${Date.now()}.${fbclid}; path=/; max-age=${60 * 60 * 24 * 90}; SameSite=Lax`;
     setPixel({ vid: visitorId() });
   }, [allowLocal]);
+  // GA4: loads only on the public site. page_view is sent here, once per URL (gtag's own first page_view is off).
+  const [ga, setGa] = useState(false);
+  useEffect(() => { if (GA4_ID && gaAllowed(location.hostname)) { gaInit(); setGa(true); } }, []);
+  const search = useSearchParams()?.toString() ?? "";
+  const lastGaPage = useRef("");
+  useEffect(() => {
+    if (!ga) return;
+    const url = path + (search ? `?${search}` : "");
+    if (lastGaPage.current === url) return;
+    lastGaPage.current = url;
+    trackEvent("page_view", { page_location: location.origin + url, page_path: path, page_title: document.title });
+  }, [ga, path, search]);
+
   // PageView on first load and on every route change, once per page.
   const lastPage = useRef("");
   useEffect(() => {
@@ -45,6 +58,7 @@ export default function Analytics({ allowLocal = false }: { allowLocal?: boolean
       if (wa) {
         const where = wa.dataset.cta || wa.closest<HTMLElement>("[data-cta]")?.dataset.cta || wa.closest("section,header,footer,aside")?.getAttribute("aria-label") || (wa.closest("footer") ? "footer" : path);
         track("Contact", { content_name: String(where).slice(0, 60) });
+        trackEvent("contact", { method: "whatsapp", cta: String(where).slice(0, 60), link_url: wa.href });
       }
       const cta = (e.target as Element).closest<HTMLElement>("[data-cta]")?.dataset.cta ?? "";
       const card = (e.target as Element).closest<HTMLElement>(".price-card");
@@ -70,10 +84,9 @@ export default function Analytics({ allowLocal = false }: { allowLocal?: boolean
   if (!enabled) return null;
   return (
     <>
-      {GA4_ID && (
+      {GA4_ID && ga && (
         <>
           <Script src={`https://www.googletagmanager.com/gtag/js?id=${GA4_ID}`} strategy="afterInteractive" />
-          <Script id="ga4" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config','${GA4_ID}');`}</Script>
         </>
       )}
       {META_PIXEL_ID && pixel && (

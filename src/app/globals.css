@@ -2683,3 +2683,9 @@ body:has(#home-problem-title) header .wrap { max-width: 1760px; padding-inline: 
   body:has(#home-problem-title) #main #top .hero-copy .hero-cue { display: none; }
   body:has(#home-problem-title) #main .rise-free #top .hero-visual:not(#_) { margin: 8px auto 0; }
 }
+@media (max-width: 767px) {
+  body:has(#home-problem-title) #main #top h1.h1:not(#_):not(#__) { font-size: clamp(28px, 8.4vw, 36px) !important; }
+  body:has(#home-problem-title) #main #top .hero-copy .hero-sub:not(#_):not(#__) { max-width: none; font-size: min(14px, 3.75vw); }
+  body:has(#home-problem-title) #main #top .hero-copy .hero-sub span { display: block; white-space: nowrap; }
+}
+@media (max-width: 767px) { body:has(#home-problem-title) #main #process-title:not(#_):not(#__) { font-size: 7.6vw !important; } }

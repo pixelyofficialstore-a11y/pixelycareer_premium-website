@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
@@ -73,7 +74,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main">{children}</main>
         <Footer />
         <StickyBar />
-        <Analytics allowLocal={!!process.env.META_TEST_EVENT_CODE} />
+        <Suspense fallback={null}>
+          <Analytics allowLocal={!!process.env.META_TEST_EVENT_CODE} />
+        </Suspense>
       </body>
     </html>
   );
