@@ -2658,3 +2658,9 @@ footer .wrap, #final-cta[data-blog] .wrap { max-width: 1264px; padding-inline: 3
   #main:is(:has(#home-problem-title), :has([data-pricing-page])) :is(h1, h2) { font-weight: 700; letter-spacing: -0.02em; line-height: 1.1; }
   #main:is(:has(#home-problem-title), :has([data-pricing-page])) h1, #main:is(:has(#home-problem-title), :has([data-pricing-page])) h1 * { font-weight: 800 !important; }
 }
+
+/* Footer payment logos: one 20px row, 12px gaps, centred with "We accept". Files are 2x, never upscaled. */
+.pay-logos { gap: 12px; }
+.pay-logo { height: 20px; }
+.pay-logo img { width: auto; height: 20px; opacity: 1; }
+@media (max-width: 767px) { .pay-logos { gap: 12px; } .pay-logo { height: 20px; } .pay-logo img { height: 20px; } }
