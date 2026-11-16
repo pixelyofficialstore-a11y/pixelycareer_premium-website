@@ -1,0 +1,49 @@
+/* Footer, every page. Scoped with footer.root:not(#_) so the older global footer rules never reach it. */
+/* The footer ends 32px after the disclaimer. The floating WhatsApp button fades out while the footer's last rows are on screen (CartDrawer). */
+footer.root:not(#_) { padding: 48px 0 32px; color: #fff; }
+
+/* Desktop: brand block + three columns */
+.root .grid { display: grid; grid-template-columns: minmax(0, 1.4fr) repeat(3, minmax(0, 1fr)); gap: 32px; }
+.root .logo { display: block; width: auto; height: 40px; }
+.root .tagline { max-width: 340px; margin: 16px 0 0; color: #9aa5bd; font-size: 14px; line-height: 1.6; text-wrap: balance; }
+.root .social { display: flex; gap: 12px; margin: 20px 0 0; padding: 0; list-style: none; }
+.root .social a { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #131f3d; color: #fff; transition: background-color 150ms ease; }
+.root .social a:hover { background: #1d2b52; }
+.root .social a.green { color: #25d366; }
+
+.root .title { margin: 0; color: #fff; font-size: 14px; font-weight: 600; line-height: 1.4; letter-spacing: 0; }
+.root .links { margin: 16px 0 0; padding: 0; list-style: none; }
+.root .links li + li { margin-top: 12px; }
+.root .links a { color: #9aa5bd; font-size: 14px; line-height: 1.5; text-decoration: none; transition: color 150ms ease; }
+.root .links a:hover { color: #fff; }
+.root .links a.wa { color: #4c8dff; }
+.root .links a.wa:hover { color: #fff; }
+
+.root .fold { display: none; }
+
+/* Divider + one bottom row */
+.root .bottom { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 24px; padding-top: 24px; border-top: 1px solid rgb(255 255 255 / 0.1); }
+.root .legal { margin: 0; color: #9aa5bd; font-size: 14px; line-height: 1.5; }
+.root .legal a { color: inherit; text-decoration: none; white-space: nowrap; transition: color 150ms ease; }
+.root .legal a:hover { color: #fff; }
+.root .pay { display: flex; flex-wrap: nowrap; align-items: center; gap: 16px; color: #9aa5bd; font-size: 14px; white-space: nowrap; }
+.root .pay img { display: block; width: auto; height: 20px; }
+.root .disclaimer { margin: 16px 0 0; color: #6b7690; font-size: 11px; line-height: 1.5; }
+
+/* Phones and tablets: brand, the three columns as accordions, payment logos, then © and the disclaimer. All left-aligned, 24px apart. */
+@media (max-width: 1023px) {
+  .root .grid { display: block; }
+  .root .col { display: none; }
+  .root .brand { margin-bottom: 24px; }
+  .root .fold { display: block; border-bottom: 1px solid rgb(255 255 255 / 0.1); }
+  .root .fold:first-of-type { border-top: 1px solid rgb(255 255 255 / 0.1); }
+  .root .foldHead { display: flex; align-items: center; justify-content: space-between; min-height: 48px; color: #fff; font-size: 14px; font-weight: 600; list-style: none; cursor: pointer; }
+  .root .foldHead::-webkit-details-marker { display: none; }
+  .root .chev { color: #9aa5bd; transition: rotate 200ms ease; }
+  .root .fold[open] .chev { rotate: 180deg; }
+  .root .fold .links { margin: 0; padding: 0 0 16px; }
+  .root .fold .links a { display: inline-flex; align-items: center; min-height: 32px; }
+  .root .fold .links li + li { margin-top: 4px; }
+  .root .bottom { flex-direction: column-reverse; align-items: flex-start; gap: 24px; margin-top: 24px; padding-top: 0; border-top: 0; }
+  .root .disclaimer { margin-top: 24px; }
+}

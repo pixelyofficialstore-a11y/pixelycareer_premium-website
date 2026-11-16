@@ -1,14 +1,15 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, type ReactNode } from "react";
-import { BUNDLE, BUNDLE_EXTRA_LINE, BUNDLE_NOW, offerHref } from "@/config/offers";
-import type { MarketKey } from "@/config/markets";
+import { BUNDLE, BUNDLE_NOW, SALE, offerHref, onlinePrice } from "@/config/offers";
+import { MARKETS, formatPricingPrice, getPackages, type MarketKey } from "@/config/markets";
+import { usePathname } from "next/navigation";
 import { trackFunnel, trackPromotion, type Commerce } from "@/lib/analytics";
-import { useCountdown, useOffer } from "./useOffer";
+import { useCountdown, useOffer, useSale } from "./useOffer";
 import "./offer.css";
 
 /**
- * 11.11 Sale (pk). One offer: "Executive Career Branding & Personal Website" (short: "Executive Branding & Website"),
+ * 11.11 Sale (pk). One offer: "Executive Branding & Personal Website" (short: "Executive Branding & Website"),
  * Rs 27,500 → Rs 20,000.
  * Every piece hides itself when the offer ends by time or slots, all use the real endsAt, and all colors
  * come from the --sale tokens in offer.css (no green, no cyan).
@@ -35,7 +36,6 @@ function useSeen(slot: string) {
     const io = new IntersectionObserver(([e]) => {
       if (e.isIntersecting) {
         trackPromotion("view_promotion", BUNDLE.id, slot);
-        if (slot.endsWith("_band")) trackFunnel("view", OFFER_ITEM);
         io.disconnect();
       }
     }, { threshold: 0.5 });
@@ -46,8 +46,8 @@ function useSeen(slot: string) {
 }
 
 export const inline = (t: { d: number; h: number; m: number }) => `${t.d}d ${pad(t.h)}h ${pad(t.m)}m`;
-const OFFER_ITEM: Commerce = { name: BUNDLE.title, ids: [BUNDLE.packageId, BUNDLE.addonId], value: BUNDLE.price, currency: "PKR", items: 2 };
-const claim = (slot: string) => () => { trackPromotion("select_promotion", BUNDLE.id, slot); if (slot.endsWith("_band")) trackFunnel("view", OFFER_ITEM); trackFunnel("cart", OFFER_ITEM); };
+export const OFFER_ITEM: Commerce = { name: BUNDLE.title, ids: [BUNDLE.packageId, BUNDLE.addonId], value: BUNDLE.price, currency: "PKR", items: 2 };
+const claim = (slot: string) => () => { trackPromotion("select_promotion", BUNDLE.id, slot); trackFunnel("cart", OFFER_ITEM); };
 
 export function Flame({ size = 14 }: { size?: number }) {
   return <svg viewBox="0 0 24 24" width={size} height={size} fill="currentColor" aria-hidden="true"><path d="M12 2c1 3.5-1.5 5.2-1.5 7.6 0 1.3.9 2.2 2 2.2 1.4 0 2.2-1.2 1.9-3.1 2.6 1.8 4.6 4.5 4.6 7.6A7 7 0 0 1 12 23a7 7 0 0 1-7-6.7c0-4.3 3.2-6.8 4.5-9.6.6 1 .9 2 .8 3.2C12.3 8.4 12.9 5.5 12 2Z" /></svg>;
@@ -81,32 +81,29 @@ function Countdown({ t }: { t: { d: number; h: number; m: number; s: number } })
   );
 }
 
-/** The offer band (id="offer"): right after the hero on /pk, above the heading on /pricing?m=pk. */
+/** The offer band (id="offer") under the hero: the 11.11 Sale (20% off online) with its countdown. */
 export function OfferBand({ market, slot = "home_band" }: { market: MarketKey; slot?: string }) {
-  const { live, remaining, t } = useLive(market);
+  const { live, t } = useSale(1000);
   const ref = useSeen(slot);
-  if (!live) return null;
+  if (!live || market !== "pk") return null;
   return (
     <section id="offer" ref={ref} className="of-band" aria-labelledby="of-band-title">
       <div className="wrap of-band-grid">
         <div className="of-band-copy">
-          <span className="of-tag of-tag-big"><Flame size={15} />11.11 SALE</span>
-          <h2 id="of-band-title">Executive Career Branding <em>& Personal Website.</em></h2>
+          <span className="of-tag of-tag-big"><Flame size={15} />{SALE.tag}</span>
+          <h2 id="of-band-title">Flat 20% off <em>all packages.</em></h2>
           <ul className="of-list">
-            {["Premium CV and LinkedIn makeover", "Personal portfolio website", "Free domain and hosting for 1 year"].map((item) => (
+            {SALE.bullets.map((item) => (
               <li key={item}><svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="m3 8.5 3.2 3L13 4.5" /></svg>{item}</li>
             ))}
           </ul>
         </div>
         <div className="of-price-card">
-          <p className="of-was"><s>{rs(BUNDLE.compareAt)}</s></p>
-          <p className="of-now">{rs(BUNDLE.price)}</p>
-          <p className="of-extra">{BUNDLE_EXTRA_LINE}</p>
+          <p className="of-was">Sale ends 30 Nov</p>
           <p className="of-ends" suppressHydrationWarning>Ends in {inline(t)}</p>
           <Countdown t={t} />
-          <Link href={OFFER_HREF} className="of-btn" data-cta={`offer-claim-${slot}`} onClick={claim(slot)}>Claim 11.11 offer →</Link>
-          {remaining !== null && remaining <= SHOW_SLOTS_AT && <p className="of-band-slots">Only {remaining} slots left</p>}
-          <p className="of-band-note">Money back guarantee · <Link href="/terms#offers">T&C apply</Link></p>
+          <a href="#pricing" className="of-btn" data-cta={`offer-see-plans-${slot}`} onClick={() => trackPromotion("select_promotion", "sale-20", slot)}>See plans</a>
+          <p className="of-band-note">100% money back guarantee</p>
         </div>
       </div>
     </section>
@@ -127,7 +124,7 @@ export function ExecUpgrade({ on, onChange }: { on: boolean; onChange: (v: boole
       <span className="of-up-box" aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg></span>
       <span className="of-up-body">
         <b>Upgrade to the 11.11 Bundle</b>
-        <span className="of-up-row"><span>Executive Career Branding</span><span>7,500</span></span>
+        <span className="of-up-row"><span>Executive Branding</span><span>7,500</span></span>
         <span className="of-up-row"><span>Personal Website + domain</span><span>20,000</span></span>
         <span className="of-up-row of-up-total"><span>Worth <s>27,500</s></span><strong>Both for {rs(BUNDLE_NOW)}</strong></span>
       </span>
@@ -145,19 +142,17 @@ export function ExecClaim() {
  * in place of the CV image (stacked under the subtext on mobile). Otherwise the normal buttons.
  */
 export function FinalCtaOffer({ market, blog = false, children }: { market: MarketKey; blog?: boolean; children: ReactNode }) {
-  const { live, t } = useLive(market, 60_000);
-  if (!live) return <>{children}</>;
+  const { live, t } = useSale(1000);
+  if (!live || market !== "pk") return <>{children}</>;
   return (
     <>
       <div className="of-fstats"><p><b>1,800+</b>Professionals helped</p><p><b>100%</b>Recommended on Facebook</p></div>
       <div className="of-fcard">
-        <div className="of-fcard-top"><span className="of-tag">11.11 BUNDLE</span><span suppressHydrationWarning>Ends in {inline(t)}</span></div>
-        <p className="of-fcard-title">Executive Career Branding <em>& Personal Website</em></p>
-        <p className="of-fcard-was"><s>Worth {rs(BUNDLE.compareAt)}</s></p>
-        <p className="of-fcard-price"><b>{rs(BUNDLE.price)}</b></p>
-        <Link href={OFFER_HREF} className="of-exec-claim" data-cta="offer-claim-final_cta" onClick={claim("final_cta")}>Claim 11.11 Bundle</Link>
-        <p className="of-extra">{BUNDLE_EXTRA_LINE}</p>
-        <p className="of-fcard-alt">Just need a CV? <Link href="/pricing?m=pk" data-cta={blog ? "blog-final-packages" : "final-packages"}>See all packages</Link></p>
+        <div className="of-fcard-top"><span className="of-tag">{SALE.tag}</span><span>Ends 30 Nov</span></div>
+        <p className="of-fcard-title">{SALE.headline}</p>
+        <ul className="of-fcard-list">{SALE.bullets.map((x) => <li key={x}><span className="of-tick" aria-hidden="true">✓</span> {x}</li>)}</ul>
+        <Countdown t={t} />
+        <a href={blog ? "/#pricing" : "#pricing"} className="of-btn of-btn-blue of-fcard-btn" data-cta={blog ? "blog-final-see-plans" : "final-see-plans"}>See plans</a>
       </div>
     </>
   );
@@ -178,8 +173,7 @@ export function StickyOffer() {
 
 /** Announcement bar: one static line that fades between two messages. */
 export const BAR_MESSAGES = [
-  { href: "/pricing?m=pk", long: <><span className="of-hl">11.11 Sale:</span> Flat 20% off all packages · Order now →</>, short: <><span className="of-hl">11.11:</span> Flat 20% off →</> },
-  { href: "/pk#offer", long: <><span className="of-hl">11.11 Bundle:</span> Executive Branding + Personal Website, Rs {BUNDLE_NOW.toLocaleString("en-US")} · See offer →</>, short: <><span className="of-hl">11.11 Bundle</span> Rs {BUNDLE_NOW.toLocaleString("en-US")} →</> },
+  { href: "/#pricing", long: <><span className="of-hl">11.11 Sale:</span> Flat 20% off all packages · See plans →</>, short: <><span className="of-hl">11.11 Sale:</span> Flat 20% off · See plans →</> },
 ];
 export function Ticker({ i }: { i: number }) {
   return (
@@ -193,3 +187,36 @@ export function Ticker({ i }: { i: number }) {
   );
 }
 
+
+
+/** Final CTA card on every page. While the sale is on: the white sale card with the countdown. After SALE.endsAt: plans from the lowest full price, no countdown. */
+export function FinalCtaCard() {
+  const path = usePathname();
+  const { live, t } = useSale(1000);
+  const href = path === "/" || path === "/offer" ? "#pricing" : "/pricing#plans";
+  // The lowest plan price, and the same plan at the online (sale) price.
+  const m = MARKETS.pk;
+  const low = Math.min(...getPackages(m).map((p) => p.price));
+  const from = formatPricingPrice(m, low);
+  if (live) {
+    return (
+      <div className="fc-card">
+        <div className="fc-top"><span className="fc-tag">{SALE.tag}</span><span>Ends 30 Nov</span></div>
+        <p className="fc-title">{SALE.headline}</p>
+        <p className="fc-price">CVs from <s>{from}</s> <b>{formatPricingPrice(m, onlinePrice(low))}</b></p>
+        <div className="fc-count" role="timer" aria-label={`${t.d} days, ${t.h} hours and ${t.m} minutes left`}>
+          {([["Days", t.d], ["Hrs", t.h], ["Min", t.m], ["Sec", t.s]] as const).map(([label, n]) => (
+            <div key={label}><b suppressHydrationWarning>{pad(n)}</b><span>{label}</span></div>
+          ))}
+        </div>
+        <a href={href} className="fc-btn fc-btn-sale" data-cta="final-see-plans" onClick={() => trackPromotion("select_promotion", "sale-20", "final_cta")}>See plans</a>
+      </div>
+    );
+  }
+  return (
+    <div className="fc-card fc-card-plain">
+      <p className="fc-title">Plans from {from}</p>
+      <a href={href} className="fc-btn fc-btn-blue" data-cta="final-see-plans">See plans</a>
+    </div>
+  );
+}

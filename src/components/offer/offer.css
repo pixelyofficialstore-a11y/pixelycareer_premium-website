@@ -220,3 +220,124 @@ html:has(.of-ticker):not([data-bar-closed], [data-no-bar]) { --bar-h: 36px; }
 .of-foot-line { margin: 24px 0 0; color: rgb(255 255 255 / 0.8); font-size: 13px; }
 
 .of-price-card .of-was s { text-decoration-color: #f4733c; text-decoration-thickness: 2px; }
+
+/* Brand colours: orange only for the 11.11 tag, the price card sale label, strike-throughs and countdown digits. */
+.of-band { background: #010c28; }
+.of-band h2 em, .of-fcard-title em { color: var(--color-periwinkle); }
+.of-list svg { color: var(--color-periwinkle); }
+.of-count b { color: var(--sale-500) !important; }
+.of-btn-blue, .of-exec-claim, .of-sticky-btn, .of-cta-btn { background: var(--color-vivid) !important; box-shadow: none !important; color: #fff; }
+.of-btn-blue:hover, .of-exec-claim:hover, .of-sticky-btn:hover, .of-cta-btn:hover { background: #01219c !important; }
+.of-band .of-was { color: rgb(255 255 255 / 0.75); font-size: 15px; font-weight: 600; }
+.of-fcard-title { font-size: 22px; font-weight: 700; }
+.of-fcard-list { list-style: none; margin: 12px 0 14px; padding: 0; display: grid; gap: 6px; color: rgb(255 255 255 / 0.85); font-size: 14px; }
+.of-fcard .of-count { width: 100%; justify-content: space-between; padding: 12px 0; border: 0; border-block: 1px solid rgb(255 255 255 / 0.1); border-radius: 0; background: none; }
+.of-fcard .of-count div { flex: 1; min-width: 0; padding: 0; }
+.of-fcard-btn { width: 100%; margin-top: 16px; text-decoration: none; }
+/* Sale band: the countdown shows on every screen size, so the inline "Ends in" line is not needed. */
+.of-band .of-price-card .of-count { display: flex; }
+.of-band .of-ends { display: none !important; }
+
+/* Offer band: orange accents on navy; bullets 12px apart; the countdown card centred with the headline block */
+.of-band h2 em { background: linear-gradient(90deg, #ff8a50, #ef5f2a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.of-band .of-list svg { color: #ff8a50; }
+.of-band .of-list { gap: 12px; }
+.of-band .of-band-grid { align-items: center; }
+
+/* Final CTA (every page): copy left, white card right, centred together */
+#main #final-cta.fcta { padding-block: 80px !important; overflow: visible; }
+.fcta-grid { display: grid; grid-template-columns: minmax(0, 560px) 400px; justify-content: center; align-items: center; gap: 64px; }
+.fcta-copy { max-width: 560px; text-align: left; }
+#main #final-cta #cta-title.fcta-title { margin: 0; font-family: var(--font-head); font-weight: 600; font-size: clamp(24px, 6.6vw, 44px) !important; line-height: 1.12; letter-spacing: -0.02em; color: #fff !important; white-space: nowrap; }
+#main #final-cta #cta-title.fcta-title em { font-style: normal; color: #a9c1ff !important; }
+.fcta-sub { margin: 16px 0 0; color: rgb(255 255 255 / 0.85); font-size: 17px; line-height: 1.5; }
+.fcta-stats { display: flex; gap: 48px; margin-top: 28px; padding-top: 20px; border-top: 1px solid rgb(255 255 255 / 0.2); }
+.fcta-stats p { display: grid; margin: 0; color: rgb(255 255 255 / 0.75); font-size: 13px; }
+.fcta-stats b { color: #fff; font-family: var(--font-head); font-size: 24px; font-weight: 700; }
+.fc-card { padding: 28px; border-radius: 20px; background: #fff; box-shadow: 0 24px 60px -20px rgb(1 12 40 / 0.35); color: #010c28; text-align: left; }
+.fc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; color: #6b7280; font-size: 13px; }
+.fc-tag { padding: 4px 11px; border-radius: 999px; background: linear-gradient(90deg, #ff8a50, #ef5f2a); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; }
+.fc-title { margin: 0; color: #010c28; font-family: var(--font-head); font-size: 22px; font-weight: 700; line-height: 1.3; }
+.fc-list { list-style: none; display: grid; gap: 8px; margin: 14px 0 0; padding: 0; color: #374151; font-size: 14.5px; }
+.fc-list li { display: flex; align-items: center; gap: 8px; }
+.fc-tick { flex: none; color: #ef5f2a; }
+.fc-card-plain .fc-tick { color: #0048ff; }
+.fc-count { display: flex; margin-top: 18px; padding: 12px 0; border-block: 1px solid #e5e7eb; }
+.fc-count div { flex: 1; display: grid; justify-items: center; }
+.fc-count div + div { border-left: 1px solid #e5e7eb; }
+.fc-count b { color: #ef5f2a; font-family: var(--font-head); font-size: 28px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.fc-count span { color: #6b7280; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; }
+.fc-btn { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 54px; margin-top: 18px; border-radius: 999px; color: #fff !important; font-size: 16px; font-weight: 600; text-decoration: none; transition: transform .2s ease, filter .2s ease; }
+.fc-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.fc-btn-sale { background: linear-gradient(90deg, #ff8a50, #ef5f2a); box-shadow: 0 12px 24px -12px rgb(239 95 42 / 0.7); }
+.fc-btn-blue { background: #0048ff; }
+@media (max-width: 900px) {
+  #main #final-cta.fcta { padding-block: 56px !important; }
+  .fcta-grid { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  .fcta-copy { max-width: none; text-align: center; }
+  .fcta-stats { justify-content: center; gap: 40px; }
+  .fc-card { padding: 22px; }
+}
+
+/* /offer hero: the longer headline stays exactly two lines (8.2vw keeps "Still no interview calls?" inside 360px) */
+body #main #top h1.h1.h1-two > span { white-space: nowrap; }
+
+/* /offer H1: 12% under the homepage size, a little more space between the two lines */
+body #main #top h1.h1.h1-two > span { font-size: 0.88em; line-height: 1.15; letter-spacing: -0.02em; }
+/* Desktop: line 2 must clear the CV visual, which needs about 30% under the homepage size at -0.02em tracking */
+@media (min-width: 1024px) { body #main #top h1.h1.h1-two > span { font-size: 0.7em; } }
+
+/* ===== Final CTA v2 (every page): copy + buttons + 3 stats left, the offer card right. Overrides the rules above. ===== */
+html body #final-cta.fcta:not(#_):not(#__) { padding: 72px 0 !important; margin-bottom: 0 !important; overflow: visible; }
+html body #final-cta .fcta-grid:not(#_) { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; align-items: center; justify-content: stretch; }
+html body #final-cta .fcta-copy:not(#_) { max-width: none; text-align: left; }
+html body #final-cta #cta-title.fcta-title:not(#_):not(#__) { margin: 0; font-size: clamp(40px, 4.6vw, 64px) !important; line-height: 1.05 !important; letter-spacing: -0.02em !important; white-space: nowrap; color: #fff !important; }
+html body #final-cta #cta-title.fcta-title:not(#_) em { display: inline; color: #a9c1ff !important; }
+html body #final-cta .fcta-sub:not(#_) { margin: 20px 0 0; color: rgb(255 255 255 / 0.9); font-size: 18px; line-height: 1.5; }
+.fcta-actions { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 32px; }
+html body #final-cta .fcta-btn:not(#_) { display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 32px; border-radius: 999px; font-size: 17px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: transform .2s ease, background-color .2s ease, color .2s ease; }
+html body #final-cta .fcta-btn:not(#_):hover { transform: translateY(-1px); }
+html body #final-cta .fcta-btn-white:not(#_) { background: #fff; color: #0048ff !important; }
+html body #final-cta .fcta-btn-line:not(#_) { border: 1.5px solid rgb(255 255 255 / 0.7); background: transparent; color: #fff !important; }
+html body #final-cta .fcta-btn-line:not(#_):hover { background: rgb(255 255 255 / 0.1); border-color: #fff; }
+html body #final-cta .fcta-stats:not(#_) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; margin-top: 40px; padding-top: 32px; border-top: 1px solid rgb(255 255 255 / 0.2); }
+html body #final-cta .fcta-stats:not(#_) p { display: grid; align-content: start; gap: 4px; margin: 0; color: rgb(255 255 255 / 0.8); font-size: 15px; line-height: 1.4; }
+html body #final-cta .fcta-stats:not(#_) b { color: #fff; font-family: var(--font-head); font-size: 32px; font-weight: 700; line-height: 1.1; white-space: nowrap; }
+
+/* The card */
+html body #final-cta .fc-card:not(#_) { width: 100%; padding: 32px; border-radius: 18px; box-shadow: 0 32px 64px -24px rgb(1 12 40 / 0.45); }
+html body #final-cta .fc-top:not(#_) { margin-bottom: 20px; font-size: 15px; }
+html body #final-cta .fc-tag:not(#_) { padding: 6px 16px; font-size: 13px; }
+html body #final-cta .fc-title:not(#_) { font-size: 26px; line-height: 1.25; }
+.fc-price { margin: 6px 0 0; color: #6b7280; font-size: 17px; line-height: 1.4; }
+.fc-price s { color: #9ca3af; }
+.fc-price b { color: #010c28; font-weight: 700; }
+html body #final-cta .fc-count:not(#_) { margin-top: 20px; padding: 14px 8px; border: 0; border-radius: 14px; background: #fff5ef; }
+html body #final-cta .fc-count:not(#_) div + div { border-left: 0; }
+html body #final-cta .fc-count:not(#_) b { font-size: 30px; }
+html body #final-cta .fc-count:not(#_) span { margin-top: 2px; color: #9ca3af; font-size: 12px; }
+html body #final-cta .fc-btn:not(#_) { min-height: 60px; margin-top: 24px; font-size: 18px; }
+html body #final-cta .fc-card-plain .fc-btn:not(#_) { margin-top: 20px; }
+
+/* Phones and tablets: the copy block, then the card full width. Left-aligned. */
+@media (max-width: 1023px) {
+  html body #final-cta.fcta:not(#_):not(#__) { padding: 56px 0 !important; }
+  html body #final-cta .fcta-grid:not(#_) { grid-template-columns: minmax(0, 1fr); gap: 32px; }
+  html body #final-cta #cta-title.fcta-title:not(#_):not(#__) { font-size: min(8.2vw, 48px) !important; }
+}
+@media (max-width: 767px) {
+  html body #final-cta .fcta-sub:not(#_) { margin-top: 14px; font-size: 16px; }
+  .fcta-actions { flex-direction: column; gap: 12px; margin-top: 24px; }
+  html body #final-cta .fcta-btn:not(#_) { width: 100%; min-height: 52px; font-size: 16px; }
+  html body #final-cta .fcta-stats:not(#_) { gap: 12px; margin-top: 28px; padding-top: 24px; }
+  html body #final-cta .fcta-stats:not(#_) p { font-size: 13px; }
+  html body #final-cta .fcta-stats:not(#_) b { font-size: 24px; }
+  html body #final-cta .fc-card:not(#_) { padding: 22px; }
+  html body #final-cta .fc-title:not(#_) { font-size: 22px; }
+  html body #final-cta .fc-price:not(#_) { font-size: 15px; }
+  html body #final-cta .fc-count:not(#_) b { font-size: 26px; }
+  html body #final-cta .fc-btn:not(#_) { min-height: 54px; font-size: 16px; }
+}
+/* The headline fits its column on one line each (64px is wider than the 1.25fr column at 1440); always left-aligned */
+html body #final-cta #cta-title.fcta-title:not(#_):not(#__):not(#___) { font-size: clamp(36px, 4.15vw, 60px) !important; text-align: left !important; }
+@media (max-width: 1023px) { html body #final-cta #cta-title.fcta-title:not(#_):not(#__):not(#___) { font-size: min(8.2vw, 48px) !important; } }

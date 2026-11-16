@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import CartDrawer from "@/components/cart/CartDrawer";
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
@@ -55,7 +56,7 @@ const STRUCTURED_DATA = {
 };
 
 // The server sends en-US. This sets the market home's language before anything is read.
-const SET_LANG = `document.documentElement.lang={"/pk":"en-PK","/ae":"en-AE","/sa":"en-SA","/uk":"en-GB"}[location.pathname]||"en-US";var p=location.pathname;if(p==="/order"||p.indexOf("/order/")===0||p==="/free-cv-review")document.documentElement.setAttribute("data-no-bar","");try{if(sessionStorage.getItem("pixely-bar-closed"))document.documentElement.setAttribute("data-bar-closed","")}catch(e){}`;
+const SET_LANG = `var p=location.pathname;document.documentElement.lang="en-PK";if(p==="/checkout"||p.indexOf("/order/")===0||p==="/free-cv-review")document.documentElement.setAttribute("data-no-bar","");try{if(sessionStorage.getItem("pixely-bar-closed"))document.documentElement.setAttribute("data-bar-closed","")}catch(e){}`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main">{children}</main>
         <Footer />
         <StickyBar />
+        <CartDrawer />
         <Suspense fallback={null}>
           <Analytics allowLocal={!!process.env.META_TEST_EVENT_CODE} />
         </Suspense>

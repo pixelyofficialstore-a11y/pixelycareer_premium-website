@@ -49,3 +49,6 @@
     right: -4%;
   }
 }
+
+/* /offer: a longer headline, always exactly two lines */
+.twoLine > span { white-space: nowrap; }

@@ -6,8 +6,11 @@ import { env } from "./env";
 
 export const fail = (status = 400, error = "Please check your details and try again.") => NextResponse.json({ error }, { status });
 
+/** Visitor IP. IPv6 is preferred (Meta matches it better) and never shortened or converted. */
 export function clientIp(req: Request) {
-  return (req.headers.get("x-forwarded-for") ?? req.headers.get("x-real-ip") ?? "").split(",")[0].trim().slice(0, 60) || null;
+  const h = (n: string) => (req.headers.get(n) ?? "").split(",")[0].trim().replace(/^\[|\]$/g, "").slice(0, 60);
+  for (const n of ["cf-connecting-ipv6", "cf-connecting-ip", "true-client-ip", "x-forwarded-for", "x-real-ip"]) { const v = h(n); if (v) return v; }
+  return null;
 }
 export function ipCountry(req: Request, market?: string | null) {
   const h = (req.headers.get("cf-ipcountry") ?? req.headers.get("x-vercel-ip-country") ?? "").toUpperCase().slice(0, 2);

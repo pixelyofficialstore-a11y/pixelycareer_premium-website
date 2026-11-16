@@ -5,6 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { MARKETS, orderHref } from "@/config/markets";
 import { useMarket } from "./useMarket";
 import { StickyOffer, useLive } from "@/components/offer/Offer";
+import { cartCount, openCart, useCart } from "@/lib/cart";
+import { WA_HELLO, WaGlyph } from "@/components/cart/CartDrawer";
 
 /** Small screen order bar on every page except /order: appears once the hero has scrolled out, hides near the final call to action. */
 export default function StickyBar() {
@@ -12,9 +14,23 @@ export default function StickyBar() {
   const path = usePathname();
   const [show, setShow] = useState(false);
   const footerIn = useRef(false);
-  const off = path === "/order" || path.startsWith("/order/");
+  const off = path === "/checkout" || path.startsWith("/order/");
   // pk: the 11.11 Sale replaces "Start your order" while it is on, and hides while the offer band is in view.
-  const { live: sale } = useLive(market, 60_000);
+  const { live: saleLive } = useLive(market, 60_000);
+  const pk = market === "pk";
+  const sale = saleLive && !pk;
+  const count = cartCount(useCart());
+  // pk: "See plans" until the plans have been seen and something is in the cart, then "Place your order".
+  const [seen, setSeen] = useState(false);
+  useEffect(() => {
+    if (!pk) return;
+    try { if (sessionStorage.getItem("pixely-plans-seen")) { setSeen(true); return; } } catch {}
+    const el = document.getElementById("plans");
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setSeen(true); try { sessionStorage.setItem("pixely-plans-seen", "1"); } catch {} io.disconnect(); } }, { threshold: 0.2 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [pk, path]);
 
   useEffect(() => {
     if (off) return;
@@ -44,13 +60,34 @@ export default function StickyBar() {
     };
   }, [off, path, sale]);
 
+  // --sticky-h: the bar's real height (its bottom padding already includes the safe area), used for the page's bottom padding.
+  const bar = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = bar.current;
+    if (!el) return;
+    const set = () => document.documentElement.style.setProperty("--sticky-h", `${el.offsetHeight}px`);
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    set();
+    return () => ro.disconnect();
+  }, [off]);
   if (off) return null;
   return (
     <div
+      ref={bar}
       inert={!show}
       className={`fixed inset-x-0 bottom-0 z-40 transition-[transform,opacity] duration-200 ease-out-soft lg:hidden ${sale ? "" : "border-t border-navy/10 bg-white px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]"} ${show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
     >
-      {sale ? <StickyOffer /> : <Link href={orderHref(MARKETS[market])} className="btn btn-primary w-full" data-cta="sticky-order">
+      {pk ? (
+        <div className="flex gap-2">
+          {seen && count ? (
+            <button type="button" onClick={openCart} className="btn btn-primary flex-1" data-cta="sticky-checkout">Place your order</button>
+          ) : (
+            <a href="#plans" onClick={(e) => { if (!document.getElementById("plans")) { e.preventDefault(); location.href = "/pricing#plans"; } }} className="btn btn-primary flex-1" data-cta="sticky-see-plans">See plans</a>
+          )}
+          <a href={WA_HELLO} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp" data-cta="sticky-whatsapp" className="grid h-12 w-12 flex-none place-items-center rounded-full bg-[#010c28] text-white"><WaGlyph size={24} /></a>
+        </div>
+      ) : sale ? <StickyOffer /> : <Link href={orderHref(MARKETS[market])} className="btn btn-primary w-full" data-cta="sticky-order">
         Start your order →
       </Link>}
     </div>

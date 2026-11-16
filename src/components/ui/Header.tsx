@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { MARKETS, orderHref } from "@/config/markets";
 import { NAV, WHATSAPP_URL } from "@/lib/site";
 import { useMarket } from "./useMarket";
+import { cartCount, openCart, useCart } from "@/lib/cart";
 
 export default function Header() {
   const pathname = usePathname();
@@ -20,6 +21,8 @@ export default function Header() {
     if (lenis) lenis.scrollTo(0, { immediate: true });
     else window.scrollTo(0, 0);
   };
+  const pk = market.key === "pk";
+  const count = cartCount(useCart());
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const sentinel = useRef<HTMLDivElement>(null);
@@ -85,10 +88,18 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center justify-end gap-2 lg:gap-4">
+            {pk && (
+              <>
+                <button type="button" onClick={openCart} aria-label={`Cart, ${count} item${count === 1 ? "" : "s"}`} data-cta="header-cart" className="relative inline-flex h-11 w-11 cursor-pointer items-center justify-center">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2" /><circle cx="9.5" cy="20" r="1.2" /><circle cx="17.5" cy="20" r="1.2" /></svg>
+                  {count > 0 && <span className="absolute top-1 right-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-vivid px-1 text-[11px] font-bold text-white">{count}</span>}
+                </button>
+              </>
+            )}
             {pathname === "/partners" ? (
               <a href="#agency-enquiry" className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta="agency-header-call">Book a 15 minute call →</a>
             ) : (
-              <Link href={orderHref(market)} className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta={homepage ? "home-header-order" : "header-order"}>
+              <Link href={pk ? "/pricing#plans" : orderHref(market)} className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta={homepage ? "home-header-order" : "header-order"}>
                 Start your order
               </Link>
             )}

@@ -22,7 +22,7 @@ const markers = [
 type Drag = { pointerId: number; x: number; y: number; position: number; horizontal: boolean };
 
 /** Root homepage only. Both images keep the same scale under the reveal mask. */
-export default function HomeProblem({ marketKey = "us" }: { marketKey?: MarketKey }) {
+export default function HomeProblem({ marketKey = "us", embedded = false }: { marketKey?: MarketKey; embedded?: boolean }) {
   // TODO market image: markets without their own pair show the US pair.
   const before = HERO_PERSONAS[marketKey]?.images?.bad ?? HERO_PERSONAS.us.images.bad;
   const after = HERO_PERSONAS[marketKey]?.images?.good ?? HERO_PERSONAS.us.images.good;
@@ -182,14 +182,7 @@ export default function HomeProblem({ marketKey = "us" }: { marketKey?: MarketKe
     setPosition((value) => event.key === "Home" ? 0 : event.key === "End" ? 100 : Math.max(0, Math.min(100, value + delta)));
   };
 
-  return (
-    <section id="problem" aria-labelledby="home-problem-title" className={styles.section}>
-      <div className={styles.inner}>
-        <h2 id="home-problem-title" className={styles.title}>
-          Same experience. <span>A sharper story.</span>
-        </h2>
-        <p id={descriptionId} className={styles.subtitle}>Drag the line to see the difference.</p>
-
+  const comparison = (
         <div
           ref={comparisonRef}
           className={styles.comparison}
@@ -288,6 +281,18 @@ export default function HomeProblem({ marketKey = "us" }: { marketKey?: MarketKe
             </svg>
           </div>
         </div>
+  );
+  // Inside the homepage Services bento: only the slider, with the caption under it.
+  if (embedded) return <div className={styles.embedded}>{comparison}</div>;
+  return (
+    <section id="problem" aria-labelledby="home-problem-title" className={styles.section}>
+      <div className={styles.inner}>
+        <h2 id="home-problem-title" className={styles.title}>
+          Same experience. <span>A sharper story.</span>
+        </h2>
+        <p id={descriptionId} className={styles.subtitle}>Drag the line to see the difference.</p>
+
+        {comparison}
 
         <div ref={changesRef} className={styles.changes} role="table" aria-label="What changes" onMouseLeave={interactive ? () => { if (activeRow !== null) showRow(null); } : undefined}>
           <div className={styles.changesHead} role="row">

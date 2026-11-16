@@ -12,7 +12,7 @@ export default function SmoothScroll() {
     scheduleMotion(({ gsap, ScrollTrigger }) => {
       import("lenis").then(({ default: Lenis }) => {
         if (cancelled) return;
-        const lenis = new Lenis({ anchors: true, lerp: 0.11 });
+        const lenis = new Lenis({ anchors: false, lerp: 0.11 });
         lenis.on("scroll", ScrollTrigger.update);
         (window as unknown as { __lenis?: unknown }).__lenis = lenis;
         const tick = (t: number) => lenis.raf(t * 1000);

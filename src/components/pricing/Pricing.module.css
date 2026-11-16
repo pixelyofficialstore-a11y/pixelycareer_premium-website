@@ -1125,7 +1125,7 @@
 .page .pricePair > .price .priceUnit { align-self: baseline; padding: 0; font-size: 16px; font-weight: 600; }
 .priceNote { margin: 6px 0 16px; color: #6b7280; font-size: 13px; line-height: 1.4; }
 .page .bundleMeta { color: #c2410c; font-weight: 500; }
-.page .choose, .page .bundleCta { width: 100%; min-height: 48px; height: 48px; justify-content: center; gap: 8px; }
+.page .choose, .page .bundleCta { width: 100%; min-height: 44px; height: 44px; justify-content: center; gap: 8px; }
 .page .badge { white-space: nowrap; }
 .page .badgeBest { background: #eef2ff; color: #0b1b3f; border: 1px solid #d6dcf5; animation: none; }
 .page .badgeSale { background: #f4733c; color: #fff; border: 1px solid #f4733c; }
@@ -1145,7 +1145,7 @@
   .page .mobileTab { white-space: nowrap; padding-inline: .25rem; }
 }
 
-.onlinePill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: #e7f8ee; color: #0a7a3d; font-size: 13px; font-weight: 600; }
+.onlinePill { display: inline-block; padding: 3px 10px; border-radius: 999px; background: #eef3ff; color: #0048ff; font-size: 13px; font-weight: 600; }
 .onlineLine { margin: 4px 0 12px; font-size: 13px; line-height: 1.4; color: #6b7587; }
 
 /* v4: sale label, top aligned cards, footer pinned, no overlap */
@@ -1184,4 +1184,42 @@
   .priceGrid .cardSlot, .priceGrid .card { height: auto; min-height: 0; }
   .priceGrid .includedContent { flex: none; padding-bottom: 0; }
   .priceGrid .supportRow { margin-top: 24px; }
+}
+
+/* PK: bundle as one wide card under the 4 plans */
+.page .bundleWide { grid-column: 1 / -1; }
+.page .bundleRow { display: flex; flex-direction: row !important; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; height: auto !important; }
+.page .bundleRow .packageName { margin: 6px 0 4px; }
+.page .bundleRow .pricePair { margin: 0; align-items: baseline; }
+.bundleOnline { font-size: 13px; color: #6b6b6b; margin-left: 4px; }
+.page .bundleRow .bundleCta { margin: 0; min-width: 160px; justify-content: center; }
+@media (max-width: 767px) { .page .bundleRow { flex-direction: column !important; align-items: stretch; text-align: left; } }
+.oneDoc { text-align: center; margin: 22px auto 0; font-size: 15px; color: #555; }
+.oneDoc a { display: inline-block; margin-left: 8px; color: #0048ff; font-weight: 600; text-decoration: underline; }
+button.choose { cursor: pointer; font: inherit; font-weight: 650; width: 100%; min-height: 44px; height: 44px; padding-block: 0; }
+.choosePrimary:hover { background: #01219c !important; }
+
+/* PK: old price clearly visible, grey with an orange strike line */
+.page .priceGrid .pricePair .compareAt, .page .priceGrid .pricePair .compareAt * { font-size: 18px !important; font-weight: 400; color: #6b7280 !important; text-decoration-color: #f4733c !important; }
+.page .priceGrid .pricePair .compareAt { text-decoration: line-through; text-decoration-thickness: 2px; }
+
+/* PK: the 11.11 offer strip under the cards */
+.saleStrip { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; margin: 28px 0 0; padding: 18px 24px; border: 1.5px solid #f4733c; border-radius: 18px; background: #fff5ef; color: #010c28; }
+.saleStrip p { margin: 0; font-size: 16px; line-height: 1.5; }
+.saleStrip b { color: #c2410c; }
+.saleCount { color: #c2410c; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (max-width: 640px) { .saleStrip { flex-direction: column; align-items: stretch; text-align: center; } }
+
+/* Compare table: 4 columns like the cards; scrolls sideways on small screens with the feature names fixed */
+.tableScroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tableWas { display: block; margin-top: 2px; color: #9aa4b5; font-size: .72rem; font-weight: 400; }
+.table thead th:first-child, .table tbody th { position: sticky; left: 0; z-index: 1; background: #fff; }
+.table thead th .tablePrice { color: #010c28; font-size: .9rem; font-weight: 700; }
+.ctaRow td:first-child { position: sticky; left: 0; background: #fff; }
+.ctaRow button.choose { cursor: pointer; }
+@media (max-width: 767px) {
+  .compareCard { display: block; }
+  .table { min-width: 680px; }
+  .table thead th:first-child, .table tbody th { width: 130px; min-width: 130px; box-shadow: 1px 0 0 #edf0f5; }
+  .groupRow th { box-shadow: none !important; }
 }

@@ -16,7 +16,7 @@ export async function generateMetadata({ searchParams }: { searchParams: Promise
     "/order",
     offer ? `11.11 Sale: ${BUNDLE.headline}` : "Start Your Order | Pixely Careers",
     offer ? `${BUNDLE.headline} for Rs 20,000 instead of Rs 27,500. Only 10 slots.` : "Choose your package and send your order request in one minute. We confirm everything with you on WhatsApp, including your details, delivery and timing.",
-    { label: "Order", title: "Start your order", offer, locale: offer ? "en_PK" : "en_US" },
+    { label: "Order", title: "Start your order", offer, locale: "en_PK" },
   );
 }
 
@@ -34,7 +34,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ p
     );
   }
   // The 11.11 offer is a PK offer: an offer link opens the PK order form even without a PK geo or market cookie.
-  const market = q.offer && !q.market && !q.m ? MARKETS.pk : await requestMarket(q.market ?? q.m);
+  const market = await requestMarket(q.market ?? q.m);
   // An offer link always means Executive with the website ticked. The URL wins over anything saved.
   const offer = market.key === "pk" && !!q.offer;
   const initial = offer ? "executive" : getPackages(market).find((p) => p.id === q.package)?.id;

@@ -51,9 +51,8 @@ export async function POST(req: Request) {
     const attr = await attribution(req, { fbp: b.fbp, fbc: b.fbc, market: b.market });
     const ad = await adSource();
     const sourceUrl = (req.headers.get("referer") ?? "").slice(0, 500) || null;
-    const leadEventId = b.eventId ? `Lead_${b.eventId}` : null;
     const row = await saveOrder(req, { ...b, step: 4 }, {
-      fbp: attr.fbp, fbc: attr.fbc, clientIp: attr.clientIp, userAgent: attr.userAgent, eventSourceUrl: sourceUrl, leadEventId, ...ad,
+      fbp: attr.fbp, fbc: attr.fbc, clientIp: attr.clientIp, userAgent: attr.userAgent, eventSourceUrl: sourceUrl, ...ad,
       status: paid ? "payment_submitted" : "new",
       cvUrl: cvOk ? b.cvUrl : null, cvPublicId: cvOk ? b.cvPublicId : null,
       paymentMethod: paid ? b.paymentMethod ?? null : null,
@@ -62,11 +61,14 @@ export async function POST(req: Request) {
     });
     if (!row) return fail();
     clearOfferCache();
-    // Conversions API Lead with the order total; the browser Pixel fires the same event_id. Fire and forget.
-    if (!leadEventId) await db().update(orders).set({ leadEventId: `Lead_${row.eventId}` }).where(eq(orders.id, row.id));
-    void sendCapi("Lead", `Lead_${row.eventId}`, { phone: normalizePhone(b.whatsapp, b.code ?? ""), email: b.email, name: b.name, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [row.id, ad.externalId] },
-      { value: row.total, currency: MARKETS[b.market as keyof typeof MARKETS]?.currency ?? "PKR", content_ids: [b.package], content_name: b.package, content_type: "product", content_category: b.market !== "pk" ? undefined : b.payChoice === "later" ? "talk_first" : b.payAmountType === "advance" ? "pay_advance" : "pay_full" }, sourceUrl);
-    const res = NextResponse.json({ ref: row.id.slice(0, 8).toUpperCase(), eventId: row.eventId, total: row.total });
+    // Conversions API AddPaymentInfo for both options (Pay now / Order on WhatsApp), valued at the discounted total.
+    // The browser Pixel fires the same event_id (AddPaymentInfo_<ref>), so Meta deduplicates them. Orders never send Lead.
+    const ref = row.id.slice(0, 8).toUpperCase();
+    const apiId = `AddPaymentInfo_${ref}`;
+    await db().update(orders).set({ leadEventId: apiId }).where(eq(orders.id, row.id));
+    void sendCapi("AddPaymentInfo", apiId, { phone: normalizePhone(b.whatsapp ?? "", b.code ?? ""), email: b.email, name: b.name, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [ad.externalId, row.id] },
+      { value: row.total, currency: MARKETS[b.market as keyof typeof MARKETS]?.currency ?? "PKR", content_ids: [b.package], content_name: b.package, content_type: "product", content_category: b.payChoice === "now" ? "pay_now" : "whatsapp" }, sourceUrl);
+    const res = NextResponse.json({ ref, eventId: row.eventId, total: row.total });
     res.cookies.delete(ORDER_COOKIE);
     return res;
   } catch (e) {

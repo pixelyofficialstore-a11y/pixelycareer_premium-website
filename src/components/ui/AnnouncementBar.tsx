@@ -5,7 +5,7 @@ import { useEffect, useLayoutEffect, useState } from "react";
 import { getAnnouncement, isBarHidden } from "@/config/announcements";
 import { MARKETS } from "@/config/markets";
 import { useMarket } from "./useMarket";
-import { useCountdown, useOffer } from "@/components/offer/useOffer";
+import { useCountdown, useOffer , useSale } from "@/components/offer/useOffer";
 import { BAR_MESSAGES, Ticker } from "@/components/offer/Offer";
 import "@/components/offer/offer.css";
 
@@ -34,6 +34,7 @@ export default function AnnouncementBar() {
   const hidden = isBarHidden(path);
   const { open: offerOpen, remaining } = useOffer(market.key);
   const left = useCountdown(60_000);
+  const sale = useSale();
   const [msg, setMsg] = useState(0);
   useEffect(() => { const id = setInterval(() => setMsg((n) => (n + 1) % BAR_MESSAGES.length), 5000); return () => clearInterval(id); }, []);
 
@@ -59,7 +60,8 @@ export default function AnnouncementBar() {
   };
 
   // pk: the Personal Brand Bundle replaces the page message while it is open (also for utm_campaign "bundle").
-  const bundle = offerOpen && !left.done;
+  // The 11.11 Sale message replaces the page message until 30 Nov.
+  const bundle = sale.live;
   const message = bundle ? { key: "brand-bundle", text: "", href: BAR_MESSAGES[msg].href, ctaLabel: undefined } : getAnnouncement(market, path, campaign);
   const inner = bundle ? (
     <>

@@ -268,7 +268,7 @@ export default async function Page({ params }: Props) {
           </ul>
         </section>
       </div>
-      <MarketFinalCta />
+      <MarketFinalCta abroad={["ae", "sa", "gulf", "uk", "europe"].includes(String(meta.market))} />
       <Reveal />
     </>
   );

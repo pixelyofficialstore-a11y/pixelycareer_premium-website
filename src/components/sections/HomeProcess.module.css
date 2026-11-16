@@ -65,7 +65,7 @@
 .payChips { display: flex; gap: 3px; margin-top: 2px; }
 .payChips b { flex: 1; padding: 3px 0; border-radius: 4px; background: #eef3ff; color: #0048ff; font-size: 7.5px; font-weight: 600; text-align: center; }
 .upload { margin-top: 2px; padding: 4px; border: 1px dashed #b7c2d6; border-radius: 4px; color: #6b7280; font-size: 8.5px; text-align: center; }
-.verified { background: #16a34a !important; }
+.verified { background: #0048ff !important; }
 
 /* Polish pass */
 .section { padding-block: 96px; overflow-x: clip; }
@@ -127,3 +127,23 @@
   .step:nth-child(odd) .card { margin-right: 116px; }
   .step:nth-child(even) .card { margin-left: 116px; }
 }
+
+.seePlans { margin: 40px 0 0; text-align: center; position: relative; z-index: 2; }
+
+/* Balanced cards: every step card is the same height (desktop: the tallest copy; phones: equal rows) */
+@media (min-width: 1024px) { .step .card { min-height: 240px; } }
+@media (max-width: 1023px) {
+  .steps { grid-auto-rows: 1fr; }
+  .step .card, .step:nth-child(odd) .card, .step:nth-child(even) .card { height: 100%; }
+}
+
+/* Step 02 (pk): a small WhatsApp chat with the CV expert */
+.chat { display: grid; gap: 5px; width: 138px; padding: 8px; border-radius: 12px; background: #efeae2; color: #111b21; font-size: 9px; line-height: 1.3; box-shadow: 0 16px 32px -14px rgb(0 0 0 / .6); text-align: left; }
+.chatHead { display: flex; align-items: center; gap: 6px; margin: -8px -8px 1px; padding: 6px 8px; border-radius: 12px 12px 0 0; background: #075e54; color: #fff; }
+.chatHead b { display: block; font-size: 9.5px; font-weight: 600; line-height: 1.2; }
+.chatHead small { display: block; color: rgb(255 255 255 / .75); font-size: 8px; line-height: 1.2; }
+.avatar { display: grid; place-items: center; flex: none; width: 20px; height: 20px; border-radius: 50%; background: #dfe5e7; color: #8696a0; overflow: hidden; }
+.avatar svg { margin-top: 5px; width: 18px; height: 18px; }
+.chat p { margin: 0; max-width: 88%; padding: 4px 7px; border-radius: 7px; color: #111b21 !important; font-size: 9px !important; line-height: 1.3 !important; box-shadow: 0 1px 0 rgb(0 0 0 / .08); }
+.inMsg { justify-self: start; border-top-left-radius: 2px !important; background: #fff; }
+.outMsg { justify-self: end; border-top-right-radius: 2px !important; background: #d9fdd3; }

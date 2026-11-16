@@ -5,7 +5,15 @@
  */
 export const MARKET_KEYS = ["us", "pk", "ae", "sa", "uk"] as const;
 export type MarketKey = (typeof MARKET_KEYS)[number];
-export type PackageId = "ats-career" | "international-pro" | "executive";
+export type PackageId = "cv-starter" | "ats-career" | "international-pro" | "executive";
+
+/** Plan subtitle, shown under the plan name wherever plans are listed. */
+export const PLAN_TAGLINE: Record<PackageId, string> = {
+  "cv-starter": "CV and cover letter only",
+  "ats-career": "For freshers and early careers",
+  "international-pro": "For jobs in the Gulf and abroad",
+  executive: "For managers and senior roles",
+};
 
 const WHICH_FORMAT = { q: "Which CV format do I need?", a: "It depends on where you’re applying. Tell us your country and role, and we’ll use the right format." };
 
@@ -42,7 +50,7 @@ const INDEED = { indeedItem: "Indeed profile", indeedRow: "Indeed profile" };
 export const MARKETS: Record<MarketKey, Market> = {
   us: {
     key: "us",
-    path: "/",
+    path: "/us",
     hreflang: "en-US",
     code: "US",
     region: "United States",
@@ -52,11 +60,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     word: "resume",
     phoneCode: "+1",
     approved: false,
-    prices: { "ats-career": 99, "international-pro": 169, executive: 279 },
-    compareAt: { "ats-career": 120, "international-pro": 199, executive: 329 },
+    prices: { "cv-starter": 99, "ats-career": 99, "international-pro": 169, executive: 279 },
+    compareAt: { "cv-starter": 120, "ats-career": 120, "international-pro": 199, executive: 329 },
     showCompareAt: true,
-    sameDay: { "ats-career": 20, "international-pro": 20, executive: 25 },
+    sameDay: { "cv-starter": 20, "ats-career": 20, "international-pro": 20, executive: 25 },
     pricingResults: {
+      "cv-starter": "An ATS CV and cover letter, ready in 2 days.",
       "ats-career": "A resume that passes ATS and lands your first interviews.",
       "international-pro": "Get shortlisted for competitive roles in the US and abroad.",
       executive: "A leadership resume that wins senior level interviews.",
@@ -76,7 +85,7 @@ export const MARKETS: Record<MarketKey, Market> = {
   },
   pk: {
     key: "pk",
-    path: "/pk",
+    path: "/",
     hreflang: "en-PK",
     code: "PK",
     region: "Pakistan",
@@ -85,11 +94,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     word: "CV",
     phoneCode: "+92",
     approved: true,
-    prices: { "ats-career": 2999, "international-pro": 4999, executive: 7500 },
-    compareAt: { "ats-career": 2999, "international-pro": 4999, executive: 7500 },
+    prices: { "cv-starter": 2000, "ats-career": 2999, "international-pro": 4999, executive: 7500 },
+    compareAt: { "cv-starter": 2000, "ats-career": 2999, "international-pro": 4999, executive: 7500 },
     showCompareAt: false,
-    sameDay: { "ats-career": 500, "international-pro": 500, executive: 700 },
+    sameDay: { "cv-starter": 500, "ats-career": 500, "international-pro": 500, executive: 700 },
     pricingResults: {
+      "cv-starter": "An ATS CV and cover letter, ready in 2 days.",
       "ats-career": "A CV that passes ATS and gets you your first interviews.",
       "international-pro": "Get shortlisted for Gulf and international roles.",
       executive: "A leadership profile that wins senior level interviews.",
@@ -119,11 +129,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     word: "CV",
     phoneCode: "+971",
     approved: false,
-    prices: { "ats-career": 299, "international-pro": 499, executive: 849 },
-    compareAt: { "ats-career": 369, "international-pro": 599, executive: 999 },
+    prices: { "cv-starter": 299, "ats-career": 299, "international-pro": 499, executive: 849 },
+    compareAt: { "cv-starter": 369, "ats-career": 369, "international-pro": 599, executive: 999 },
     showCompareAt: true,
-    sameDay: { "ats-career": 60, "international-pro": 60, executive: 80 },
+    sameDay: { "cv-starter": 60, "ats-career": 60, "international-pro": 60, executive: 80 },
     pricingResults: {
+      "cv-starter": "An ATS CV and cover letter, ready in 2 days.",
       "ats-career": "A CV that passes ATS and gets UAE recruiters calling.",
       "international-pro": "Get shortlisted for top roles in Dubai, Abu Dhabi and the Gulf.",
       executive: "A leadership profile that wins senior roles in the UAE.",
@@ -152,11 +163,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     word: "CV",
     phoneCode: "+966",
     approved: false,
-    prices: { "ats-career": 299, "international-pro": 499, executive: 849 },
-    compareAt: { "ats-career": 369, "international-pro": 599, executive: 999 },
+    prices: { "cv-starter": 299, "ats-career": 299, "international-pro": 499, executive: 849 },
+    compareAt: { "cv-starter": 369, "ats-career": 369, "international-pro": 599, executive: 999 },
     showCompareAt: true,
-    sameDay: { "ats-career": 60, "international-pro": 60, executive: 80 },
+    sameDay: { "cv-starter": 60, "ats-career": 60, "international-pro": 60, executive: 80 },
     pricingResults: {
+      "cv-starter": "An ATS CV and cover letter, ready in 2 days.",
       "ats-career": "A CV that passes ATS and gets you interviews in Saudi Arabia.",
       "international-pro": "Get shortlisted for roles in Riyadh, Jeddah and across the Gulf.",
       executive: "A leadership profile that wins senior roles in Saudi Arabia.",
@@ -186,11 +198,12 @@ export const MARKETS: Record<MarketKey, Market> = {
     word: "CV",
     phoneCode: "+44",
     approved: false,
-    prices: { "ats-career": 69, "international-pro": 119, executive: 199 },
-    compareAt: { "ats-career": 85, "international-pro": 145, executive: 239 },
+    prices: { "cv-starter": 69, "ats-career": 69, "international-pro": 119, executive: 199 },
+    compareAt: { "cv-starter": 85, "ats-career": 85, "international-pro": 145, executive: 239 },
     showCompareAt: true,
-    sameDay: { "ats-career": 15, "international-pro": 15, executive: 20 },
+    sameDay: { "cv-starter": 15, "ats-career": 15, "international-pro": 15, executive: 20 },
     pricingResults: {
+      "cv-starter": "An ATS CV and cover letter, ready in 2 days.",
       "ats-career": "A CV that passes ATS and gets you your first UK interviews.",
       "international-pro": "Get shortlisted for competitive UK and European roles.",
       executive: "A leadership CV that wins senior level interviews.",
@@ -235,9 +248,30 @@ export function localize(m: Market, text: string) {
 export const localizeTitle = (m: Market, text: string) => localize(m, text).replace(/\bresume(s?)\b/g, "Resume$1");
 
 export const homeHref = (m: Market, hash = "") => (hash ? `${m.path === "/" ? "/" : m.path}${hash}` : m.path);
-export const orderHref = (m: Market, id?: PackageId) => `/order?${id ? `package=${id}&` : ""}market=${m.key}`;
+/** Markets that are live. UK, UAE and KSA stay hidden until they are switched on here. */
+export const ENABLED_MARKETS: MarketKey[] = ["pk"];
+/** The market comes from the URL only: /pk and everything under it is Pakistan, every other page is the US site. */
+export const marketOfPath = (_path?: string): MarketKey => "pk";
+export const pricingPath = (_k?: MarketKey) => "/pricing";
+export const orderHref = (_m: Market, id?: PackageId) => `/checkout${id ? `?package=${id}` : ""}`;
 
 const BASE_PACKAGES = [
+  {
+    id: "cv-starter" as const,
+    tier: "CV",
+    name: "CV Starter",
+    forLine: "Just need a strong CV and cover letter.",
+    deliveryDays: "2 days",
+    value: [
+      { n: "30", label: "days support" },
+      { n: "2", label: "revisions" },
+      { n: "2", label: "days delivery" },
+    ],
+    lead: "",
+    items: ["ATS CV written for your target role", "Tailored cover letter", "PDF and editable Word files"],
+    button: "Add to cart",
+    only: ["pk"] as string[],
+  },
   {
     id: "ats-career" as const,
     tier: "Starter",
@@ -271,7 +305,7 @@ const BASE_PACKAGES = [
   {
     id: "executive" as const,
     tier: "Executive",
-    name: "Executive Career Branding",
+    name: "Executive Branding",
     forLine: "For managers, directors and senior leaders.",
     deliveryDays: "3 days",
     value: [
@@ -279,7 +313,7 @@ const BASE_PACKAGES = [
       { n: "4", label: "revisions" },
       { n: "3", label: "days priority" },
     ],
-    lead: "Everything in International Pro, plus:",
+    lead: "Everything in International Career Pro, plus:",
     items: ["Premium executive CV", "One page visual CV", "Executive cover letter and bio", "LinkedIn makeover with 10 ready posts", "Interview preparation guide", "Priority handling"],
     button: "Build My Brand",
   },
@@ -287,7 +321,7 @@ const BASE_PACKAGES = [
 
 /** The three packages as a given market sees them. */
 export function getPackages(m: Market) {
-  return BASE_PACKAGES.map((p) => ({
+  return BASE_PACKAGES.filter((p) => !("only" in p) || (p.only as string[]).includes(m.key)).map((p) => ({
     ...p,
     forLine: p.forLine,
     items: [...p.items],
@@ -305,32 +339,33 @@ const Y = "✓";
 const N = "·";
 const X = "✕";
 /** Comparison table. Values are from the approved pricing preview. */
-export function getComparison(m: Market): [string, string, string, string][] {
+/** Columns: CV Starter, ATS Career, International Pro, Executive (the same order as the cards). */
+export function getComparison(m: Market): [string, string, string, string, string][] {
   const fee = (id: PackageId) => `+${formatPricingPrice(m, m.sameDay[id])}`;
   const naukri = m.key === "ae" || m.key === "sa" || m.key === "pk";
-  const rows: [string, string, string, string][] = [
-    [localize(m, "ATS / Europass CV"), "Standard", "International standard", "Premium executive"],
-    ["One page visual profile", X, X, Y],
-    ["Cover letter", "Tailored", "Country specific", "Executive"],
-    ["Bio statement", X, Y, "Executive"],
-    ["Keywords for your target job", Y, Y, Y],
-    ["PDF & editable Word files", Y, Y, Y],
-    ["LinkedIn", "Content optimization", "Complete optimization & makeover", "Makeover & 10 post content pack"],
-    ["Indeed profile", X, Y, Y],
-    ...(naukri ? [["Naukrigulf profile", X, Y, Y] as [string, string, string, string]] : []),
-    ["Digital contact card", X, Y, Y],
-    ["Interview preparation guide (PDF)", X, X, Y],
-    ["Revisions before delivery", "Unlimited", "Unlimited", "Unlimited"],
-    ["Free updates after delivery", "3", "3", "4"],
-    ["WhatsApp support", "30 days", "3 months", "6 months"],
-    ["Delivery", "2 days", "2 days", "3 days"],
-    ["Same day delivery", fee("ats-career"), fee("international-pro"), X],
+  const rows: [string, string, string, string, string][] = [
+    [localize(m, "ATS / Europass CV"), "Standard", "Standard", "International standard", "Premium executive"],
+    ["One page visual profile", X, X, X, Y],
+    ["Cover letter", "Tailored", "Tailored", "Country specific", "Executive"],
+    ["Bio statement", X, X, Y, "Executive"],
+    ["Keywords for your target job", Y, Y, Y, Y],
+    ["PDF & editable Word files", Y, Y, Y, Y],
+    ["LinkedIn", X, "Content optimization", "Complete optimization & makeover", "Makeover & 10 post content pack"],
+    ["Indeed profile", X, X, Y, Y],
+    ...(naukri ? [["Naukrigulf profile", X, X, Y, Y] as [string, string, string, string, string]] : []),
+    ["Digital contact card", X, X, Y, Y],
+    ["Interview preparation guide (PDF)", X, X, X, Y],
+    ["Revisions before delivery", X, "Unlimited", "Unlimited", "Unlimited"],
+    ["Free updates after delivery", "2", "3", "3", "4"],
+    ["WhatsApp support", "30 days", "30 days", "3 months", "6 months"],
+    ["Delivery", "2 days", "2 days", "2 days", "3 days"],
+    ["Same day delivery", X, fee("ats-career"), fee("international-pro"), X],
   ];
   return rows;
 }
 
 /** Row groups for the table, found by their first row. */
-export function getComparisonGroups(rows: [string, string, string, string][]) {
+export function getComparisonGroups(rows: string[][]) {
   const at = (label: string) => rows.findIndex((r) => r[0] === label);
   const starts = [["Documents", 0], ["Profiles", at("LinkedIn")], ["Extras", at("Interview preparation guide (PDF)")], ["Service", at("Revisions before delivery")]] as const;
   return starts.map(([name, start], i) => ({ name, start, end: i + 1 < starts.length ? starts[i + 1][1] : rows.length }));

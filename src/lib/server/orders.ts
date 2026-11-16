@@ -18,7 +18,7 @@ export const orderBody = z.object({
   addons: z.record(z.string().max(40), z.number().int().min(0).max(10)).default({}),
   sameDay: z.boolean().default(false),
   bundle: z.boolean().default(false),
-  payChoice: z.enum(["now", "later"]).nullable().optional(),
+  payChoice: z.enum(["now", "later", "talk_first"]).nullable().optional(),
   step: z.number().int().min(1).max(4).default(1),
   name: opt(120), code: opt(6), whatsapp: opt(30), email: z.string().trim().max(160).email().optional().nullable().or(z.literal("")).transform((v) => v || null),
   targetCountry: opt(60), targetRole: opt(120), notes: opt(500),
@@ -29,7 +29,7 @@ export const orderBody = z.object({
   resume: z.string().uuid().optional().nullable(),
   /** The browser's cart id: the Pixel and the Conversions API share it as the event id. */
   eventId: z.string().regex(/^[a-z0-9]{6,40}$/i).optional(),
-  payAmountType: z.enum(["advance", "full"]).optional().nullable(),
+  payAmountType: z.enum(["full"]).optional().nullable(),
 });
 export type OrderBody = z.infer<typeof orderBody>;
 

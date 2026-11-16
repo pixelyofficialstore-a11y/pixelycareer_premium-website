@@ -1,8 +1,8 @@
 import { getPackages, localize, type Market, type MarketKey, type PackageId } from "@/config/markets";
 
 // CONFIRM non PKR prices with the owner. Every price lives here, per market.
-type Tier = "ats" | "pro" | "exec";
-export const TIER: Record<PackageId, Tier> = { "ats-career": "ats", "international-pro": "pro", executive: "exec" };
+type Tier = "starter" | "ats" | "pro" | "exec";
+export const TIER: Record<PackageId, Tier> = { "cv-starter": "starter", "ats-career": "ats", "international-pro": "pro", executive: "exec" };
 
 /** tiers: units price by their own tier (unit 1, units 2 to 5, units 6 to 10). flat: one price per unit. fixed: one price once. byPackage: one price per package. */
 type Price =
@@ -21,7 +21,7 @@ const GULF: Row = {
 };
 const PRICES: Record<MarketKey, Row> = {
   pk: {
-    "role-pack": T(1300, 1000, 750), arabic: T(1500, 1000, 700),
+    "ats-cv": F(1500), "cover-letter": F(500), europass: F(1500), linkedin: F(1500), arabic: F(1500), "role-pack": T(1300, 1000, 750),
     "content-pack": F(2500), bio: F(1000), "job-portals": F(1500), "contact-card": F(500), portfolio: PK(20000, 16000, 12500),
   },
   us: {
@@ -43,6 +43,8 @@ export type Addon = {
   nameWestern?: string;
   benefit: string;
   qty: boolean;
+  /** Most units one order can take (default 10, or 1 when qty is false). */
+  max?: number;
   badge?: string;
   /** Packages that already include this add-on, so it is hidden for them. */
   hiddenOn: Tier[];
@@ -50,13 +52,18 @@ export type Addon = {
 };
 
 export const ADDONS: Addon[] = [
-  { id: "role-pack", name: "Another CV + cover letter", benefit: "Another role, or the same role in another format", qty: true, badge: "Most added", hiddenOn: [], markets: "all" },
-  { id: "arabic", name: "Arabic CV", benefit: "For Arabic speaking employers", qty: true, hiddenOn: [], markets: ["ae", "sa", "pk"] },
+  { id: "ats-cv", name: "Extra ATS CV", benefit: "For another role or job ad", qty: true, max: 5, badge: "Most added", hiddenOn: [], markets: ["pk"] },
+  { id: "cover-letter", name: "Extra cover letter", benefit: "For another job ad", qty: true, max: 5, hiddenOn: [], markets: ["pk"] },
+  { id: "europass", name: "Europass CV", benefit: "The format European employers expect", qty: false, hiddenOn: ["ats", "pro", "exec"], markets: ["pk"] },
+  // Kept for old orders; not offered any more.
+  { id: "linkedin", name: "LinkedIn profile", benefit: "A full LinkedIn makeover", qty: false, hiddenOn: ["ats", "pro", "exec"], markets: [] },
+  { id: "role-pack", name: "Another CV + cover letter", benefit: "Another role, or the same role in another format", qty: true, badge: "Most added", hiddenOn: [], markets: ["us", "uk", "ae", "sa"] },
+  { id: "arabic", name: "Arabic CV", benefit: "For Arabic speaking employers", qty: true, max: 1, hiddenOn: [], markets: ["ae", "sa", "pk"] },
   { id: "content-pack", name: "LinkedIn content pack", benefit: "Stay visible to recruiters", qty: false, hiddenOn: ["exec"], markets: "all" },
-  { id: "bio", name: "Bio statement", benefit: "Your professional story", qty: false, hiddenOn: ["pro", "exec"], markets: "all" },
-  { id: "job-portals", name: "Indeed + Naukrigulf profiles", nameWestern: "Indeed profile", benefit: "Get found on job portals", qty: false, hiddenOn: ["pro", "exec"], markets: "all" },
-  { id: "contact-card", name: "Digital contact card", benefit: "Share your details in one tap", qty: false, hiddenOn: ["pro", "exec"], markets: "all" },
-  { id: "portfolio", name: "Portfolio website", benefit: "Free domain and hosting for the first year", qty: false, hiddenOn: [], markets: "all" },
+  { id: "bio", name: "Bio statement", benefit: "Your professional story", qty: false, hiddenOn: ["pro", "exec"], markets: ["us", "uk", "ae", "sa"] },
+  { id: "job-portals", name: "Indeed + Naukrigulf profiles", nameWestern: "Indeed profile", benefit: "Get found on job portals", qty: false, hiddenOn: ["pro", "exec"], markets: ["us", "uk", "ae", "sa"] },
+  { id: "contact-card", name: "Digital contact card", benefit: "Share your details in one tap", qty: false, hiddenOn: ["pro", "exec"], markets: ["us", "uk", "ae", "sa"] },
+  { id: "portfolio", name: "Portfolio website", benefit: "Free domain and hosting for the first year", qty: false, hiddenOn: [], markets: ["us", "uk", "ae", "sa"] },
 ];
 const BY_ID = new Map(ADDONS.map((a) => [a.id, a]));
 
@@ -65,7 +72,8 @@ export function unitAt(market: MarketKey, id: string, n: number, pkg: PackageId)
   const p = PRICES[market][id];
   if (p.kind === "tiers") return n <= 1 ? p.a : n <= 5 ? p.b : p.c;
   if (p.kind === "flat") return p.price;
-  return p[TIER[pkg]];
+  const t = TIER[pkg];
+  return p[t === "starter" ? "ats" : t];
 }
 
 /** Total for q units: each unit at its own tier, so earlier units never get cheaper. */
@@ -81,6 +89,7 @@ export function availableAddons(m: Market, pkg: PackageId) {
     name: localize(m, a.nameWestern && (m.key === "us" || m.key === "uk") ? a.nameWestern : a.name),
     benefit: localize(m, a.benefit),
     qty: a.qty,
+    max: a.qty ? a.max ?? 10 : 1,
     badge: a.badge,
   }));
 }
@@ -94,7 +103,7 @@ export function calcOrder(m: Market, pkgId: PackageId, sameDay: boolean, selecti
   const list: OrderLine[] = availableAddons(m, pkgId)
     .filter((a) => (selection[a.id] ?? 0) > 0)
     .map((a) => {
-      const qty = BY_ID.get(a.id)!.qty ? Math.min(10, Math.max(1, Math.floor(selection[a.id]))) : 1;
+      const qty = BY_ID.get(a.id)!.qty ? Math.min(a.max, Math.max(1, Math.floor(selection[a.id]))) : 1;
       const groups: Record<number, number> = {};
       for (let n = 1; n <= qty; n++) { const u = unitAt(m.key, a.id, n, pkgId); groups[u] = (groups[u] ?? 0) + 1; }
       const unitBreakdown = Object.entries(groups).map(([price, count]) => ({ qty: count, unitPrice: Number(price) }));

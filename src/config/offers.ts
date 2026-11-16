@@ -24,14 +24,17 @@ export type Offer = {
   active: boolean;
 };
 
+/** The 11.11 Bundle (Executive + website) is switched off. Its code stays; set true to bring it back. */
+export const BUNDLE_ENABLED = false;
+
 export const OFFERS: Offer[] = [
   {
     id: "brand-bundle",
     markets: ["pk"],
     title: "11.11 Sale",
-    headline: "Executive Career Branding + Personal Website",
+    headline: "Executive Branding + Personal Website",
     short: "Executive Branding & Website",
-    includes: ["Executive Career Branding package", "Portfolio website with free domain and hosting for the first year"],
+    includes: ["Executive Branding package", "Portfolio website with free domain and hosting for the first year"],
     packageId: "executive",
     addonId: "portfolio",
     price: 20000,
@@ -40,7 +43,7 @@ export const OFFERS: Offer[] = [
     startsAt: "2026-11-11T00:00:00+05:00",
     endsAt: "2026-11-30T23:59:59+05:00",
     totalSlots: 10,
-    active: true,
+    active: BUNDLE_ENABLED,
   },
 ];
 
@@ -51,7 +54,7 @@ export const getOffer = (id?: string | null) => OFFERS.find((o) => o.id === id);
 export const offerOpen = (o: Offer, market: MarketKey, now = Date.now()) =>
   o.active && o.markets.includes(market) && now >= Date.parse(o.startsAt) && now < Date.parse(o.endsAt);
 
-export const offerHref = (o: Offer) => `/order?market=pk&package=${o.packageId}&addons=${o.addonId}&offer=${o.id}`;
+export const offerHref = (o: Offer) => `/checkout?package=${o.packageId}&addons=${o.addonId}&offer=${o.id}`;
 
 /** Days, hours, minutes and seconds left until endsAt. The same real deadline for every visitor. */
 export function timeLeft(endsAt: string, now = Date.now()) {
@@ -63,29 +66,30 @@ export type OfferState = { id: string; open: boolean; remaining: number; total: 
 
 /**
  * Online payment discount (pk). Applies to package + add-ons until ONLINE.endsAt, then prices go back to full.
- * full: pay everything on the website, 20% off. advance: pay 50% on the website, 10% off.
- * The discounted total is rounded to the nearest Rs 50; the 50% advance is rounded up to the next Rs 50.
+ * Pay in full on the website (or order on WhatsApp and pay after the chat): 20% off.
+ * The discounted total is rounded to the nearest Rs 50.
  * The 11.11 Bundle has its own fixed pay now prices and gets no extra percentage.
  */
 export const ONLINE = {
   full: { pct: 20, label: "online_20" },
-  advance: { pct: 10, label: "online_10" },
   endsAt: "2026-11-30T23:59:59+05:00",
   round: 50,
-  bundleOff: { full: 1000, advance: 500 },
+  bundleOff: { full: 1000 },
 } as const;
-export type PayAmountType = "advance" | "full";
-export type DiscountType = "online_20" | "online_10" | "bundle" | "none";
+export type PayAmountType = "full";
+export type DiscountType = "online_20" | "bundle" | "none";
 export const onlineOpen = (now = Date.now()) => now < Date.parse(ONLINE.endsAt);
 export const ONLINE_ENDS_LABEL = "30 Nov";
+/** The 11.11 Sale: flat 20% off every package when paid online in full, until ONLINE.endsAt. */
+export const SALE = { tag: "11.11 SALE", headline: "Flat 20% off all packages", bullets: ["ATS CVs from Rs 1,600", "Pay online in full and save 20%", "100% money back guarantee"], endsAt: ONLINE.endsAt } as const;
 
 export function payPlan(subtotal: number, type: PayAmountType, opts: { bundle?: boolean; now?: number } = {}) {
   const r = ONLINE.round;
   let total = subtotal, discountType: DiscountType = "none";
   if (opts.bundle) { total = subtotal - ONLINE.bundleOff[type]; discountType = "bundle"; }
   else if (onlineOpen(opts.now)) { total = Math.round((subtotal * (100 - ONLINE[type].pct)) / 100 / r) * r; discountType = ONLINE[type].label; }
-  const today = type === "full" ? total : Math.ceil(total / 2 / r) * r;
-  return { type, subtotal, discount: subtotal - total, total, today, balance: total - today, discountType: total < subtotal ? discountType : "none" as DiscountType };
+  const today = total;
+  return { type, subtotal, discount: subtotal - total, total, today, balance: 0, discountType: total < subtotal ? discountType : "none" as DiscountType };
 }
 /** Pay in full online price for display (cards). */
 export const onlinePrice = (price: number, type: PayAmountType = "full", now?: number) => payPlan(price, type, { now }).total;
@@ -96,4 +100,4 @@ export const BUNDLE_EXTRA_LINE = `Book your slot online and save an extra Rs ${
 
 /** What the 11.11 Bundle includes. The pricing card and the order page both read this, so they never differ. */
 export const BUNDLE_ITEMS = ["Premium executive CV", "Personal portfolio website", "Free domain & hosting for 1 year", "Executive bio statement", "LinkedIn makeover + content pack (10 posts)", "Interview preparation guide"] as const;
-export const BUNDLE_ALL_LINE = "Includes everything in Executive Career Branding.";
+export const BUNDLE_ALL_LINE = "Includes everything in Executive Branding.";

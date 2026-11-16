@@ -7,21 +7,6 @@ import { scheduleMotion } from "@/lib/motion";
  * Mark an element with data-reveal. Content is visible by default, so this can only ever add polish.
  */
 export default function Reveal() {
-  // Phones skip laying out far-off sections, so arriving from another page at /#pricing needs one more
-  // pass once the real heights are known. Any touch from the visitor cancels it.
-  useEffect(() => {
-    const target = location.hash ? document.getElementById(location.hash.slice(1)) : null;
-    if (!target || window.innerWidth >= 1024) return;
-    const settle = () => target.scrollIntoView({ behavior: "instant" });
-    const timers = [window.setTimeout(settle, 120), window.setTimeout(settle, 500), window.setTimeout(settle, 1000)];
-    const cancel = () => timers.forEach(window.clearTimeout);
-    window.addEventListener("touchstart", cancel, { passive: true, once: true });
-    return () => {
-      cancel();
-      window.removeEventListener("touchstart", cancel);
-    };
-  }, []);
-
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let revert: (() => void) | undefined;

@@ -579,3 +579,11 @@
 .noteGood { right: 4%; color: #067647; border: 1px solid #abefc6; }
 @media (max-width: 600px) { .note { font-size: 11px; padding: 5px 9px; } }
 @media (prefers-reduced-motion: reduce) { .note { transition: opacity 200ms ease; transform: none; } }
+
+/* Inside the homepage Services bento */
+.embedded { display: flex; justify-content: center; width: 100%; }
+.embedded .comparison { width: 100%; margin-top: 0; aspect-ratio: 4 / 3; }
+@media (min-width: 1100px) {
+  .embedded { flex: 1; min-height: 0; }
+  .embedded .comparison { aspect-ratio: auto; height: 100%; min-height: 420px; }
+}

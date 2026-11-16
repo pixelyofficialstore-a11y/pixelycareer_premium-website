@@ -4,8 +4,8 @@ import { isConfigError } from "@/lib/server/env";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { db, events, orders } from "@/lib/db";
-import { sendCapi } from "@/lib/server/capi";
-import { attribution, fail, honeypot, limited, opt, readJson } from "@/lib/server/request";
+import { BOT_UA, sendCapi } from "@/lib/server/capi";
+import { attribution, fail, honeypot, limited, normalizePhone, opt, readJson } from "@/lib/server/request";
 import { currentOrderId } from "@/lib/server/orders";
 import { cookies } from "next/headers";
 
@@ -33,8 +33,16 @@ const body = z.object({
  */
 export async function POST(req: Request) {
   if (limited(req, "track", 60)) return fail(429);
+  const raw = await req.clone().json().catch(() => null) as { name?: unknown } | null;
   const b = await readJson(req, body);
-  if (!b || b.website) return fail();
+  if (!b) {
+    // Anything outside the allow-list (for example a missing or unknown event name) is refused and logged.
+    console.warn("track: refused event", JSON.stringify({ name: String(raw?.name ?? "(none)").slice(0, 60) }));
+    return fail();
+  }
+  if (b.website) return fail();
+  // Bots, crawlers and test visits are never logged or sent to Meta.
+  if (BOT_UA.test(req.headers.get("user-agent") ?? "") || (b.page && /[?&]test=1(&|$)/.test(b.page))) return NextResponse.json({ ok: true, skipped: true });
   try {
     const attr = await attribution(req, { fbp: b.fbp, fbc: b.fbc });
     const orderId = await currentOrderId().catch(() => null);
@@ -49,7 +57,7 @@ export async function POST(req: Request) {
       ...attr, market: b.market, sessionId: b.sessionId, orderId, name: b.name,
       value: b.value != null ? String(b.value) : null, currency: b.currency, page: b.page, meta: { ...(b.meta ?? {}), event_id: b.eventId },
     });
-    const capi = await sendCapi(META[b.name], b.eventId, { phone: user.whatsapp ?? b.user?.phone, email: user.email ?? b.user?.email, name: [b.user?.firstName, b.user?.lastName].filter(Boolean).join(" ") || null, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, orderId] },
+    const capi = await sendCapi(META[b.name], b.eventId, { phone: user.whatsapp ?? (b.user?.phone ? normalizePhone(b.user.phone) : null), email: user.email ?? b.user?.email, name: [b.user?.firstName, b.user?.lastName].filter(Boolean).join(" ") || null, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [vid, orderId] },
       { ...(b.value != null ? { value: b.value, currency: b.currency } : {}), ...(b.meta?.content_name ? { content_name: b.meta.content_name } : {}), ...(b.meta?.content_category ? { content_category: b.meta.content_category } : {}), ...(b.meta?.num_items ? { num_items: b.meta.num_items } : {}), ...(Array.isArray(b.meta?.content_ids) ? { content_ids: b.meta.content_ids, content_type: "product" } : {}) },
       b.page);
     return NextResponse.json({ ok: true, capi });

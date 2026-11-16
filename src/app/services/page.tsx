@@ -6,6 +6,7 @@ import { HERO_PERSONAS } from "@/config/heroPersonas";
 import FinalCta from "@/components/sections/FinalCta";
 import ServicesMotion from "@/components/sections/ServicesMotion";
 import { requestMarket } from "@/lib/market-server";
+import { pricingPath } from "@/config/markets";
 import { formatPricingPrice } from "@/config/markets";
 import { JsonLd, breadcrumbJsonLd, pageMetadata } from "@/lib/seo";
 
@@ -25,23 +26,24 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
   const cv = persona.images.good;
   const price = (fn: () => number) => { try { const n = fn(); return n > 0 ? formatPricingPrice(market, n) : ""; } catch { return ""; } };
   const from = (p: string) => (p ? `Add on from ${p}` : "Ask us");
-  const pricing = `/pricing?m=${m}`;
+  const pricing = pricingPath(m);
+  const P = "";
   const gulf = m === "ae" || m === "sa" || m === "pk";
 
   const layers: { label: string; title: string; visual: "cv" | "profile" | "browser"; rows: Row[] }[] = [
     {
       label: "01 Get shortlisted", title: "Career documents", visual: "cv",
       rows: [
-        { name: m === "us" ? "ATS resume" : "ATS CV", line: "Written for your role and country", tag: "In every package", href: "/services/ats-cv" },
-        { name: "Cover letter", line: "Tailored to each application", tag: "In every package", href: "/services/cover-letter" },
-        { name: "Europass CV", line: "For EU applications", tag: from(price(() => unitAt(m, "role-pack", 1, "ats-career"))), href: "/services/europass-cv" },
+        { name: m === "us" ? "ATS resume" : "ATS CV", line: "Written for your role and country", tag: "In every package", href: P + "/services/ats-cv" },
+        { name: "Cover letter", line: "Tailored to each application", tag: "In every package", href: P + "/services/cover-letter" },
+        { name: "Europass CV", line: "For EU applications", tag: from(price(() => unitAt(m, "role-pack", 1, "ats-career"))), href: P + "/services/europass-cv" },
         ...(gulf ? [{ name: "Arabic CV", line: "For Arabic speaking employers", tag: from(price(() => unitAt(m, "arabic", 1, "ats-career"))), href: pricing }] : []),
       ],
     },
     {
       label: "02 Get found", title: "Professional visibility", visual: "profile",
       rows: [
-        { name: "LinkedIn optimization", line: "A profile recruiters can find", tag: "In Pro and Executive", href: "/services/linkedin" },
+        { name: "LinkedIn optimization", line: "A profile recruiters can find", tag: "In Pro and Executive", href: P + "/services/linkedin" },
         { name: m === "us" || m === "uk" ? "Indeed profile" : "Indeed + Naukrigulf profiles", line: "Get found on job portals", tag: "In Pro and Executive", href: pricing },
         { name: "LinkedIn content pack", line: "10 posts to stay visible", tag: "In Executive", href: pricing },
       ],
@@ -49,7 +51,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
     {
       label: "03 Get remembered", title: "Digital presence", visual: "browser",
       rows: [
-        { name: "Portfolio website", line: "Free domain and hosting for the first year", tag: (() => { const p = price(() => totalFor(m, "portfolio", 1, "executive")); return p ? `From ${p}` : "Ask us"; })(), href: "/services/portfolio-website" },
+        { name: "Portfolio website", line: "Free domain and hosting for the first year", tag: (() => { const p = price(() => totalFor(m, "portfolio", 1, "executive")); return p ? `From ${p}` : "Ask us"; })(), href: P + "/services/portfolio-website" },
         { name: "Bio statement", line: "Your professional story", tag: "In Pro and Executive", href: pricing },
         { name: "Digital contact card", line: "Share your details in one tap", tag: "In Pro and Executive", href: pricing },
       ],

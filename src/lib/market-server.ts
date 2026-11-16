@@ -1,11 +1,6 @@
-import { cookies } from "next/headers";
-import { MARKETS, isMarketKey, type Market } from "@/config/markets";
+import { MARKETS, type Market } from "@/config/markets";
 
-/** Market for pages that share one URL: an explicit ?market= wins, then the saved choice, then Pakistan by geo country, then the US main site. */
-export async function requestMarket(fromQuery?: string): Promise<Market> {
-  if (isMarketKey(fromQuery)) return MARKETS[fromQuery];
-  const jar = await cookies();
-  const saved = jar.get("pc_market")?.value ?? jar.get("market")?.value;
-  if (isMarketKey(saved)) return MARKETS[saved];
-  return jar.get("pc_geo")?.value === "PK" ? MARKETS.pk : MARKETS.us;
+/** Pakistan is the only live market: every page is the PK site. Other markets stay in config, disabled (ENABLED_MARKETS). */
+export async function requestMarket(_fromUrl?: string): Promise<Market> {
+  return MARKETS.pk;
 }

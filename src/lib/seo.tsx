@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { MARKETS, MARKET_KEYS, type Market, formatPrice, getPackages, orderHref } from "@/config/markets";
+import { MARKETS, MARKET_KEYS, ENABLED_MARKETS, type Market, formatPrice, getPackages, orderHref } from "@/config/markets";
 
 export const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://pixelycareers.com").replace(/\/$/, "");
 
@@ -20,7 +20,7 @@ export function JsonLd({ data }: { data: object }) {
 }
 
 export const hreflangs = () => ({
-  ...Object.fromEntries(MARKET_KEYS.map((k) => [MARKETS[k].hreflang, MARKETS[k].path])),
+  ...Object.fromEntries(ENABLED_MARKETS.map((k) => [MARKETS[k].hreflang, MARKETS[k].path])),
   "x-default": "/",
 });
 
@@ -29,7 +29,7 @@ export function homeMetadata(m: Market, offer = false): Metadata {
   return {
     title: { absolute: m.meta.title },
     description: m.meta.description,
-    alternates: { canonical: m.path, languages: hreflangs() },
+    alternates: { canonical: m.path },
     openGraph: {
       type: "website",
       url: `${SITE}${m.path === "/" ? "" : m.path}`,
@@ -49,7 +49,7 @@ export function pageMetadata(path: string, title: string, description: string, o
     title: { absolute: title },
     description,
     alternates: { canonical: path },
-    openGraph: { type: "website", url: `${SITE}${path}`, siteName: "Pixely Careers", title, description, locale: og.locale ?? "en_US", images },
+    openGraph: { type: "website", url: `${SITE}${path}`, siteName: "Pixely Careers", title, description, locale: og.locale ?? "en_PK", images },
     twitter: { card: "summary_large_image", title, description, images: images.map((i) => i.url) },
   };
 }

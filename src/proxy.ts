@@ -5,7 +5,7 @@ const ATTR = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_te
 
 /**
  * Every page:
- * - pc_geo: the visitor's country from the host's geo header. A visitor in Pakistan with no saved market gets the pk site and its offer.
+ * - Pakistan only, on the root URLs: old /pk, /uk, /ae, /sa, /us and ?market= links get a 301 (no geo, no market cookie).
  * - px_attr: first touch attribution (utm, fbclid, gclid, referrer, landing page) for 30 days, attached to every database insert.
  */
 export function proxy(request: NextRequest) {
@@ -19,11 +19,28 @@ export function proxy(request: NextRequest) {
     url.port = "";
     return NextResponse.redirect(url, 308);
   }
-  const response = NextResponse.next();
-  if (!request.cookies.has("pc_geo")) {
-    const country = request.headers.get("x-vercel-ip-country") ?? request.headers.get("cf-ipcountry") ?? request.headers.get("x-country-code");
-    if (country) response.cookies.set("pc_geo", country.toUpperCase(), { path: "/", maxAge: MONTH, sameSite: "lax" });
+  // Pakistan is the only market, on the root URLs. Old /pk, other market and ?market=pk links: 301 with their parameters.
+  {
+    const u = request.nextUrl;
+    const p = u.pathname.replace(/\/+$/, "") || "/";
+    let to: string | null = null;
+    if (p === "/pk" || /^\/(uk|ae|sa|us)$/.test(p)) to = "/";
+    else if (p === "/pk/start" || p === "/pk/cv" || p === "/cv") to = "/";
+    else if (p === "/pk/checkout" || p === "/order") to = "/checkout";
+    else if (p.startsWith("/pk/")) to = p.slice(3);
+    else if (/^\/(uk|ae|sa|us)\/pricing$/.test(p)) to = "/pricing";
+    if (to || u.searchParams.has("market") || u.searchParams.has("m")) {
+      if (!to && (u.searchParams.has("market") || u.searchParams.has("m")) && (p === "/" || p === "/pricing" || p === "/services" || p.startsWith("/services/") || p === "/order/success")) to = p;
+      if (to) {
+        const url = u.clone();
+        url.pathname = to;
+        url.searchParams.delete("market");
+        url.searchParams.delete("m");
+        return NextResponse.redirect(url, 301);
+      }
+    }
   }
+  const response = NextResponse.next();
   // Last touch: every visit that arrives with campaign parameters replaces it (30 days).
   {
     const q = request.nextUrl.searchParams;
@@ -35,6 +52,8 @@ export function proxy(request: NextRequest) {
       response.cookies.set("px_last", JSON.stringify(last), { path: "/", maxAge: MONTH, sameSite: "lax", httpOnly: true, secure: process.env.NODE_ENV === "production" });
     }
   }
+  // px_vid: the anonymous visitor id (external_id), set on the first page view so every event carries it. Readable by the Pixel script.
+  if (!request.cookies.has("px_vid")) response.cookies.set("px_vid", crypto.randomUUID(), { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
   if (!request.cookies.has("px_attr")) {
     const q = request.nextUrl.searchParams;
     const attr: Record<string, string> = {};

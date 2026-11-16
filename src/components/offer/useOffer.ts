@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { BUNDLE, offerOpen, timeLeft, type OfferState } from "@/config/offers";
+import { BUNDLE, BUNDLE_ENABLED, offerOpen, timeLeft, type OfferState, ONLINE } from "@/config/offers";
 import type { MarketKey } from "@/config/markets";
 
 let request: Promise<OfferState | null> | null = null;
@@ -20,7 +20,7 @@ function fetchState(): Promise<OfferState | null> {
  * so the bar and strip show at once; remaining is null until it is known.
  */
 export function useOffer(market: MarketKey) {
-  const eligible = market === "pk";
+  const eligible = market === "pk" && BUNDLE_ENABLED;
   const [state, setState] = useState<{ open: boolean; remaining: number } | null>(null);
   useEffect(() => {
     if (!eligible) return;
@@ -40,6 +40,17 @@ export function useCountdown(ms = 60_000) {
     return () => clearInterval(t);
   }, [ms]);
   return timeLeft(BUNDLE.endsAt, now);
+}
+
+/** The 11.11 Sale (20% off online): live until ONLINE.endsAt, with its countdown. */
+export function useSale(ms = 60_000) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), ms);
+    return () => clearInterval(t);
+  }, [ms]);
+  const t = timeLeft(ONLINE.endsAt, now);
+  return { live: !t.done, t };
 }
 
 export const short = (t: { d: number; h: number; m: number }) => `${t.d}d ${t.h}h ${t.m}m`;

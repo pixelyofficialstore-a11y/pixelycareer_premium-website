@@ -12,11 +12,11 @@ export function enableMeta() { enabled = true; }
 
 const cookie = (n: string) => (typeof document === "undefined" ? null : document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? null);
 
-/** A stable anonymous id for this browser (external_id). Shared with the server through the px_vid cookie. */
+/** A stable anonymous id for this browser (external_id). The proxy sets the px_vid cookie on the first page view; this is the fallback. */
 export function visitorId() {
   let id = cookie("px_vid");
   if (!id) {
-    id = `v${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+    id = newEventId();
     document.cookie = `px_vid=${id}; path=/; max-age=${60 * 60 * 24 * 365}; SameSite=Lax`;
   }
   return id;
@@ -24,6 +24,26 @@ export function visitorId() {
 
 export const newEventId = (_name?: string) => (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`);
 export type MetaUser = { email?: string | null; phone?: string | null; firstName?: string | null; lastName?: string | null };
+
+/** sha256 hex of the trimmed, lowercased value (the same as the server). Null where SubtleCrypto is unavailable. */
+export async function sha256(v: string) {
+  try {
+    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v.trim().toLowerCase()));
+    return Array.from(new Uint8Array(b), (x) => x.toString(16).padStart(2, "0")).join("");
+  } catch { return null; }
+}
+
+/** Contact details from the checkout Details step, kept for this session so later events (AddPaymentInfo, Lead, Contact) match better. */
+const USER_KEY = "pixely-user";
+export function rememberUser(u: MetaUser) {
+  try { sessionStorage.setItem(USER_KEY, JSON.stringify(u)); } catch {}
+  // Browser Pixel: advanced matching (the Pixel hashes ph, fn and ln itself).
+  const fbq = typeof window !== "undefined" ? (window as unknown as { fbq?: Fbq }).fbq : undefined;
+  if (fbq && META_PIXEL_ID && enabled) void sha256(visitorId()).then((ext) => fbq("init", META_PIXEL_ID, { external_id: ext ?? visitorId(), ...(u.phone ? { ph: u.phone.replace(/\D/g, "") } : {}), ...(u.firstName ? { fn: u.firstName.toLowerCase() } : {}), ...(u.lastName ? { ln: u.lastName.toLowerCase() } : {}) }));
+}
+function storedUser(): MetaUser | undefined {
+  try { const s = sessionStorage.getItem(USER_KEY); return s ? (JSON.parse(s) as MetaUser) : undefined; } catch { return undefined; }
+}
 
 const SERVER_NAMES = { PageView: "page_view", ViewContent: "view_content", AddToCart: "add_to_cart", InitiateCheckout: "initiate_checkout", AddPaymentInfo: "add_payment_info", Lead: "lead", Contact: "contact", Schedule: "schedule" } as const;
 export type MetaEvent = keyof typeof SERVER_NAMES;
@@ -40,14 +60,15 @@ export function track(eventName: MetaEvent, params: MetaParams = {}, userData?: 
   };
   fire();
   if (opts.server === false) return;
-  // Server copy (Conversions API), same event_id. Waits up to 3s for the Pixel to set _fbp so both carry the same browser id.
+  // Server copy (Conversions API), same event_id. Waits up to 500 ms for the Pixel to set _fbp; the server falls back to the request cookie.
+  const user = userData ?? storedUser();
   const send = (tries = 0) => {
-    if (!cookie("_fbp") && tries < 15) { setTimeout(() => send(tries + 1), 200); return; }
+    if (!cookie("_fbp") && tries < 5) { setTimeout(() => send(tries + 1), 100); return; }
     try {
     fetch("/api/track", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, signal: AbortSignal.timeout(5000), body: JSON.stringify({
       name: SERVER_NAMES[eventName], eventId, value: params.value, currency: params.currency, page: location.href.slice(0, 500),
       meta: { ...(params.content_category ? { content_category: params.content_category } : {}), ...(params.num_items ? { num_items: params.num_items } : {}), ...(params.content_name ? { content_name: params.content_name } : {}), ...(params.content_ids ? { content_ids: params.content_ids } : {}) },
-      fbp: cookie("_fbp"), fbc: cookie("_fbc"), ...(userData ? { user: userData } : {}),
+      fbp: cookie("_fbp"), fbc: cookie("_fbc"), ...(user ? { user } : {}),
     }) }).catch(() => {});
     } catch {}
   };

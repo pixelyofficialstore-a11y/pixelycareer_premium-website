@@ -1,10 +1,10 @@
 "use client";
 
-import { newEventId, track } from "@/lib/meta";
+import { newEventId } from "@/lib/meta";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
 import { whatsappMessage } from "@/lib/site";
-import { trackEvent } from "@/lib/analytics";
+import { send } from "@/lib/track";
 import Turnstile from "@/components/forms/Turnstile";
 import "./enquiry-form.css";
 
@@ -106,14 +106,13 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
     // Saved for the CRM in the background; the WhatsApp handoff never waits for it.
     const ck = (n: string) => document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? null;
     const leadId = newEventId();
-    track("Lead", { content_name: "partner", content_ids: ["partner"], content_type: "product", value: 0, currency: "PKR" }, undefined, { eventId: leadId, server: false });
+    send("Lead", { key: leadId, name: "partner", ids: ["partner"], value: 0, currency: "PKR", eventId: leadId, server: false, ga: { form_name: "agency_partnership" } });
     fetch("/api/partners", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
       turnstile: ts, name: form.name, orgName: form.organization, orgType: form.organizationType || null, code: form.code, whatsapp: form.phone, email: form.email || null,
       designation: form.designation.trim() || null, destinations: form.destinations.join(", ") || null, countryHq: form.country || null, monthlyVolume: form.volume || null, model: form.model || null, notes: form.notes || null, website: hp.current?.value ?? "", fbp: ck("_fbp"), fbc: ck("_fbc"), eventId: leadId,
     }) })
       .then(async (r) => {
         if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || "We could not send this. Please try again.");
-        try { trackEvent("generate_lead", { form_name: "agency_partnership", method: "form" }); } catch {}
         setSubmitted(true);
       })
       .catch((e: Error) => { setSendError(e.message || "We could not send this. Please try again."); })

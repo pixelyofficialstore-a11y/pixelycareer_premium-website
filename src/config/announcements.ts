@@ -16,12 +16,12 @@ const BUNDLE = "CV + cover letter + LinkedIn, from {price} →";
 const CAMPAIGNS: { keywords: string[]; message: Announcement }[] = [
   { keywords: ["gulf"], message: { key: "campaign-gulf", text: GULF, href: PRICING } },
   { keywords: ["review"], message: { key: "campaign-review", text: "Your free CV review is one message away →", href: "/free-cv-review" } },
-  { keywords: ["executive"], message: { key: "campaign-executive", text: "Executive Career Branding: your full professional brand →", href: PRICING } },
+  { keywords: ["executive"], message: { key: "campaign-executive", text: "Executive Branding: your full professional brand →", href: PRICING } },
   { keywords: ["bundle", "profile"], message: { key: "campaign-bundle", text: BUNDLE, href: PRICING } },
 ];
 
 const PAGES: { match: (path: string) => boolean; message: Announcement }[] = [
-  { match: (p) => p === "/pk", message: { key: "pk", text: "First draft in 2 days. Same-day delivery available →", href: PRICING } },
+  { match: (p) => p === "/", message: { key: "pk", text: "First draft in 2 days. Same-day delivery available →", href: PRICING } },
   { match: (p) => p === "/ae", message: { key: "ae", text: GULF, href: PRICING } },
   { match: (p) => p === "/sa", message: { key: "sa", text: GULF, href: PRICING } },
   { match: (p) => p === "/uk", message: { key: "uk", text: "UK CVs, plus Europass for EU applications →", href: PRICING } },
@@ -35,13 +35,13 @@ const PAGES: { match: (path: string) => boolean; message: Announcement }[] = [
 const FALLBACK: Announcement = { key: "free-review", text: "Free CV review. Send your CV on WhatsApp →", href: "/free-cv-review" };
 
 /** Pages with no bar at all. The layout's inline script repeats this test, so it holds before first paint. */
-export const isBarHidden = (path: string) => path === "/order" || path.startsWith("/order/") || path === "/free-cv-review";
+export const isBarHidden = (path: string) => path === "/checkout" || path.startsWith("/order/") || path === "/free-cv-review";
 
 function fill(m: Market, message: Announcement, path: string): Announcement {
   const lowest = Math.min(...Object.values(m.prices));
   const text = localize(m, message.text).replaceAll("{price}", formatPrice(m, lowest)).replaceAll("{currency}", m.currency);
   // On this market's own home, stay on the page. Anywhere else, go to its home first.
-  const href = message.href === "{pricing}" ? `/pricing?m=${m.key}` : message.href === PRICING ? (path === m.path ? PRICING : homeHref(m, PRICING)) : message.href;
+  const href = message.href === "{pricing}" ? (m.key === "pk" ? "/pricing" : "/pricing") : message.href === PRICING ? (path === m.path ? PRICING : homeHref(m, PRICING)) : message.href;
   return { ...message, text, href };
 }
 

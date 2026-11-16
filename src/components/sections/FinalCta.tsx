@@ -1,4 +1,4 @@
-import { FinalCtaOffer } from "@/components/offer/Offer";
+import { FinalCtaCard, FinalCtaOffer } from "@/components/offer/Offer";
 import Link from "next/link";
 import CtaCvImage from "@/components/cv/CtaCvImage";
 import { HERO_PERSONAS } from "@/config/heroPersonas";
@@ -13,6 +13,24 @@ export default function FinalCta({ market, variant, cta }: { market: Market; var
   const blog = variant === "blog";
   const requestedImage = images.good;
 
+  if (market.key === "pk") {
+    return (
+      <section id="final-cta" data-blog={blog || undefined} aria-labelledby="cta-title" className="on-blue final-cta fcta bg-vivid text-white">
+        <div className="wrap fcta-grid">
+          <div className="fcta-copy">
+            <h2 id="cta-title" className="fcta-title">Stop getting rejected.<br /><em>Fix your CV today.</em></h2>
+            <p className="fcta-sub">First draft in 2 days. 100% money back guarantee.</p>
+            <div className="fcta-actions">
+              <Link href={cta?.href ?? orderHref(market)} className="fcta-btn fcta-btn-white" data-cta={cta?.id ?? "home-final-order"}>{cta?.label ?? "Start your order"} →</Link>
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="fcta-btn fcta-btn-line" data-cta="home-final-whatsapp">Chat on WhatsApp</a>
+            </div>
+            <div className="fcta-stats"><p><b>1,800+</b>Professionals helped</p><p><b>100%</b>Recommended on Facebook</p><p><b>2 days</b>First draft</p></div>
+          </div>
+          <FinalCtaCard />
+        </div>
+      </section>
+    );
+  }
   return (
     <section id="final-cta" data-blog={blog || undefined} aria-labelledby="cta-title" className="on-blue final-cta bg-vivid text-white">
       <div className="wrap final-grid">
@@ -21,7 +39,7 @@ export default function FinalCta({ market, variant, cta }: { market: Market; var
             <>Stop getting rejected. <em>{localize(market, "Fix your CV today.")}</em></>
           </h2>
           <p className="final-sub">First draft in 2 days. <span>100% money back guarantee.</span></p>
-          {market.key === "pk" ? (
+          {(market.key as string) === "pk" ? (
             <FinalCtaOffer market={market.key} blog={blog}>
           <div className="final-actions">
             <Link href={cta?.href ?? orderHref(market)} className="btn btn-white min-h-14 px-8 text-[1.0625rem]" data-cta={cta?.id ?? "home-final-order"}>
@@ -29,7 +47,7 @@ export default function FinalCta({ market, variant, cta }: { market: Market; var
               <ArrowRight />
             </Link>
             {blog ? (
-              <Link href={`/pricing?m=${market.key}`} className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="blog-final-packages">
+              <Link href={"/pricing"} className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="blog-final-packages">
                 See packages
               </Link>
             ) : (
@@ -47,7 +65,7 @@ export default function FinalCta({ market, variant, cta }: { market: Market; var
               <ArrowRight />
             </Link>
             {blog ? (
-              <Link href={`/pricing?m=${market.key}`} className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="blog-final-packages">
+              <Link href="/pricing" className="btn final-wa min-h-14 px-7 text-[1.0625rem]" data-cta="blog-final-packages">
                 See packages
               </Link>
             ) : (

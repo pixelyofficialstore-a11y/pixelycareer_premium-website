@@ -24,10 +24,10 @@ function copy(m: Market) {
   return (t: string) => localize(m, t.replaceAll("{portals}", portals).replaceAll("{domain}", domain));
 }
 
-export async function generateMetadata({ params }: Props) {
+export async function generateMetadata({ params, pk }: { params: Props["params"]; searchParams?: Props["searchParams"]; pk?: boolean }) {
   const s = getService((await params).slug);
   if (!s) return {};
-  const m = await requestMarket();
+  const m = await requestMarket(pk ? "pk" : undefined);
   const l = copy(m);
   return pageMetadata(`/services/${s.slug}`, `${localizeTitle(m, s.name)} | Pixely Careers`, `${l(s.sub)} First draft in 2 days.`, { label: "Service", title: localizeTitle(m, s.name), locale: m.hreflang.replace("-", "_") });
 }
@@ -121,7 +121,7 @@ export default async function Page({ params, searchParams }: Props) {
   const faq = s.faq.map((i) => ({ q: l(i.q), a: l(i.a) }));
   const packages = getPackages(m);
   const from = s.addon ? Math.min(...packages.map((p) => unitAt(m.key, s.addon!, 1, p.id))) : 0;
-  const orderLink = `/order?service=${s.slug}&market=${m.key}`;
+  const orderLink = `/checkout?service=${s.slug}`;
   const words = (t: string) => l(t).split(" ").map((w, i) => <Fragment key={i}><span className="sp-word"><span>{w}</span></span>{" "}</Fragment>);
 
   return (

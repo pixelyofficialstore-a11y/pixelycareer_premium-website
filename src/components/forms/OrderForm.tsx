@@ -6,31 +6,32 @@ import { createPortal } from "react-dom";
 import { availableAddons, calcOrder, totalFor, unitAt, type Selection } from "@/config/addons";
 import { MARKETS, formatPricingPrice, getPackages, localize, type MarketKey, type PackageId } from "@/config/markets";
 import { PAYMENTS } from "@/config/payments";
-import { BUNDLE_ALL_LINE, BUNDLE_ITEMS, onlineOpen, onlinePrice, payPlan, type PayAmountType } from "@/config/offers";
+import { BUNDLE_ALL_LINE, BUNDLE_ITEMS, onlineOpen, onlinePrice, payPlan } from "@/config/offers";
 import { cartId, setCartId, trackFunnel, type Commerce } from "@/lib/analytics";
+import { send } from "@/lib/track";
+import { rememberUser } from "@/lib/meta";
 import { useCountdown, useOffer } from "@/components/offer/useOffer";
 import { inline } from "@/components/offer/Offer";
 import { whatsappMessage } from "@/lib/site";
+import { clearCart, getCart, openCart, saveCart } from "@/lib/cart";
 import CountryPicker from "./CountryPicker";
 import { CODES } from "./Fields";
 import Turnstile, { type TsStatus } from "./Turnstile";
 import styles from "./OrderForm.module.css";
 
-const STEPS = ["Package", "Details", "Payment"];
+const STEPS = ["Cart", "Details", "Payment"];
+/** PK: the cart drawer is the package step, so checkout opens on Details. */
+const PK_STEPS = ["Details", "Payment", "Place order"];
 const COUNTRY: Record<MarketKey, string> = { us: "USA", uk: "UK", ae: "UAE", sa: "Saudi Arabia", pk: "Pakistan" };
 /** Short checklist per package: each item fits one line. */
 const CHECKLIST = (key: string, id: PackageId) => {
   const gulf = key === "ae" || key === "sa" || key === "pk";
+  if (id === "cv-starter") return ["ATS CV", "Cover letter", "Job keywords", "PDF and Word files"];
   if (id === "ats-career") return ["ATS / Europass CV", "Cover letter", "LinkedIn content", "Job keywords", "PDF and Word files"];
   if (id === "international-pro") return ["Everything in ATS", "International CV", "LinkedIn makeover", gulf ? "Indeed + Naukrigulf" : "Indeed", "Bio statement", "Contact card"];
   return ["Everything in Pro", "Executive CV", "Visual profile", "10 LinkedIn posts", "Interview guide"];
 };
-const PACKAGE_ORDER: PackageId[] = ["executive", "international-pro", "ats-career"];
-const AUDIENCE: Record<PackageId, string> = {
-  "ats-career": "Beginners & early careers",
-  "international-pro": "3+ years or applying abroad",
-  executive: "Senior & leadership roles",
-};
+const PACKAGE_ORDER: PackageId[] = ["executive", "international-pro", "ats-career", "cv-starter"];
 const CV_MAX = 5 * 1024 * 1024;
 const SHOT_MAX = 4 * 1024 * 1024;
 type Errors = Record<string, string | undefined>;
@@ -58,7 +59,7 @@ type UpState = "idle" | "uploading" | "done" | "error";
 function Dropzone({ id, label, title, note, accept, file, onFile, error, small, state }: { id: string; label: string; title: string; note: string; accept: string; file: File | null; onFile: (f: File | null) => void; error?: string; small?: boolean; state?: UpState }) {
   return (
     <div className={styles.field}>
-      <span className={styles.label}>{label}</span>
+      {label && <span className={styles.label}>{label}</span>}
       {file ? (
         <div className={`${styles.fileChip} ${small ? styles.dropSmall : ""}`}>
           <FileIcon />
@@ -127,7 +128,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const router = useRouter();
   const packages = getPackages(m);
   const pk = market === "pk";
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(market === "pk" ? 2 : 1);
   const [packageId, setPackageId] = useState<PackageId>(initial ?? "international-pro");
   const [sameDay, setSameDay] = useState(restore?.sameDay ?? false);
   // Add-ons the visitor picked themselves. The bundled website lives in bundleOn, never in here.
@@ -141,7 +142,6 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   });
   const [cv, setCv] = useState<File | null>(null);
   const [later, setLater] = useState(false);
-  const [payType, setPayType] = useState<PayAmountType>("full");
   const [extrasOpen, setExtrasOpen] = useState(false);
   const [incOpen, setIncOpen] = useState<string | null>(null);
   const [method, setMethod] = useState<"easypaisa" | "ubl">("easypaisa");
@@ -161,6 +161,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const [sheet, setSheet] = useState(false);
+  const [yoOpen, setYoOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const touchY = useRef<number | null>(null);
   const [mounted, setMounted] = useState(false);
@@ -208,6 +209,42 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offerParam]);
   const bundle = offerLive && bundleOn && packageId === offer.packageId;
+  // PK cart: the checkout opens with what is in the cart (a link with ?package wins), and every change goes back to it.
+  const [cartReady, setCartReady] = useState(!pk);
+  useEffect(() => {
+    if (!pk) return;
+    const c = getCart();
+    // The PK cart wins over a restored draft; a link with ?package or ?offer wins over the cart.
+    const q = new URLSearchParams(location.search);
+    if (!q.has("package") && !q.has("offer") && c.plan) {
+      setPackageId(c.plan);
+      setBundleOn(c.offer === offer.id);
+      setAddons(c.addons);
+    }
+    // An empty cart has nothing to check out: back to the plans.
+    if (!q.has("package") && !q.has("offer") && !c.plan) { router.replace("/#plans"); return; }
+    setCartReady(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (!cartReady || !pk) return;
+    const sync = () => {
+      const c = getCart();
+      if (!c.plan) { router.replace("/#plans"); return; }
+      setPackageId(c.plan);
+      setAddons((a) => (JSON.stringify(a) === JSON.stringify(c.addons) ? a : c.addons));
+    };
+    window.addEventListener("pixely-cart", sync);
+    return () => window.removeEventListener("pixely-cart", sync);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartReady]);
+  useEffect(() => {
+    if (!cartReady || !pk) return;
+    const c = getCart();
+    const next = { plan: packageId, offer: bundle ? offer.id : undefined, addons };
+    if (JSON.stringify(next) !== JSON.stringify({ plan: c.plan, offer: c.offer, addons: c.addons })) saveCart(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartReady, packageId, bundle, JSON.stringify(addons)]);
   // What is priced and sent: the visitor's add-ons, plus the website while the bundle is ticked.
   const eff: Selection = bundle ? { ...addons, [offer.addonId]: 1 } : addons;
   const { pkg, list, total } = calcOrder(m, packageId, sameDay, eff);
@@ -218,7 +255,6 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const options = availableAddons(m, packageId).filter((o) => !(bundle && o.id === offer.addonId));
   const toggleBundle = (on: boolean) => {
     setBundleOn(on);
-    if (on) trackFunnel("cart", { name: "11.11 Bundle", ids: [offer.packageId, offer.addonId], value: offer.price, currency: m.currency, items: 1 });
   };
   const put = async (kind: "cv" | "payment", file: File, signal?: AbortSignal) => {
     const d = new FormData();
@@ -243,12 +279,12 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       .finally(() => clearTimeout(t));
   };
   const payNow = pk && !later;
-  // Pay now (pk): 50% advance or in full, with the discount from config/offers. Shown from the payment step on.
-  const planOf = (t: PayAmountType) => payPlan(total, t, { bundle });
+  // pk: Pay now (in full) and Order on WhatsApp both get the online discount from config/offers.
+  const planOf = () => payPlan(total, "full", { bundle });
   const online = pk && onlineOpen();
-  const plan = payNow ? planOf(payType) : null;
+  const plan = pk ? planOf() : null;
+  const talkPlan = plan ?? planOf();
   const due = plan ? plan.total : total;
-  const payCategory = !pk ? undefined : later ? "talk_first" : payType === "full" ? "pay_full" : "pay_advance";
   const item: Commerce = { name: bundle ? offer.title : pkg.name, ids: [bundle ? "executive_bundle" : packageId, ...list.filter((a) => !(bundle && a.id === offer.addonId)).map((a) => a.id)], value: due, currency: m.currency, items: 1 + list.length };
   const byEmail = !pk && v.contact === "email";
   const channel = byEmail ? "email" : "WhatsApp";
@@ -327,22 +363,15 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
 
   const go = (to: number) => { setErrors({}); setSheet(false); setStep(to); };
 
-  // Funnel events. AddToCart: a package arrives from a link, or the visitor changes the package, an extra or same day delivery.
-  const firstCart = useRef(true);
-  useEffect(() => {
-    if (firstCart.current) { firstCart.current = false; if (!initial) return; }
-    trackFunnel("cart", item);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [packageId, JSON.stringify(addons), sameDay]);
-  useEffect(() => { if (step === 2) trackFunnel("checkout", item); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [step]);
-  useEffect(() => { if (payNow && shot) trackFunnel("payment", { ...item, value: planOf(payType).total, category: payType }); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [shot, payNow]);
+  // Funnel events. AddToCart is sent only from an explicit Add to cart click, never here.
+  // InitiateCheckout is sent from the cart drawer's "Place your order" click, not from here.
 
   // Draft: the open order is saved on every package, bundle, add-on, step or contact change (debounced). The server prices it.
   useEffect(() => { if (restore?.id) setCartId(restore.id.replace(/-/g, "").slice(0, 20)); }, [restore?.id]);
   const orderPayload = () => {
     const u = readUtm();
     return {
-      market, package: bundle ? "executive_bundle" : packageId, addons, sameDay, bundle, payChoice: pk ? (payNow ? "now" : "later") : null, payAmountType: pk && payNow ? payType : null, step,
+      market, package: bundle ? "executive_bundle" : packageId, addons, sameDay, bundle, payChoice: pk ? (payNow ? "now" : "talk_first") : null, payAmountType: pk && payNow ? "full" : null, step,
       name: v.name || null, code: v.code, whatsapp: v.whatsapp || null, email: v.email.trim() || null,
       targetCountry: countries[0] || null, targetCountries: countries, targetRole: v.role || null, notes: v.notes || null,
       fbp: u.fbp || null, fbc: u.fbc || null, eventId: cartId() || undefined, resume: restore?.id ?? null,
@@ -354,11 +383,21 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     }, 900);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step, v.whatsapp, v.code, v.email, v.name, v.country, JSON.stringify(countries), v.role, packageId, JSON.stringify(addons), sameDay, bundle, later, payType]);
-  const cont = () => { if (validate(step)) go(step + 1); };
+  }, [step, v.whatsapp, v.code, v.email, v.name, v.country, JSON.stringify(countries), v.role, packageId, JSON.stringify(addons), sameDay, bundle, later]);
+  const cont = () => {
+    if (!validate(step)) return;
+    // Details step done: keep name and phone for this session so later events match (Meta hashes them).
+    if (step === 2) {
+      const [first, ...rest] = v.name.trim().split(/\s+/).filter(Boolean);
+      const phone = byEmail ? null : `${v.code}${v.whatsapp.replace(/\D/g, "").replace(/^0/, "")}`;
+      rememberUser({ phone, email: v.email.trim() || null, firstName: first ?? null, lastName: rest.length ? rest[rest.length - 1] : null });
+    }
+    go(step + 1);
+  };
 
   const submit = async () => {
     if (busy || !validate(3)) return;
+    const waWin = pk && later ? window.open("about:blank", "_blank") : null;
     setBusy(true);
     setFailed(false);
     setSheet(false);
@@ -375,12 +414,21 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ref) throw new Error(data.error || "failed");
       clearTimeout(timer);
-      trackFunnel("lead", { ...item, value: data.total ?? due, category: payCategory });
+      // AddPaymentInfo for both options, once per order, valued at the discounted total. Orders never send Lead.
+      trackFunnel("payment", { ...item, value: data.total ?? due, category: payNow ? "pay_now" : "whatsapp", orderId: data.ref }, data.ref);
       try { sessionStorage.removeItem("pixely-cart-id"); } catch {}
-      const q = new URLSearchParams({ id: data.ref, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1", t: String(data.total ?? due), p: String(plan?.today ?? due), d: String(plan?.discount ?? 0) } : { talk: "1" }) });
-      router.push(`/order/success?${q}`);
+      const q = new URLSearchParams({ id: data.ref, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1", t: String(data.total ?? due), p: String(plan?.today ?? due), d: String(plan?.discount ?? 0) } : { talk: "1", t: String(data.total ?? due), n: bundle ? "11.11 Bundle" : pkg.name }) });
+      if (pk) clearCart();
+      // Order on WhatsApp: the chat opens with the order, the success page shows here.
+      if (waWin) {
+        const off = plan && plan.discount > 0 ? (bundle ? `, ${money(plan.discount)} off` : ", 20% off") : "";
+        send("Contact", { key: "wa:order:" + data.ref, name: "order-on-whatsapp", ga: { method: "whatsapp", cta: "order-on-whatsapp" } });
+        try { waWin.location.href = whatsappMessage(`Hi, I'd like to order ${bundle ? "the 11.11 Bundle" : pkg.name} (${money(data.total ?? due)}${off}). Order no. PX-${data.ref}.`); } catch { waWin.close(); }
+      }
+      router.push(`${market === "pk" ? "/order/success" : "/order/success"}?${q}`);
     } catch (err) {
       clearTimeout(timer);
+      waWin?.close();
       const msg = err instanceof Error && err.message !== "failed" && err.name !== "AbortError" && !/fetch|network/i.test(err.message) ? err.message : "";
       setErrors({ submit: msg || "Couldn\u2019t send. Try again or message us on WhatsApp." });
       setFailed(true);
@@ -395,13 +443,14 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     `Total: ${money(due)}`,
     v.name && `Name: ${v.name}`,
     v.role && `Role: ${v.role}, ${countries.join(", ")}`,
-    pk ? (payNow ? `${payType === "full" ? "Paid in full" : "Paid 50%"} by ${method === "ubl" ? "UBL Bank" : "Easypaisa / JazzCash"}${txn ? `, ID ${txn}` : ""}` : "Pay later") : "",
+    pk ? (payNow ? `Paid in full by ${method === "ubl" ? "UBL Bank" : "Easypaisa / JazzCash"}${txn ? `, ID ${txn}` : ""}` : "Pay later") : "",
   ].filter(Boolean).join("\n"));
 
   const last = step === 3;
-  const label = last ? (pk && later ? "Send request" : "Place order") : "Continue";
+  const waBtn = last && pk && later;
+  const label = waBtn ? <><WaIcon /> Order on WhatsApp</> : last ? "Place order" : "Continue";
   const continueBtn = (cls: string) => (
-    <button type="button" className={`btn btn-primary ${styles.continue} ${cls}`} onClick={last ? submit : cont} disabled={busy || (last && tsStatus !== "ok")} aria-busy={busy || undefined} data-cta={last ? "order-send-request" : "order-continue"}>
+    <button type="button" className={`btn btn-primary ${styles.continue} ${waBtn ? styles.waBtn : ""} ${cls}`} onClick={last ? submit : cont} disabled={busy || (last && tsStatus !== "ok")} aria-busy={busy || undefined} data-cta={last ? "order-send-request" : "order-continue"}>
       {busy ? <><span className={styles.spinner} aria-hidden="true" /> Sending</> : last && tsStatus === "checking" ? <><span className={styles.spinner} aria-hidden="true" /> Verifying</> : label}
     </button>
   );
@@ -414,13 +463,12 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
           <div key={a.id} className={styles.sumLine}><dt>{a.name}{a.qty > 1 ? ` × ${a.qty}` : ""} (add-on)</dt><dd>{money(a.total)}</dd></div>
         ))}
         {sameDay && <div className={styles.sumLine}><dt>Same day delivery</dt><dd>{pkg.sameDayLabel}</dd></div>}
-        {plan && plan.discount > 0 && <div className={styles.sumLine}><dt>{bundle ? "Online discount" : `Online discount (${plan.type === "full" ? "20%" : "10%"})`}</dt><dd>−{money(plan.discount)}</dd></div>}
+        {plan && plan.discount > 0 && <div className={styles.sumLine}><dt>{bundle ? "Online discount" : "Online discount (20%)"}</dt><dd>−{money(plan.discount)}</dd></div>}
       </dl>
       <div className={styles.sumTotal}>
         <span>Total payable</span>
         <strong key={due} className={styles.totalNum}>{money(due)}</strong>
       </div>
-      {plan && plan.type === "advance" && <dl className={styles.sumList}><div className={styles.sumLine}><dt>Pay today (50%)</dt><dd>{money(plan.today)}</dd></div></dl>}
     </>
   );
   const extrasCount = list.length + (sameDay ? 1 : 0);
@@ -446,7 +494,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                     items: [...BUNDLE_ITEMS] as string[], note: BUNDLE_ALL_LINE as string | undefined, sel: bundle,
                     pick: () => { choosePackage(offer.packageId); toggleBundle(true); },
                   }] : []),
-                  ...PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)!).map((p) => ({
+                  ...PACKAGE_ORDER.map((id) => packages.find((x) => x.id === id)).filter((p): p is (typeof packages)[number] => !!p).map((p) => ({
                     id: p.id as string, name: p.name, line: "", price: online ? onlinePrice(p.price) : p.price, was: (online ? p.price : undefined) as number | undefined, meta: p.deliveryDays,
                     badge: p.id === "executive" ? "Best Results" : p.id === "international-pro" ? "Most Popular" : "", tone: p.id === "executive" ? styles.pkBest : p.id === "international-pro" ? styles.pkPop : "",
                     items: CHECKLIST(m.key, p.id), note: undefined as string | undefined, sel: p.id === packageId && !bundle,
@@ -474,11 +522,11 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                       {options.map((o) => {
                         const qty = addons[o.id] ?? 0;
                         const on = qty > 0;
-                        const set1 = (n: number) => setAddons((s) => { const next = { ...s }; if (n < 1) delete next[o.id]; else next[o.id] = Math.min(10, n); return next; });
+                        const set1 = (n: number) => setAddons((s) => { const next = { ...s }; if (n < 1) delete next[o.id]; else next[o.id] = Math.min(o.max, n); return next; });
                         let sub: string;
                         if (!o.qty) sub = `${o.benefit} · ${money(totalFor(m.key, o.id, 1, packageId))}`;
                         else if (!on) sub = `${o.benefit} · ${money(unitAt(m.key, o.id, 1, packageId))}`;
-                        else sub = `${money(totalFor(m.key, o.id, qty, packageId))} for ${qty}${qty < 10 ? ` · next ${money(unitAt(m.key, o.id, qty + 1, packageId))}` : ""}`;
+                        else sub = `${money(totalFor(m.key, o.id, qty, packageId))} for ${qty}${qty < o.max ? ` · next ${money(unitAt(m.key, o.id, qty + 1, packageId))}` : ""}`;
                         return (
                           <div key={o.id} className={`${styles.arow} ${on ? styles.arowOn : ""}`}>
                             <div className={styles.aleft}>
@@ -493,7 +541,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                                 <span className={styles.stepper}>
                                   <button type="button" onClick={() => set1(qty - 1)} aria-label={`Fewer ${o.name}`}>–</button>
                                   <output aria-live="polite">{qty}</output>
-                                  <button type="button" onClick={() => set1(qty + 1)} disabled={qty >= 10} aria-label={`More ${o.name}`}>+</button>
+                                  <button type="button" onClick={() => set1(qty + 1)} disabled={qty >= o.max} aria-label={`More ${o.name}`}>+</button>
                                 </span>
                               ) : (
                                 <button type="button" className={`${styles.addBtn} ${styles.added}`} onClick={() => set1(0)} aria-label={`Remove ${o.name}`}>✓ Added</button>
@@ -507,22 +555,36 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 )}
               </section>
   );
+  if (pk && !cartReady) return <div className={styles.page} style={{ minHeight: "60vh" }} />;
   return (
     <div className={`${styles.page} ${step > 1 ? styles.inner : ""}`}>
       <div className={styles.head}>
         <h1 className={`display ${styles.title}`}>Let&apos;s get you <em>shortlisted.</em></h1>
         <ol className={styles.steps} aria-label="Order steps">
-          {STEPS.map((s, i) => (
-            <li key={s} className={i + 1 === step ? styles.active : i + 1 < step ? styles.complete : ""} aria-current={i + 1 === step ? "step" : undefined}>
-              <span>{i + 1 < step ? "✓" : i + 1}</span> {s}
-            </li>
-          ))}
+          {(pk ? PK_STEPS : STEPS).map((s, i) => {
+            const n = pk ? i + 2 : i + 1;
+            return (
+              <li key={s} className={n === step ? styles.active : n < step ? styles.complete : ""} aria-current={n === step ? "step" : undefined}>
+                {n < step ? <button type="button" className={styles.stepBack} onClick={() => go(n)}><span>✓</span> {s}</button> : <><span>{i + 1}</span> {s}</>}
+              </li>
+            );
+          })}
         </ol>
       </div>
 
       <div className={styles.layout}>
         <form ref={formRef} className={styles.form} noValidate onSubmit={(e) => e.preventDefault()}>
-          {step > 1 && <button type="button" className={styles.backLink} onClick={() => go(step - 1)}>← Back</button>}
+          {pk && narrow && step > 1 && (
+            <div className={`${styles.card} ${styles.yourOrder}`}>
+              <button type="button" className={styles.yoToggle} onClick={() => setYoOpen((o) => !o)} aria-expanded={yoOpen}>
+                <span>Your order: {bundle ? "11.11 Bundle" : pkg.name}{shownList.length ? ` + ${shownList.length} extra${shownList.length > 1 ? "s" : ""}` : ""} · {money(due)}</span>
+                <Chevron open={yoOpen} />
+              </button>
+              <button type="button" className={styles.yoEdit} onClick={openCart} data-cta="checkout-edit-order">Edit</button>
+              {yoOpen && <div className={styles.yoList}>{summaryLines}</div>}
+            </div>
+          )}
+          {!pk && step > 1 && <button type="button" className={styles.backLink} onClick={() => go(step - 1)}>← Back</button>}
           {step === 1 && (
             <>
               <h2 className={styles.stepTitle}>Choose your package</h2>
@@ -609,7 +671,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
 
           {step === 3 && (
             <section aria-labelledby="pay-title">
-              <h2 id="pay-title" className={styles.stepTitle}>Payment</h2>
+              {!pk && <h2 id="pay-title" className={styles.stepTitle}>Payment</h2>}
               {!pk ? (
                 <div className={`${styles.card} ${styles.info}`}>
                   <Shield />
@@ -617,52 +679,56 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 </div>
               ) : (
                 <>
-                <div className={styles.payStack} role="radiogroup" aria-label="How would you like to pay?">
-                  {([["full", "Pay in full", money(planOf("full").today), planOf("full").discount], ["advance", "Pay 50% now", `${money(planOf("advance").today)} today`, planOf("advance").discount], ["talk", "Talk to us first (WhatsApp)", money(total), 0]] as const).map(([k, name, price, off]) => {
-                    const on = k === "talk" ? later : !later && payType === k;
-                    return (
-                      <button key={k} type="button" role="radio" aria-checked={on} className={`${styles.card} ${styles.payBox} ${styles.payBoxHead} ${on ? styles.payBoxOn : ""}`} onClick={() => { if (k === "talk") setLater(true); else { setLater(false); setPayType(k); } }} data-cta={`order-pay-${k}`}>
+                <div className={styles.opts}>
+                  <h2 id="pay-title" className={styles.optsTitle}>How would you like to order?</h2>
+                  <div className={styles.optRow} role="radiogroup" aria-labelledby="pay-title">
+                    {([[false, "Pay now", talkPlan.discount > 0 ? `${bundle ? `${money(talkPlan.discount)} off` : "20% off"} · full payment` : "Full payment"], [true, "Order on WhatsApp", talkPlan.discount > 0 ? `${bundle ? `${money(talkPlan.discount)} off` : "20% off"} · pay after we chat` : "Pay after we chat"]] as const).map(([t, name, sub]) => (
+                      <button key={name} type="button" role="radio" aria-checked={later === t} className={`${styles.opt} ${later === t ? styles.optOn : ""}`} onClick={() => setLater(t)} data-cta={t ? "order-pay-talk" : "order-pay-now"}>
                         <span className={styles.radioDot} aria-hidden="true" />
-                        <span className={styles.payName}><b>{name}</b>{k !== "talk" && off > 0 && <small>{bundle ? `${money(off)} off` : k === "full" ? "20% off" : "10% off"}</small>}</span>
-                        <strong>{price}</strong>
+                        <span className={styles.optText}><b>{name}</b>{sub && <small>{sub}</small>}</span>
+                        <strong className={styles.optPrice}>{money(talkPlan.total)}</strong>
                       </button>
-                    );
-                  })}
-                </div>
-                {!later && (
-                <div className={`${styles.card} ${styles.payCard}`}>
-                  <div className={styles.tabs} role="tablist" aria-label="Payment method">
-                    <button type="button" role="tab" aria-selected={method === "easypaisa"} className={method === "easypaisa" ? styles.tabOn : ""} onClick={() => setMethod("easypaisa")}>Easypaisa / JazzCash</button>
-                    <button type="button" role="tab" aria-selected={method === "ubl"} className={method === "ubl" ? styles.tabOn : ""} onClick={() => setMethod("ubl")}>UBL Bank</button>
+                    ))}
                   </div>
-                  <div className={styles.payGrid}>
-                    <div className={styles.acct}>
-                      <PayRow label="Account title" value="Muhammad Hamza" copy="Muhammad Hamza" />
-                      {method === "easypaisa" ? (
-                        <PayRow label="Account number" value={PAYMENTS.easypaisa.number} copy={PAYMENTS.easypaisa.copy} />
-                      ) : (
-                        <>
-                          <PayRow label="Account number" value={PAYMENTS.ubl.number} copy={PAYMENTS.ubl.number} />
-                          <PayRow label="IBAN" value={PAYMENTS.ubl.iban.replace(/(.{4})(?=.)/g, "$1 ")} copy={PAYMENTS.ubl.iban} mono />
-                        </>
-                      )}
+                  <hr className={styles.optRule} />
+                  {later ? (
+                    <p className={styles.optLine}>Your order is saved and WhatsApp opens with your details. Pay there after we&apos;ve spoken.</p>
+                  ) : (
+                    <div className={styles.optBody}>
+                      <div className={styles.method}>
+                        <div className={styles.tabs} role="tablist" aria-label="Payment method">
+                          <button type="button" role="tab" aria-selected={method === "easypaisa"} className={method === "easypaisa" ? styles.tabOn : ""} onClick={() => setMethod("easypaisa")}>Easypaisa / JazzCash</button>
+                          <button type="button" role="tab" aria-selected={method === "ubl"} className={method === "ubl" ? styles.tabOn : ""} onClick={() => setMethod("ubl")}>UBL Bank</button>
+                        </div>
+                        <div className={styles.payGrid}>
+                          <div className={styles.acct}>
+                            <PayRow label="Account title" value="Muhammad Hamza" copy="Muhammad Hamza" />
+                            {method === "easypaisa" ? (
+                              <PayRow label="Account number" value={PAYMENTS.easypaisa.number} copy={PAYMENTS.easypaisa.copy} />
+                            ) : (
+                              <>
+                                <PayRow label="Account number" value={PAYMENTS.ubl.number} copy={PAYMENTS.ubl.number} />
+                                <PayRow label="IBAN" value={PAYMENTS.ubl.iban.replace(/(.{4})(?=.)/g, "$1 ")} copy={PAYMENTS.ubl.iban} mono />
+                              </>
+                            )}
+                          </div>
+                          {method === "easypaisa" && qrOk && (
+                            <figure className={styles.qr}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={PAYMENTS.easypaisa.qr} alt="Payment QR code" width={140} height={140} loading="lazy" onError={() => setQrOk(false)} />
+                            </figure>
+                          )}
+                        </div>
+                      </div>
+                      <div className={styles.payUpload}>
+                        <Dropzone id="shot" label="" title="Upload payment screenshot" note="JPG, PNG, WEBP or PDF · max 4 MB" accept="image/jpeg,image/png,image/webp,application/pdf" file={shot} onFile={onShot} error={errors.shot} state={shotState} small />
+                        <Field id="txn" label="Transaction ID (optional)">
+                          <input id="txn" className={styles.input} value={txn} onChange={(e) => setTxn(e.target.value)} />
+                        </Field>
+                      </div>
                     </div>
-                    {method === "easypaisa" && qrOk && (
-                      <figure className={styles.qr}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={PAYMENTS.easypaisa.qr} alt="Payment QR code" width={180} height={180} loading="lazy" onError={() => setQrOk(false)} />
-                        <figcaption>Scan to pay</figcaption>
-                      </figure>
-                    )}
-                  </div>
-                  <div className={styles.payUpload}>
-                    <Dropzone id="shot" label="Payment screenshot *" title="Upload screenshot" note="JPG, PNG, WEBP or PDF · max 4 MB" accept="image/jpeg,image/png,image/webp,application/pdf" file={shot} onFile={onShot} error={errors.shot} state={shotState} small />
-                    <Field id="txn" label="Transaction ID (optional)">
-                      <input id="txn" className={styles.input} value={txn} onChange={(e) => setTxn(e.target.value)} />
-                    </Field>
-                  </div>
+                  )}
                 </div>
-                )}
                 </>
               )}
               <div className={styles.mOnly}>{finish}</div>
@@ -672,11 +738,12 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         </form>
 
         <aside className={`${styles.card} ${styles.summary}`} aria-label="Order summary">
-          <h2>Order summary</h2>
+          {pk ? <div className={styles.sumHeadRow}><h2>Your order</h2><button type="button" onClick={openCart} className={styles.editLink} data-cta="checkout-edit-order">Edit</button></div> : <h2>Order summary</h2>}
           {summaryLines}
           {last && <div className={styles.sumFinish}>{finish}</div>}
           <Turnstile onToken={setTsToken} onStatus={setTsStatus} retry={tsRetry} />
           {continueBtn(styles.summaryContinue)}
+          {pk && last && !later && <p className={styles.secure}>🔒 Secure payment · Money back guarantee</p>}
         </aside>
       </div>
 
@@ -721,10 +788,9 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
             <button type="button" className={styles.mtotal} onClick={() => setSheet((s) => !s)} aria-expanded={sheet}>
               <span>Total payable ⌃</span>
               <strong key={due}>{money(due)}</strong>
-              {plan && plan.type === "advance" && <span>Pay today {money(plan.today)}</span>}
             </button>
             {last && !terms ? (
-              <button type="button" className={`btn btn-primary ${styles.continue} ${styles.mcontinue} `} aria-disabled="true" onClick={() => { setTermsHint(true); setTermsShake((n) => n + 1); }}>{label}</button>
+              <button type="button" className={`btn btn-primary ${styles.continue} ${waBtn ? styles.waBtn : ""} ${styles.mcontinue}`} aria-disabled="true" onClick={() => { setTermsHint(true); setTermsShake((n) => n + 1); }}>{label}</button>
             ) : continueBtn(styles.mcontinue)}
           </div>
         </>,

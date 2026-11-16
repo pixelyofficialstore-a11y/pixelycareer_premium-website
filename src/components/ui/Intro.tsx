@@ -13,7 +13,7 @@ const CURTAIN_STARTS = 1650; // ms. Keep in step with the delay on #intro in glo
 
 const SCRIPT = `(function(){
   var d=document.documentElement;
-  if(["/","/pk","/ae","/sa","/uk"].indexOf(location.pathname)<0)return;
+  if(["/"].indexOf(location.pathname)<0)return;
   try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return}catch(e){return}
   d.setAttribute("data-intro","on");
   setTimeout(function(){d.setAttribute("data-intro","done")},${CURTAIN_STARTS});

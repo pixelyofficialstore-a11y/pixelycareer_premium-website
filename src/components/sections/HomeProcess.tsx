@@ -14,10 +14,10 @@ const STEPS = {
     { title: "Draft", line: "First draft in 2 days. Revisions until you’re satisfied." },
   ],
   pk: [
-    { title: "Choose", line: "Pick your package." },
-    { title: "Order and pay", line: "Fill your details and pay by JazzCash, Easypaisa or bank." },
-    { title: "Confirm", line: "We verify your payment and message you." },
-    { title: "Draft", line: "First draft in 2 days. Revisions until you’re satisfied." },
+    { title: "Choose your package", line: "Pay on our website, or order on WhatsApp." },
+    { title: "Meet your CV expert", line: "A professional CV writer is assigned to you on WhatsApp. Share your details and target job." },
+    { title: "We write your documents", line: "Your expert builds your CV and documents around your goals and sends the first draft." },
+    { title: "Review and receive", line: "Ask for any changes. Once you’re happy, you get the final files in PDF and Word." },
   ],
 };
 
@@ -30,17 +30,20 @@ export default function HomeProcess({ marketKey = "us" }: { marketKey?: MarketKe
   const root = useRef<HTMLElement>(null);
   const pk = marketKey === "pk";
   const steps = pk ? STEPS.pk : STEPS.link;
-  const choose = <div key="choose" className="mini mini-pack"><span>ATS Career</span><b>{formatPrice(m, m.prices["ats-career"])}</b></div>;
+  const choose = <div key="choose" className="mini mini-pack"><span>ATS Career</span><b>{pk ? `Rs ${m.prices["ats-career"].toLocaleString("en-US")}` : formatPrice(m, m.prices["ats-career"])}</b></div>;
   const draft = <div key="draft" className="mini mini-draft"><em>Draft 1</em><i /><i /><i /><i /></div>;
   const visuals = pk ? [
     choose,
-    <div key="order" className={styles.formPreview}>
-      <span>Name</span><i />
-      <span className={styles.payChips}><b>JazzCash</b><b>Easypaisa</b><b>Bank</b></span>
-      <span className={styles.upload}>Upload screenshot</span>
+    <div key="expert" className={styles.chat}>
+      <div className={styles.chatHead}>
+        <span className={styles.avatar}><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.2" /><path d="M3.8 21c.6-4.4 4-7 8.2-7s7.6 2.6 8.2 7z" /></svg></span>
+        <span><b>CV expert</b><small>online</small></span>
+      </div>
+      <p className={styles.inMsg}>Hi! Which job are you applying for?</p>
+      <p className={styles.outMsg}>Marketing manager</p>
     </div>,
-    <div key="confirm" className="mini mini-done"><b className={styles.verified}>✓</b><span>Payment verified</span></div>,
     draft,
+    <div key="done" className="mini mini-done"><b className={styles.verified}>✓</b><span>Word + PDF</span></div>,
   ] : [
     choose,
     <div key="order" className={styles.formPreview}>
@@ -77,6 +80,13 @@ export default function HomeProcess({ marketKey = "us" }: { marketKey?: MarketKe
         d += ` C${p1[0] + (p2[0] - p0[0]) / 6} ${p1[1] + (p2[1] - p0[1]) / 6}, ${p2[0] - (p3[0] - p1[0]) / 6} ${p2[1] - (p3[1] - p1[1]) / 6}, ${p2[0]} ${p2[1]}`;
       }
       const wide = window.innerWidth >= 1024;
+      // On desktop the cards are taller than their rows, so card 04 hangs below the list: keep that room inside the
+      // section, so the navy padding shows in full under the last card. Layout values only (the cards slide in with transforms).
+      const steps = el.querySelectorAll<HTMLElement>("li");
+      const last = steps[steps.length - 1];
+      const lastCard = last?.querySelector<HTMLElement>("[data-card]");
+      const hang = wide && last && lastCard ? Math.max(0, lastCard.offsetTop + lastCard.offsetHeight - last.offsetHeight) : 0;
+      track.style.marginBottom = hang ? `${Math.ceil(hang)}px` : "";
       el.querySelectorAll<HTMLElement>("[data-dot]").forEach((dot, n) => { dot.style.marginLeft = wide ? `${wave(ys[n])}px` : ""; });
       const curve = el.querySelector<SVGSVGElement>("[data-curve]");
       const rail = el.querySelector<SVGSVGElement>("[data-rail]");
@@ -116,9 +126,10 @@ export default function HomeProcess({ marketKey = "us" }: { marketKey?: MarketKe
   });
 
   return (
+    <div id="how-it-works">
     <section ref={root} id="process" className={styles.section} aria-labelledby="process-title">
       <div className={`wrap ${styles.inner}`}>
-        <h2 id="process-title" className={styles.title}>From order to interview. <em>Four steps.</em></h2>
+        <h2 id="process-title" className={styles.title} data-anchor>From order to interview. <em>Four steps.</em></h2>
         <div className={styles.track} data-track>
           <svg className={styles.curve} data-curve viewBox="0 0 200 1000" preserveAspectRatio="none" aria-hidden="true">
             <path d={CURVE} className={styles.curveBase} />
@@ -146,5 +157,6 @@ export default function HomeProcess({ marketKey = "us" }: { marketKey?: MarketKe
         </div>
       </div>
     </section>
+    </div>
   );
 }

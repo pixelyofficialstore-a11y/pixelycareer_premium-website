@@ -46,7 +46,8 @@ const STEPS = [
 const LEAD = "Skilled people weren’t getting interviews. Not because of their experience, but because their CV couldn’t get past the software or a recruiter’s first six seconds.";
 
 export default async function Page() {
-  const market = await requestMarket();
+  // Shared page: its CTAs point to /pricing.
+  const market = await requestMarket("pk");
   const proof = getReviews(market.key).filter((r) => r.type === "text" && r.quote).slice(0, 3);
   return (
     <div className="ab">
@@ -60,7 +61,7 @@ export default async function Page() {
             <p className="ab-lead">CVs, LinkedIn profiles and portfolio websites, written by people who know how recruiters read.</p>
             <div className="ab-actions">
               <Link href={orderHref(market)} className="btn btn-primary min-h-14 px-8" data-cta="about-hero-order">Start your order →</Link>
-              <Link href={`/pricing?m=${market.key}`} className="ab-textlink" data-cta="about-hero-packages">See packages</Link>
+              <Link href={market.key === "pk" ? "/pricing" : "/pricing"} className="ab-textlink" data-cta="about-hero-packages">See packages</Link>
             </div>
           </div>
           <BrandOrbit />
