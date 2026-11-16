@@ -1,12 +1,18 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MARKETS, isMarketKey } from "@/config/markets";
 import { whatsappMessage } from "@/lib/site";
 import styles from "./OrderForm.module.css";
 
 export default function OrderSuccess({ id, contact, market, paid, amounts, pkg = "" }: { id: string; contact: string; market?: string; paid: boolean; amounts?: { total: number; paid: number; discount: number }; pkg?: string }) {
   const [copied, setCopied] = useState(false);
+  // Order on WhatsApp from a phone: the order is saved, so WhatsApp opens now with the order number (once).
+  useEffect(() => {
+    let wa: string | null = null;
+    try { wa = sessionStorage.getItem("pixely-open-wa"); sessionStorage.removeItem("pixely-open-wa"); } catch {}
+    if (wa && /^https:\/\/(wa\.me|api\.whatsapp\.com)\//.test(wa)) { const t = setTimeout(() => { window.location.href = wa!; }, 400); return () => clearTimeout(t); }
+  }, []);
   const m = MARKETS[isMarketKey(market) ? market : "us"];
   const orderId = /^[A-F0-9]{8}$/.test(id) ? id : "";
   // pk "Talk first": no payment yet, so a consultant reaches out.

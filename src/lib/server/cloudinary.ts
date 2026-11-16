@@ -3,7 +3,8 @@ import { createHash, randomUUID } from "node:crypto";
 import { env } from "./env";
 
 export const UPLOADS = {
-  payment: { folder: "pixely/payments", max: 4 * 1024 * 1024, types: ["jpg", "png", "webp", "pdf"] },
+  // HEIC/HEIF (iPhone photos) are converted to JPG by Cloudinary on upload.
+  payment: { folder: "pixely/payments", max: 10 * 1024 * 1024, types: ["jpg", "png", "webp", "heic", "pdf"] },
   cv: { folder: "pixely/cvs", max: 5 * 1024 * 1024, types: ["pdf", "doc", "docx"] },
 } as const;
 export type UploadKind = keyof typeof UPLOADS;
@@ -15,6 +16,11 @@ export function sniff(b: Uint8Array): string | null {
   if (at([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return "png";
   if (at([0x52, 0x49, 0x46, 0x46]) && at([0x57, 0x45, 0x42, 0x50], 8)) return "webp";
   if (at([0x25, 0x50, 0x44, 0x46, 0x2d])) return "pdf";
+  // HEIC / HEIF: an ISO box "ftyp" at byte 4 with an image brand.
+  if (at([0x66, 0x74, 0x79, 0x70], 4)) {
+    const brand = String.fromCharCode(...b.subarray(8, 12));
+    if (["heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1", "heif"].includes(brand)) return "heic";
+  }
   if (at([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1])) return "doc";
   if (at([0x50, 0x4b, 0x03, 0x04])) {
     // A .docx is a zip with a word/ folder.
@@ -31,6 +37,8 @@ export async function upload(kind: UploadKind, bytes: Uint8Array, ext: string) {
     folder: UPLOADS[kind].folder,
     public_id: resource === "raw" ? `${randomUUID()}.${ext}` : randomUUID(),
     timestamp: String(Math.floor(Date.now() / 1000)),
+    // Stored as JPG, so the CRM and every browser can show it.
+    ...(ext === "heic" ? { format: "jpg" } : {}),
   };
   const toSign = Object.keys(params).sort().map((k) => `${k}=${params[k]}`).join("&");
   const form = new FormData();

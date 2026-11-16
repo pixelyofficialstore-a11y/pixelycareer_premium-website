@@ -9,7 +9,8 @@ import { db, orders } from "@/lib/db";
 import { ORDER_COOKIE, orderBody, saveOrder } from "@/lib/server/orders";
 import { MARKETS } from "@/config/markets";
 import { sendCapi } from "@/lib/server/capi";
-import { adSource, attribution, fail, limited, normalizePhone, opt, readJson, turnstileOk } from "@/lib/server/request";
+import { adSource, attribution, fail, limited, normalizePhone, opt, turnstileOk } from "@/lib/server/request";
+import { logOrderIssue } from "@/lib/server/order-log";
 
 export const runtime = "nodejs";
 
@@ -17,7 +18,7 @@ const body = orderBody.extend({
   name: z.string().trim().min(1).max(120),
   whatsapp: z.string().trim().min(5).max(30),
   terms: z.literal(true),
-  turnstile: z.string().max(4096),
+  turnstile: z.string().max(4096).optional().nullable(),
   cvUrl: opt(500), cvPublicId: opt(200),
   paymentMethod: z.enum(["easypaisa", "ubl", "jazzcash"]).optional().nullable(),
   screenshotUrl: opt(500), screenshotPublicId: opt(200),
@@ -27,9 +28,15 @@ const body = orderBody.extend({
 /** Final order submit. Status: payment_submitted when proof of payment came with it, otherwise new. */
 export async function POST(req: Request) {
   if (limited(req, "submit", 8)) return fail(429, "Too many requests. Please wait a moment.");
-  const b = await readJson(req, body);
-  if (!b || b.website) return fail();
-  if (!normalizePhone(b.whatsapp, b.code ?? "")) return fail(400, "Enter a valid WhatsApp number.");
+  let raw: unknown = null;
+  try { raw = await req.json(); } catch {}
+  const parsed = body.safeParse(raw);
+  // Which fields failed, never their values.
+  if (!parsed.success) { void logOrderIssue(req, "submit_invalid_body", { fields: parsed.error.issues.map((i) => i.path.join(".")).slice(0, 10) }); return fail(); }
+  const b = parsed.data;
+  if (b.website) return fail();
+  const info = { market: b.market, package: b.package, payChoice: b.payChoice ?? null, eventId: b.eventId ?? null };
+  if (!normalizePhone(b.whatsapp, b.code ?? "")) { void logOrderIssue(req, "submit_bad_phone", info); return fail(400, "Enter a valid WhatsApp number."); }
   try {
     // Idempotent: a retry of an order that already went through returns the same order.
     if (b.eventId) {
@@ -41,12 +48,17 @@ export async function POST(req: Request) {
         return res;
       }
     }
-    if (!(await turnstileOk(b.turnstile, req))) return fail(400, "Please complete the security check.");
+    // Turnstile often cannot run in the Facebook and Instagram in-app browsers. A missing or failed check never blocks
+    // the order: it falls back to a tighter rate limit per IP (3 in 10 minutes) and is logged.
+    if (!(await turnstileOk(b.turnstile, req))) {
+      if (limited(req, "submit-unverified", 3, 10 * 60_000)) { void logOrderIssue(req, "submit_unverified_limited", info); return fail(429, "Too many requests. Please wait a moment or message us on WhatsApp."); }
+      void logOrderIssue(req, "turnstile_unverified", { ...info, token: b.turnstile ? "invalid" : "missing" }, "warning");
+    }
     const pk = b.market === "pk";
     // PK sends CVs on WhatsApp; other markets may attach one. Uploads must be ours.
     const cvOk = !pk && ownUpload("cv", b.cvUrl, b.cvPublicId);
     const shotOk = pk && ownUpload("payment", b.screenshotUrl, b.screenshotPublicId);
-    if (pk && b.payChoice === "now" && !shotOk && !b.transactionId) return fail(400, "Upload your payment screenshot.");
+    if (pk && b.payChoice === "now" && !shotOk && !b.transactionId) { void logOrderIssue(req, "submit_no_screenshot", { ...info, hadUrl: !!b.screenshotUrl }); return fail(400, "Upload your payment screenshot."); }
     const paid = pk && b.payChoice === "now" && (shotOk || !!b.transactionId);
     const attr = await attribution(req, { fbp: b.fbp, fbc: b.fbc, market: b.market });
     const ad = await adSource();
@@ -59,7 +71,7 @@ export async function POST(req: Request) {
       paymentScreenshotUrl: shotOk ? b.screenshotUrl : null, paymentScreenshotPublicId: shotOk ? b.screenshotPublicId : null,
       transactionId: paid ? b.transactionId : null,
     });
-    if (!row) return fail();
+    if (!row) { void logOrderIssue(req, "submit_not_priced", info); return fail(); }
     clearOfferCache();
     // Conversions API AddPaymentInfo for both options (Pay now / Order on WhatsApp), valued at the discounted total.
     // The browser Pixel fires the same event_id (AddPaymentInfo_<ref>), so Meta deduplicates them. Orders never send Lead.
@@ -73,6 +85,7 @@ export async function POST(req: Request) {
     return res;
   } catch (e) {
     console.error("order submit failed:", dbError(e));
+    void logOrderIssue(req, "submit_failed", { ...info, error: String(dbError(e)).slice(0, 300) });
     if (isConfigError(e)) return fail(503, "This is not configured yet. Please message us on WhatsApp.");
     return fail(500, "We could not save your order. Please try again.");
   }

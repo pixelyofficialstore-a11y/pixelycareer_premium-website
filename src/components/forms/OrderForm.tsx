@@ -33,7 +33,13 @@ const CHECKLIST = (key: string, id: PackageId) => {
 };
 const PACKAGE_ORDER: PackageId[] = ["executive", "international-pro", "ats-career", "cv-starter"];
 const CV_MAX = 5 * 1024 * 1024;
-const SHOT_MAX = 4 * 1024 * 1024;
+const SHOT_MAX = 10 * 1024 * 1024;
+/** Phones often name files without an extension (Android) or use HEIC (iPhone): accept by name or by type; the server checks the bytes. */
+const shotOk = (f: File) => /\.(jpe?g|png|webp|heic|heif|pdf)$/i.test(f.name) || /^image\/(jpeg|png|webp|heic|heif)$|^application\/pdf$/i.test(f.type) || (!/\.[a-z0-9]{2,5}$/i.test(f.name) && /^image\//i.test(f.type));
+/** A checkout failure goes to the server log and website.events. Never throws. */
+const report = (detail: Record<string, unknown>) => {
+  try { fetch("/api/orders/error", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true, body: JSON.stringify(detail) }).catch(() => {}); } catch {}
+};
 type Errors = Record<string, string | undefined>;
 
 const I = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" } as const;
@@ -150,14 +156,17 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   // The screenshot uploads as soon as it is picked; submit only sends its URL.
   const [shotUp, setShotUp] = useState<{ secure_url: string; public_id: string } | null>(null);
   const [shotState, setShotState] = useState<UpState>("idle");
+  const [shotMsg, setShotMsg] = useState("");
   const shotSeq = useRef(0);
   const [noteOpen, setNoteOpen] = useState(false);
   const [failed, setFailed] = useState(false);
   const [qrOk, setQrOk] = useState(hasQr);
   const [terms, setTerms] = useState(false);
-  const [tsToken, setTsToken] = useState("");
-  const [tsStatus, setTsStatus] = useState<TsStatus>("checking");
-  const [tsRetry, setTsRetry] = useState(0);
+  // Turnstile never blocks the order: the token is sent when there is one, and the server rate-limits orders without one.
+  const tsRef = useRef("");
+  const tsState = useRef<TsStatus>("checking");
+  const setTsToken = (t: string) => { tsRef.current = t; };
+  const setTsStatus = (st: TsStatus) => { tsState.current = st; };
   const [errors, setErrors] = useState<Errors>({});
   const [busy, setBusy] = useState(false);
   const [sheet, setSheet] = useState(false);
@@ -269,13 +278,27 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     const n = ++shotSeq.current;
     setShot(f);
     setShotUp(null);
-    if (!f || f.size > SHOT_MAX || !/\.(jpe?g|png|webp|pdf)$/i.test(f.name)) { setShotState("idle"); return; }
+    setShotMsg("");
+    if (!f) { setShotState("idle"); return; }
+    // Say what is wrong straight away, never silently.
+    if (f.size > SHOT_MAX || !shotOk(f)) {
+      setShotState("error");
+      setShotMsg(f.size > SHOT_MAX ? "This file is over 10 MB. Take a screenshot instead and upload that." : "Upload a photo or screenshot (JPG, PNG, HEIC) or a PDF.");
+      report({ stage: "upload_rejected_in_browser", market, file: { type: f.type, size: f.size, name: f.name.slice(-40) } });
+      return;
+    }
     setShotState("uploading");
     const ctl = new AbortController();
-    const t = setTimeout(() => ctl.abort(), 30000);
+    const t = setTimeout(() => ctl.abort(), 60000);
     put("payment", f, ctl.signal)
       .then((u) => { if (n === shotSeq.current) { setShotUp(u); setShotState("done"); } })
-      .catch(() => { if (n === shotSeq.current) setShotState("error"); })
+      .catch((err) => {
+        if (n !== shotSeq.current) return;
+        setShotState("error");
+        const timeout = err instanceof Error && err.name === "AbortError";
+        setShotMsg(timeout ? "The upload is taking too long. Check your internet and try again." : err instanceof Error && !/fetch|network/i.test(err.message) ? err.message : "The upload failed. Check your internet and try again.");
+        report({ stage: timeout ? "upload_timeout" : "upload_failed", market, message: err instanceof Error ? err.message : String(err), file: { type: f.type, size: f.size, name: f.name.slice(-40) } });
+      })
       .finally(() => clearTimeout(t));
   };
   const payNow = pk && !later;
@@ -320,9 +343,8 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
     }
     if (s === 3 && payNow) {
       if (!shot) e.shot = "Upload your payment screenshot.";
-      else if (shot.size > SHOT_MAX || !/\.(jpe?g|png|webp|pdf)$/i.test(shot.name)) e.shot = "Upload a JPG, PNG, WEBP or PDF under 4 MB.";
       else if (shotState === "uploading") e.shot = "Wait a moment, your screenshot is still uploading.";
-      else if (shotState === "error") e.shot = "The upload failed. Remove the file and try again.";
+      else if (shotState === "error") e.shot = shotMsg || "The upload failed. Remove the file and try again.";
     }
     if (s === 3 && !terms) e.terms = "Please agree to continue.";
     return e;
@@ -339,7 +361,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       return Object.keys(nextErr).length === keys.length && keys.every((k) => nextErr[k] === cur[k]) ? cur : nextErr;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [v, cv, shot, shotState, terms, later, byEmail]);
+  }, [v, cv, shot, shotState, shotMsg, terms, later, byEmail]);
 
   const validate = (s: number) => {
     const e = check(s);
@@ -397,20 +419,28 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
 
   const submit = async () => {
     if (busy || !validate(3)) return;
-    const waWin = pk && later ? window.open("about:blank", "_blank") : null;
+    const viaWa = pk && later;
+    // Phones and in-app browsers (Facebook, Instagram) block or swallow new windows: there WhatsApp opens from this tab,
+    // after the order is saved. On a computer a tab is opened now (still inside the click) and pointed at WhatsApp once saved.
+    const touch = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
+    const waWin = viaWa && !touch ? window.open("about:blank", "_blank") : null;
     setBusy(true);
     setFailed(false);
     setSheet(false);
-    // Never spin forever: the CV upload and the order together get 20 seconds.
+    // The security check gets a few seconds to finish; after that the order goes without it (the server rate-limits those).
+    for (let i = 0; i < 20 && !tsRef.current && tsState.current === "checking"; i++) await new Promise((r) => setTimeout(r, 200));
+    // Never spin forever: the CV upload and the order together get 25 seconds.
     const ctl = new AbortController();
-    const timer = setTimeout(() => ctl.abort(), 20000);
+    const timer = setTimeout(() => ctl.abort(), 25000);
+    let status = 0;
     try {
       const cvUp = !pk && cv ? await put("cv", cv, ctl.signal) : null;
       const res = await fetch("/api/orders/submit", { method: "POST", headers: { "Content-Type": "application/json" }, signal: ctl.signal, body: JSON.stringify({
-        ...orderPayload(), step: 4, terms: true, turnstile: tsToken,
+        ...orderPayload(), step: 4, terms: true, turnstile: tsRef.current || null,
         cvUrl: cvUp?.secure_url ?? null, cvPublicId: cvUp?.public_id ?? null,
         paymentMethod: payNow ? method : null, screenshotUrl: payNow ? shotUp?.secure_url ?? null : null, screenshotPublicId: payNow ? shotUp?.public_id ?? null : null, transactionId: payNow ? txn || null : null,
       }) });
+      status = res.status;
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data.ref) throw new Error(data.error || "failed");
       clearTimeout(timer);
@@ -419,20 +449,30 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       try { sessionStorage.removeItem("pixely-cart-id"); } catch {}
       const q = new URLSearchParams({ id: data.ref, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1", t: String(data.total ?? due), p: String(plan?.today ?? due), d: String(plan?.discount ?? 0) } : { talk: "1", t: String(data.total ?? due), n: bundle ? "11.11 Bundle" : pkg.name }) });
       if (pk) clearCart();
-      // Order on WhatsApp: the chat opens with the order, the success page shows here.
-      if (waWin) {
+      // Order on WhatsApp: saved first (above), now the chat opens with the order and the success page shows here.
+      if (viaWa) {
         const off = plan && plan.discount > 0 ? (bundle ? `, ${money(plan.discount)} off` : ", 20% off") : "";
         send("Contact", { key: "wa:order:" + data.ref, name: "order-on-whatsapp", ga: { method: "whatsapp", cta: "order-on-whatsapp" } });
-        try { waWin.location.href = whatsappMessage(`Hi, I'd like to order ${bundle ? "the 11.11 Bundle" : pkg.name} (${money(data.total ?? due)}${off}). Order no. PX-${data.ref}.`); } catch { waWin.close(); }
+        const wa = whatsappMessage(`Hi, I'd like to order ${bundle ? "the 11.11 Bundle" : pkg.name} (${money(data.total ?? due)}${off}). Order no. PX-${data.ref}.`);
+        if (waWin) { try { waWin.location.href = wa; } catch { waWin.close(); } }
+        // On a phone the success page opens WhatsApp itself, once, as soon as it shows.
+        else { try { sessionStorage.setItem("pixely-open-wa", wa); } catch {} }
       }
-      router.push(`${market === "pk" ? "/order/success" : "/order/success"}?${q}`);
+      router.push(`/order/success?${q}`);
     } catch (err) {
       clearTimeout(timer);
-      waWin?.close();
-      const msg = err instanceof Error && err.message !== "failed" && err.name !== "AbortError" && !/fetch|network/i.test(err.message) ? err.message : "";
-      setErrors({ submit: msg || "Couldn\u2019t send. Try again or message us on WhatsApp." });
+      const aborted = err instanceof Error && err.name === "AbortError";
+      const network = err instanceof Error && /fetch|network|load failed/i.test(err.message);
+      report({ stage: "submit", status: status || null, market, payChoice: viaWa ? "talk_first" : pk ? "now" : null, package: bundle ? "executive_bundle" : packageId, eventId: cartId() || null, message: aborted ? "timeout" : err instanceof Error ? err.message.slice(0, 300) : String(err) });
+      const msg = err instanceof Error && err.message !== "failed" && !aborted && !network ? err.message : "";
+      setErrors({ submit: msg ? `${/[.!?]$/.test(msg) ? msg : `${msg}.`} You can also send your order on WhatsApp below.` : aborted ? "This is taking too long. Send your order on WhatsApp below and we\u2019ll take it from there." : "We couldn\u2019t save your order. Send it on WhatsApp below and we\u2019ll take it from there." });
       setFailed(true);
       setBusy(false);
+      // Order on WhatsApp still goes to WhatsApp, with every detail of the order in the message.
+      if (viaWa) {
+        if (waWin) { try { waWin.location.href = waOrder; } catch { waWin.close(); } }
+        else window.location.href = waOrder;
+      } else waWin?.close();
     }
   };
   const waOrder = whatsappMessage([
@@ -450,8 +490,8 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const waBtn = last && pk && later;
   const label = waBtn ? <><WaIcon /> Order on WhatsApp</> : last ? "Place order" : "Continue";
   const continueBtn = (cls: string) => (
-    <button type="button" className={`btn btn-primary ${styles.continue} ${waBtn ? styles.waBtn : ""} ${cls}`} onClick={last ? submit : cont} disabled={busy || (last && tsStatus !== "ok")} aria-busy={busy || undefined} data-cta={last ? "order-send-request" : "order-continue"}>
-      {busy ? <><span className={styles.spinner} aria-hidden="true" /> Sending</> : last && tsStatus === "checking" ? <><span className={styles.spinner} aria-hidden="true" /> Verifying</> : label}
+    <button type="button" className={`btn btn-primary ${styles.continue} ${waBtn ? styles.waBtn : ""} ${cls}`} onClick={last ? submit : cont} disabled={busy} aria-busy={busy || undefined} data-cta={last ? "order-send-request" : "order-continue"}>
+      {busy ? <><span className={styles.spinner} aria-hidden="true" /> Sending</> : label}
     </button>
   );
 
@@ -479,11 +519,8 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         <span>I agree to the <Link href="/terms" target="_blank">Terms</Link> &amp; <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
       </label>
       {(errors.terms || (termsHint && !terms)) && <p className={styles.error}>{errors.terms || "Tick the box to place your order."}</p>}</>}
-      <p className={`${styles.tsStatus} ${styles["ts_" + tsStatus]}`} role="status" aria-live="polite" hidden={tsStatus !== "failed"}>
-        {tsStatus === "failed" && <>Security check failed. <button type="button" onClick={() => setTsRetry((n) => n + 1)}>Try again</button></>}
-      </p>
       {errors.submit && <p className={styles.error} role="alert">{errors.submit}</p>}
-      {failed && <a href={waOrder} target="_blank" rel="noopener noreferrer" className={styles.waFallback} data-cta="order-fail-whatsapp"><WaIcon /> Message us on WhatsApp</a>}
+      {(failed || (payNow && shotState === "error")) && <a href={waOrder} target="_blank" rel="noopener noreferrer" className={styles.waFallback} data-cta="order-fail-whatsapp"><WaIcon /> Message us on WhatsApp</a>}
     </>
   );
 
@@ -721,7 +758,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                         </div>
                       </div>
                       <div className={styles.payUpload}>
-                        <Dropzone id="shot" label="" title="Upload payment screenshot" note="JPG, PNG, WEBP or PDF · max 4 MB" accept="image/jpeg,image/png,image/webp,application/pdf" file={shot} onFile={onShot} error={errors.shot} state={shotState} small />
+                        <Dropzone id="shot" label="" title="Upload payment screenshot" note="Photo, screenshot or PDF · max 10 MB" accept="image/*,.heic,.heif,application/pdf" file={shot} onFile={onShot} error={errors.shot} state={shotState} small />
                         <Field id="txn" label="Transaction ID (optional)">
                           <input id="txn" className={styles.input} value={txn} onChange={(e) => setTxn(e.target.value)} />
                         </Field>
@@ -734,14 +771,15 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
               <div className={styles.mOnly}>{finish}</div>
             </section>
           )}
-
+          {/* The security check lives in the form, which shows on every screen size. It used to sit in the order summary,
+              which is hidden on phones, so a check that needed a tap could never be passed there. */}
+          <Turnstile onToken={setTsToken} onStatus={setTsStatus} />
         </form>
 
         <aside className={`${styles.card} ${styles.summary}`} aria-label="Order summary">
           {pk ? <div className={styles.sumHeadRow}><h2>Your order</h2><button type="button" onClick={openCart} className={styles.editLink} data-cta="checkout-edit-order">Edit</button></div> : <h2>Order summary</h2>}
           {summaryLines}
           {last && <div className={styles.sumFinish}>{finish}</div>}
-          <Turnstile onToken={setTsToken} onStatus={setTsStatus} retry={tsRetry} />
           {continueBtn(styles.summaryContinue)}
           {pk && last && !later && <p className={styles.secure}>🔒 Secure payment · Money back guarantee</p>}
         </aside>

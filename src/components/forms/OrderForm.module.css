@@ -595,6 +595,8 @@ button.payBox { cursor: pointer; }
 .optBody .drop { background: #fff; }
 .secure { margin: 10px 0 0; color: #6b7280; font-size: 12.5px; text-align: center; }
 @media (max-width: 767px) {
+  .dropSmall { height: auto; min-height: 72px; padding: 14px 16px; flex-wrap: wrap; align-content: center; row-gap: 4px; }
+  .dropSmall .dropHint { flex-basis: 100%; }
   .page .head h1.title, .inner .head h1.title { display: block; font-size: 28px !important; }
   .page .steps, .inner .steps { display: flex; margin-top: 16px; font-size: 12px; }
   .page .steps li + li::before { width: 16px; margin: 0 8px; }
