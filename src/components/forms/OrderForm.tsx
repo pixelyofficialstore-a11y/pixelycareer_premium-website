@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { availableAddons, calcOrder, totalFor, unitAt, type Selection } from "@/config/addons";
 import { MARKETS, formatPricingPrice, getPackages, localize, type MarketKey, type PackageId } from "@/config/markets";
 import { PAYMENTS } from "@/config/payments";
+import { claritySet } from "@/components/ui/Clarity";
 import { BUNDLE_ALL_LINE, BUNDLE_ITEMS, onlineOpen, onlinePrice, payPlan } from "@/config/offers";
 import { cartId, setCartId, trackFunnel, type Commerce } from "@/lib/analytics";
 import { send } from "@/lib/track";
@@ -333,6 +334,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
 
   const choosePackage = (id: PackageId) => {
     setPackageId(id);
+    claritySet("package", id);
     if (id !== offer.packageId) setBundleOn(false);
     const ok = new Set(availableAddons(m, id).map((a) => a.id));
     setAddons((a) => Object.fromEntries(Object.entries(a).filter(([k]) => ok.has(k))));

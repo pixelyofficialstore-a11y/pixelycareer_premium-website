@@ -6,6 +6,7 @@
 import { useSyncExternalStore } from "react";
 import type { PackageId } from "@/config/markets";
 import { cartId } from "./analytics";
+import { claritySet } from "@/components/ui/Clarity";
 import { blocked } from "./track";
 
 export type Cart = { plan?: PackageId; offer?: string; addons: Record<string, number> };
@@ -65,6 +66,7 @@ export function openCart() { window.dispatchEvent(new Event("pixely-cart-open"))
 export function addPlan(id: PackageId, name: string, offer?: string) {
   const c = read();
   write({ ...c, plan: id, offer, addons: { ...c.addons } });
+  claritySet("package", id);
   syncCart();
   openCart();
 }
