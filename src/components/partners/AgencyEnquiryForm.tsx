@@ -158,7 +158,7 @@ export default function AgencyEnquiryForm({ preferredModel }: { preferredModel: 
 
   return (
     <div className="agency-enquiry">
-      <form className="agency-form-card" onSubmit={submit} noValidate aria-label="Agency partnership enquiry">
+      <form className="agency-form-card" onSubmit={submit} noValidate data-clarity-mask="true" aria-label="Agency partnership enquiry">
         <h2 className="agency-form-heading">Become a partner</h2>
         <ol className="agency-form-progress" aria-label="Enquiry progress">
           <li aria-current={step === 1 ? "step" : undefined} data-complete={step > 1}><span aria-hidden="true">1</span>About you</li>

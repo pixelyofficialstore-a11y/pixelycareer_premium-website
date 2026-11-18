@@ -9,7 +9,7 @@ import { useCountdown, useOffer, useSale } from "./useOffer";
 import "./offer.css";
 
 /**
- * 11.11 Sale (pk). One offer: "Executive Branding & Personal Website" (short: "Executive Branding & Website"),
+ * November Sale (pk). One offer: "Executive Branding & Personal Website" (short: "Executive Branding & Website"),
  * Rs 27,500 → Rs 20,000.
  * Every piece hides itself when the offer ends by time or slots, all use the real endsAt, and all colors
  * come from the --sale tokens in offer.css (no green, no cyan).
@@ -59,7 +59,7 @@ export function HeroPill({ market }: { market: MarketKey }) {
   if (!live) return null;
   return (
     <a href="#offer" className="of-pill" data-cta="offer-hero-pill">
-      <span className="of-pill-chip">11.11</span>
+      <span className="of-pill-chip">Nov</span>
       <span className="of-pill-long">{BUNDLE.short} · {rs(BUNDLE_NOW)}</span>
       <span className="of-pill-short">Executive & Website · {rs(BUNDLE_NOW)}</span>
       <span className="of-pill-arrow" aria-hidden="true">→</span>
@@ -81,7 +81,7 @@ function Countdown({ t }: { t: { d: number; h: number; m: number; s: number } })
   );
 }
 
-/** The offer band (id="offer") under the hero: the 11.11 Sale (20% off online) with its countdown. */
+/** The offer band (id="offer") under the hero: the November Sale (20% off online) with its countdown. */
 export function OfferBand({ market, slot = "home_band" }: { market: MarketKey; slot?: string }) {
   const { live, t } = useSale(1000);
   const ref = useSeen(slot);
@@ -113,7 +113,7 @@ export function OfferBand({ market, slot = "home_band" }: { market: MarketKey; s
 /** Executive card: a gradient pill on the card's top border, like the Recommended badge. */
 export function ExecTag({ market }: { market: MarketKey }) {
   const { live } = useLive(market, 60_000);
-  return live ? <span className="of-card-tag">11.11 Sale</span> : null;
+  return live ? <span className="of-card-tag">November Sale</span> : null;
 }
 
 /** Executive card: the offer box between the price and the button. The whole box is one link. */
@@ -123,7 +123,7 @@ export function ExecUpgrade({ on, onChange }: { on: boolean; onChange: (v: boole
       <input type="checkbox" checked={on} onChange={(e) => onChange(e.target.checked)} />
       <span className="of-up-box" aria-hidden="true"><svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="m3 8.5 3.2 3L13 4.5" /></svg></span>
       <span className="of-up-body">
-        <b>Upgrade to the 11.11 Bundle</b>
+        <b>Upgrade to the November Bundle</b>
         <span className="of-up-row"><span>Executive Branding</span><span>7,500</span></span>
         <span className="of-up-row"><span>Personal Website + domain</span><span>20,000</span></span>
         <span className="of-up-row of-up-total"><span>Worth <s>27,500</s></span><strong>Both for {rs(BUNDLE_NOW)}</strong></span>
@@ -134,7 +134,7 @@ export function ExecUpgrade({ on, onChange }: { on: boolean; onChange: (v: boole
 
 /** Claim button for the ticked bundle. */
 export function ExecClaim() {
-  return <Link href={OFFER_HREF} className="of-exec-claim" data-cta="offer-claim-pricing_card" onClick={claim("pricing_card")}>Claim 11.11 Bundle →</Link>;
+  return <Link href={OFFER_HREF} className="of-exec-claim" data-cta="offer-claim-pricing_card" onClick={claim("pricing_card")}>Claim November Bundle →</Link>;
 }
 
 /**
@@ -163,7 +163,7 @@ export function StickyOffer() {
   return (
     <div className="of-sticky">
       <div>
-        <span className="of-sticky-k">11.11 SALE<b>{rs(BUNDLE_NOW)}</b></span>
+        <span className="of-sticky-k">NOVEMBER SALE<b>{rs(BUNDLE_NOW)}</b></span>
         <span className="of-sticky-t">{BUNDLE.short}</span>
       </div>
       <Link href={OFFER_HREF} className="of-sticky-btn" data-cta="offer-claim-sticky" onClick={claim("sticky")}>Claim →</Link>
@@ -173,7 +173,7 @@ export function StickyOffer() {
 
 /** Announcement bar: one static line that fades between two messages. */
 export const BAR_MESSAGES = [
-  { href: "/#pricing", long: <><span className="of-hl">11.11 Sale:</span> Flat 20% off all packages · See plans →</>, short: <><span className="of-hl">11.11 Sale:</span> Flat 20% off · See plans →</> },
+  { href: "/#pricing", long: <><span className="of-hl">November Sale:</span> Flat 20% off all packages · See plans →</>, short: <><span className="of-hl">November Sale:</span> Flat 20% off · See plans →</> },
 ];
 export function Ticker({ i }: { i: number }) {
   return (

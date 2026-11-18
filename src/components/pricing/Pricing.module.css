@@ -1100,7 +1100,7 @@
 .page .customBox a span { display: inline; margin: 0; color: inherit; font-size: inherit; font-weight: inherit; }
 
 
-/* 11.11 Sale Bundle (pk, while the sale is on): 4 equal columns, 2x2 on tablet, first on mobile */
+/* November Sale Bundle (pk, while the sale is on): 4 equal columns, 2x2 on tablet, first on mobile */
 @media (min-width: 1100px) { .page .priceGrid.grid4 { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; width: min(100%, 1280px); } }
 @media (min-width: 768px) and (max-width: 1099px) { .page .priceGrid.grid4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; } }
 @media (max-width: 767px) { .page .priceGrid.grid4 { grid-template-columns: 1fr; } .bundleSlot { order: -1; } }
@@ -1203,7 +1203,7 @@ button.choose { cursor: pointer; font: inherit; font-weight: 650; width: 100%; m
 .page .priceGrid .pricePair .compareAt, .page .priceGrid .pricePair .compareAt * { font-size: 18px !important; font-weight: 400; color: #6b7280 !important; text-decoration-color: #f4733c !important; }
 .page .priceGrid .pricePair .compareAt { text-decoration: line-through; text-decoration-thickness: 2px; }
 
-/* PK: the 11.11 offer strip under the cards */
+/* PK: the November offer strip under the cards */
 .saleStrip { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; margin: 28px 0 0; padding: 18px 24px; border: 1.5px solid #f4733c; border-radius: 18px; background: #fff5ef; color: #010c28; }
 .saleStrip p { margin: 0; font-size: 16px; line-height: 1.5; }
 .saleStrip b { color: #c2410c; }

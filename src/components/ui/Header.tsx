@@ -22,6 +22,8 @@ export default function Header() {
     else window.scrollTo(0, 0);
   };
   const pk = market.key === "pk";
+  // /offer (ads landing page): logo and one "Start order" button only (the cart shows once something is in it).
+  const landing = pathname === "/offer";
   const count = cartCount(useCart());
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
@@ -70,12 +72,12 @@ export default function Header() {
       <div ref={sentinel} aria-hidden="true" className="pointer-events-none absolute top-0 left-0 h-10 w-px" />
       <header className={`fixed inset-x-0 z-50 border-b transition-[background-color,border-color,box-shadow,top] duration-300 ${scrolled ? "top-0 border-navy/10 bg-white shadow-[0_6px_18px_-12px_rgb(1_12_40/0.28)]" : "top-[var(--bar-h)] border-transparent bg-transparent"}`}>
         <div className="wrap grid h-[72px] grid-cols-[1fr_auto] items-center lg:h-20 lg:grid-cols-[1fr_auto_1fr]">
-          <Link href={market.path} aria-label="Pixely Careers home" className="inline-flex min-h-11 w-fit items-center">
+          <Link href={landing ? "/offer" : market.path} onClick={landing ? (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); } : undefined} aria-label={landing ? "Back to top" : "Pixely Careers home"} className="inline-flex min-h-11 w-fit items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/brand/logo-dark.svg" alt="" width={136} height={40} className="h-9 w-auto lg:h-10" />
           </Link>
 
-          <nav aria-label="Main" className="hidden lg:block">
+          {landing ? <span className="hidden lg:block" /> : <nav aria-label="Main" className="hidden lg:block">
             <ul className="flex items-center gap-8">
               {links.map((n, i) => (
                 <li key={n.label}>
@@ -85,10 +87,10 @@ export default function Header() {
                 </li>
               ))}
             </ul>
-          </nav>
+          </nav>}
 
           <div className="flex items-center justify-end gap-2 lg:gap-4">
-            {pk && (
+            {pk && (!landing || count > 0) && (
               <>
                 <button type="button" onClick={openCart} aria-label={`Cart, ${count} item${count === 1 ? "" : "s"}`} data-cta="header-cart" className="relative inline-flex h-11 w-11 cursor-pointer items-center justify-center">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11.2a1.5 1.5 0 0 0 1.5 1.2h8.6a1.5 1.5 0 0 0 1.5-1.1L21 8H6.2" /><circle cx="9.5" cy="20" r="1.2" /><circle cx="17.5" cy="20" r="1.2" /></svg>
@@ -96,14 +98,16 @@ export default function Header() {
                 </button>
               </>
             )}
-            {pathname === "/partners" ? (
+            {landing ? (
+              <a href="#pricing" className="btn btn-primary btn-sm !min-h-11 !px-5" data-cta="offer-header-order">Start order</a>
+            ) : pathname === "/partners" ? (
               <a href="#agency-enquiry" className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta="agency-header-call">Book a 15 minute call →</a>
             ) : (
               <Link href={pk ? "/pricing#plans" : orderHref(market)} className="btn btn-primary btn-sm hidden lg:inline-flex" data-cta={homepage ? "home-header-order" : "header-order"}>
                 Start your order
               </Link>
             )}
-            <button
+            {!landing && <button
               ref={menuButton}
               type="button"
               className="-mr-2 inline-flex h-11 w-11 cursor-pointer items-center justify-center lg:hidden"
@@ -115,7 +119,7 @@ export default function Header() {
               <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
                 <path d="M3 8h18M3 16h18" />
               </svg>
-            </button>
+            </button>}
           </div>
         </div>
 

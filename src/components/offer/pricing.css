@@ -1,0 +1,78 @@
+/* /offer pricing (op-) */
+#main section#pricing.op:not(#_) { padding-block: 56px; background: var(--color-mist); }
+.op-inner { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.op-strip { margin: 0 0 16px; padding: 7px 16px; border: 1px solid var(--sale-border); border-radius: 999px; background: var(--sale-tint); color: var(--sale-600); font-size: 13px; font-weight: 500; white-space: nowrap; }
+.op-title { text-align: center; }
+.op-card { position: relative; display: flex; flex-direction: column; height: 100%; padding: 24px 20px 20px; border: 1px solid rgb(1 12 40 / .12); border-radius: 20px; background: #fff; text-align: left; }
+.op-pop { border: 1.5px solid var(--color-vivid); box-shadow: 0 18px 40px -26px rgb(0 72 255 / .5); }
+.op-badge { position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); padding: 4px 12px; border-radius: 999px; background: var(--color-vivid); color: #fff; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.op-card h3 { font-family: var(--font-head); font-size: 19px; font-weight: 600; line-height: 1.2; color: var(--color-navy); }
+.op-desc { margin-top: 4px; color: rgb(1 12 40 / .6); font-size: 13.5px; line-height: 1.4; }
+.op-price { display: flex; flex-direction: column; margin-top: 16px; }
+.op-price s { color: rgb(1 12 40 / .45); font-size: 13px; text-decoration-thickness: 1.5px; }
+.op-price b { font-family: var(--font-head); font-size: 30px; font-weight: 600; letter-spacing: -.02em; line-height: 1.15; color: var(--color-navy); }
+.op-days { margin-top: 2px; color: rgb(1 12 40 / .6); font-size: 13.5px; }
+.op-feats { display: flex; flex-direction: column; gap: 9px; margin: 18px 0 22px; padding: 0; list-style: none; }
+.op-feats li { display: flex; align-items: center; gap: 9px; color: rgb(1 12 40 / .82); font-size: 14px; }
+.op-feats svg { flex: none; color: var(--color-vivid); }
+.op-btn { margin-top: auto; min-height: 48px; border: 1.5px solid rgb(1 12 40 / .3); border-radius: 999px; background: #fff; color: var(--color-navy); font-family: var(--font-head); font-size: 15px; font-weight: 500; cursor: pointer; transition: background-color .2s, color .2s, border-color .2s; }
+.op-btn:hover { border-color: var(--color-navy); background: var(--color-navy); color: #fff; }
+.op-btn-fill { border-color: var(--color-vivid); background: var(--color-vivid); color: #fff; }
+.op-btn-fill:hover { border-color: var(--color-royal); background: var(--color-royal); }
+.op-trust { margin-top: 22px; color: rgb(1 12 40 / .6); font-size: 13.5px; line-height: 1.7; }
+.op-trust svg { display: inline; vertical-align: -2px; margin-right: 4px; }
+.op-trust a { color: var(--color-vivid); font-weight: 500; text-decoration: none; }
+.op-trust a:hover { text-decoration: underline; }
+.op-desk { display: none; }
+.op-mobile { width: 100%; max-width: 440px; margin-top: 22px; }
+.op-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 24px; padding: 4px; border: 1px solid rgb(1 12 40 / .12); border-radius: 999px; background: #fff; }
+.op-tabs button { min-height: 42px; padding: 0 4px; border: 0; border-radius: 999px; background: none; color: rgb(1 12 40 / .7); font-family: var(--font-head); font-size: 14px; font-weight: 500; cursor: pointer; transition: background-color .2s, color .2s; }
+.op-tabs button.op-tab-on { background: var(--color-vivid); color: #fff; }
+.op-mobile .op-card { min-height: 404px; padding: 26px 22px 22px; }
+.op-mobile .op-badge { left: 22px; transform: translateY(-50%); }
+.op-mobile .op-price { flex-direction: row; align-items: baseline; gap: 12px; }
+.op-mobile .op-price b { font-size: 38px; }
+.op-mobile .op-price s { font-size: 15px; }
+.op-mobile .op-feats li { font-size: 15px; }
+.op-mobile .op-btn { min-height: 52px; font-size: 16px; }
+.op-mobile .op-trust { margin-top: 18px; font-size: 13px; }
+.op-mobile .op-trust p + p { margin-top: 6px; }
+@media (min-width: 900px) {
+  #main section#pricing.op:not(#_) { padding-block: 80px; }
+  .op-mobile { display: none; }
+  .op-desk { display: block; width: 100%; max-width: 1120px; margin-top: 36px; }
+  .op-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+}
+@media (min-width: 900px) {
+  .op-desk { max-width: 1180px; }
+  .op-card h3 { font-size: 18px; white-space: nowrap; letter-spacing: -.01em; }
+}
+
+/* v3: laptop uses the main pricing cards, mobile keeps the tab card */
+.op-sub { margin-top: 10px; color: rgb(1 12 40 / .6); font-size: 15px; }
+
+.op-gap { display: inline-block; width: 20px; }
+.op [class*="compactCta"], .op [class*="bundleWide"] { display: none !important; }
+@media (min-width: 900px) {
+  #main section#pricing.op:not(#_) { padding-block: 0 72px; }
+  .op-mobile-only { display: none; }
+  .op-desk-only { display: block; text-align: center; }
+  .op-desk-only .op-trust { margin-top: 8px; }
+}
+@media (max-width: 899px) { html body #main .op h2.op-title:not(#_):not(#__) { font-size: clamp(26px, 7.4vw, 34px) !important; line-height: 1.15 !important; } }
+@media (min-width: 900px) { .op-desk-only .op-trust:not(#_) { margin-top: 32px; } }
+
+/* v4: one Pricing for both; on mobile the tabs pick which card shows */
+.op > .op-trust { text-align: center; }
+@media (max-width: 899px) {
+  .op-mobile-only .op-tabs { width: 100%; max-width: 440px; margin: 22px auto 0; }
+  .op [data-pricing-surface] > header { display: none !important; }
+  .op [data-pricing-surface] [data-reveal] { opacity: 1 !important; transform: none !important; }
+  .op[data-tab="1"] [class*="priceGrid"] > li:not(:nth-child(1)),
+  .op[data-tab="2"] [class*="priceGrid"] > li:not(:nth-child(2)),
+  .op[data-tab="3"] [class*="priceGrid"] > li:not(:nth-child(3)),
+  .op[data-tab="4"] [class*="priceGrid"] > li:not(:nth-child(4)) { display: none !important; }
+  .op > .op-trust { margin-top: 20px; padding-inline: 20px; font-size: 13px; }
+  .op-gap { display: block; width: auto; height: 4px; }
+}
+@media (min-width: 900px) { .op > .op-trust:not(#_) { margin-top: 32px; } }

@@ -8,7 +8,9 @@ import SmoothScroll from "@/components/ui/SmoothScroll";
 import ScrollReset from "@/components/ui/ScrollReset";
 import Header from "@/components/ui/Header";
 import Footer from "@/components/sections/Footer";
+import FooterSwitch from "@/components/offer/OfferFooter";
 import Analytics from "@/components/ui/Analytics";
+import Clarity from "@/components/ui/Clarity";
 import StickyBar from "@/components/ui/StickyBar";
 import AnnouncementBar from "@/components/ui/AnnouncementBar";
 
@@ -73,9 +75,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AnnouncementBar />
         <Header />
         <main id="main">{children}</main>
-        <Footer />
+        <FooterSwitch><Footer /></FooterSwitch>
         <StickyBar />
         <CartDrawer />
+        <Clarity />
         <Suspense fallback={null}>
           <Analytics allowLocal={!!process.env.META_TEST_EVENT_CODE} />
         </Suspense>

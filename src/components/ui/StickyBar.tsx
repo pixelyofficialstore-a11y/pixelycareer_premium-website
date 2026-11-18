@@ -7,6 +7,7 @@ import { useMarket } from "./useMarket";
 import { StickyOffer, useLive } from "@/components/offer/Offer";
 import { cartCount, openCart, useCart } from "@/lib/cart";
 import { WA_HELLO, WaGlyph } from "@/components/cart/CartDrawer";
+import { OFFER_WA } from "@/lib/site";
 
 /** Small screen order bar on every page except /order: appears once the hero has scrolled out, hides near the final call to action. */
 export default function StickyBar() {
@@ -15,7 +16,9 @@ export default function StickyBar() {
   const [show, setShow] = useState(false);
   const footerIn = useRef(false);
   const off = path === "/checkout" || path.startsWith("/order/");
-  // pk: the 11.11 Sale replaces "Start your order" while it is on, and hides while the offer band is in view.
+  // /offer: "Start order" and "WhatsApp", hidden while the hero buttons are on screen.
+  const landing = path === "/offer";
+  // pk: the November Sale replaces "Start your order" while it is on, and hides while the offer band is in view.
   const { live: saleLive } = useLive(market, 60_000);
   const pk = market === "pk";
   const sale = saleLive && !pk;
@@ -37,7 +40,8 @@ export default function StickyBar() {
     const onScroll = () => {
       const hero = document.getElementById("top") ?? document.querySelector("main > section, main > div > section, main > div");
       const cta = document.getElementById("final-cta");
-      const heroGone = hero ? hero.getBoundingClientRect().bottom < 0 : window.scrollY > 600;
+      const actions = landing ? document.querySelector("[data-hero-actions]")?.getBoundingClientRect() : null;
+      const heroGone = actions ? actions.bottom < 0 || actions.top > window.innerHeight : hero ? hero.getBoundingClientRect().bottom < 0 : window.scrollY > 600;
       const ctaNear = cta ? cta.getBoundingClientRect().top <= window.innerHeight - 80 : false;
       const band = document.getElementById("offer")?.getBoundingClientRect();
       const bandInView = !!band && band.top < window.innerHeight && band.bottom > 0;
@@ -58,7 +62,7 @@ export default function StickyBar() {
       io?.disconnect();
       document.documentElement.classList.remove("has-sticky-bar");
     };
-  }, [off, path, sale]);
+  }, [off, path, sale, landing]);
 
   // --sticky-h: the bar's real height (its bottom padding already includes the safe area), used for the page's bottom padding.
   const bar = useRef<HTMLDivElement>(null);
@@ -78,7 +82,13 @@ export default function StickyBar() {
       inert={!show}
       className={`fixed inset-x-0 bottom-0 z-40 transition-[transform,opacity] duration-200 ease-out-soft lg:hidden ${sale ? "" : "border-t border-navy/10 bg-white px-4 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]"} ${show ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}`}
     >
-      {pk ? (
+      {landing ? (
+        <div className="flex gap-2">
+          {count ? <button type="button" onClick={openCart} className="btn btn-primary min-h-12 flex-1" data-cta="offer-sticky-checkout">Start your order</button>
+            : <a href="#pricing" className="btn btn-primary min-h-12 flex-1" data-cta="offer-sticky-see-plans">See plans</a>}
+          <a href={OFFER_WA} target="_blank" rel="noopener noreferrer" aria-label="Chat on WhatsApp" data-cta="offer-sticky-whatsapp" className="grid h-12 w-12 flex-none place-items-center rounded-full bg-[#010c28] text-white"><WaGlyph size={24} /></a>
+        </div>
+      ) : pk ? (
         <div className="flex gap-2">
           {seen && count ? (
             <button type="button" onClick={openCart} className="btn btn-primary flex-1" data-cta="sticky-checkout">Place your order</button>

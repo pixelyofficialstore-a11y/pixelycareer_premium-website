@@ -47,7 +47,7 @@ export default function ReviewForm({ market }: { market: MarketKey }) {
     <>
       <h1 className="form-title">{localize(m, "Get a free CV review.")}</h1>
       <p className="mt-4 text-lg text-navy/70">{localize(m, "Send your CV. We’ll tell you what’s holding it back.")}</p>
-      <form ref={form} onSubmit={submit} noValidate className="mt-10 grid gap-5">
+      <form ref={form} onSubmit={submit} noValidate className="mt-10 grid gap-5" data-clarity-mask="true">
         <Field id="name" label="Full name" required error={errors.name}>
           <input {...inputProps("name", errors.name, true)} type="text" autoComplete="name" />
         </Field>

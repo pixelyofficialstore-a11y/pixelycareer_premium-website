@@ -2,7 +2,8 @@ import Accordion from "@/components/ui/Accordion";
 import { ArrowRight } from "@/components/ui/Icons";
 import { WHATSAPP_URL } from "@/lib/site";
 
-export default function Faq({ items, homepage = false, title }: { items: { q: string; a: string }[]; homepage?: boolean; title?: string }) {
+/** more: a "More questions" link under the list (the /offer page). */
+export default function Faq({ items, homepage = false, title, more }: { items: { q: string; a: string }[]; homepage?: boolean; title?: string; more?: { href: string; label: string } }) {
   return (
     <section id="faq" aria-labelledby="faq-title" className="section bg-white">
       <div className="wrap grid12 gap-y-14" data-anchor>
@@ -20,6 +21,7 @@ export default function Faq({ items, homepage = false, title }: { items: { q: st
         </div>
         <div className="col-span-12 lg:col-span-7">
           <Accordion items={items} />
+          {more && <a href={more.href} className="ol-faq-more" data-cta="offer-faq-more">{more.label} <span aria-hidden="true">→</span></a>}
         </div>
       </div>
     </section>

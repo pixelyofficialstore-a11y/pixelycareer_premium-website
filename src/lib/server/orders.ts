@@ -1,10 +1,10 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db, orders } from "@/lib/db";
-import { attribution, honeypot, normalizePhone, opt } from "./request";
+import { adSource, attribution, honeypot, normalizePhone, opt } from "./request";
 import { priceOrder } from "./pricing";
 
 export const ORDER_COOKIE = "px_order_id";
@@ -30,6 +30,8 @@ export const orderBody = z.object({
   /** The browser's cart id: the Pixel and the Conversions API share it as the event id. */
   eventId: z.string().regex(/^[a-z0-9]{6,40}$/i).optional(),
   payAmountType: z.enum(["full"]).optional().nullable(),
+  /** An Add to cart click (not the checkout): only the package, extras and price are saved. */
+  cart: z.boolean().optional(),
 });
 export type OrderBody = z.infer<typeof orderBody>;
 
@@ -46,22 +48,30 @@ export async function saveOrder(req: Request, b: OrderBody, extra: Partial<typeo
   const price = await priceOrder({ market: b.market, package: b.package, addons: b.addons, sameDay: b.sameDay, bundle: b.bundle, payChoice: b.payChoice ?? null, payAmountType: b.payAmountType ?? null });
   if (!price) return null;
   const whatsapp = b.whatsapp ? normalizePhone(b.whatsapp, b.code ?? "") : null;
-  const values = {
-    ...price,
-    payChoice: b.market === "pk" ? b.payChoice ?? null : null,
+  // An Add to cart click saves only the package, extras and price, so it never wipes details typed at checkout.
+  // Details typed at checkout. Empty ones are left out, so reopening the checkout with empty fields never wipes what was saved.
+  const details = Object.fromEntries(Object.entries({
     name: b.name, whatsapp, email: b.email,
     targetCountry: b.targetCountries[0] ?? b.targetCountry, targetCountries: b.targetCountries.length ? b.targetCountries : b.targetCountry ? [b.targetCountry] : null,
     targetRole: b.targetRole, notes: b.notes,
-    stepReached: b.step, lastActivityAt: new Date(), updatedAt: new Date(),
+  }).filter(([, v]) => v != null && v !== "")) as Partial<typeof orders.$inferInsert>;
+  const values = b.cart ? { ...price, lastActivityAt: new Date(), updatedAt: new Date(), ...extra } : {
+    ...price,
+    payChoice: b.market === "pk" ? b.payChoice ?? null : null,
+    ...details,
+    lastActivityAt: new Date(), updatedAt: new Date(),
     ...extra,
   };
   const id = await currentOrderId(b.resume);
   if (id) {
-    const [row] = await db().update(orders).set(values).where(and(eq(orders.id, id), inArray(orders.status, [...OPEN]))).returning({ id: orders.id, eventId: orders.eventId, total: orders.total, status: orders.status });
+    // step_reached only goes up: going back a step, or adding an extra later, keeps the furthest step.
+    const [row] = await db().update(orders).set({ ...values, stepReached: sql`greatest(${orders.stepReached}, ${b.step})` }).where(and(eq(orders.id, id), inArray(orders.status, [...OPEN]))).returning({ id: orders.id, eventId: orders.eventId, total: orders.total, status: orders.status });
     if (row) return row;
   }
+  // A new row, anonymous allowed: attribution (UTM, fbp, fbc), ad ids, the visitor id (external_id), and the browser's cart id as event id.
   const attr = await attribution(req, { fbp: b.fbp, fbc: b.fbc, market: b.market });
-  const [row] = await db().insert(orders).values({ ...attr, status: "cart", ...values, eventId: b.eventId ?? `o${randomUUID().replace(/-/g, "").slice(0, 20)}` })
+  const ad = await adSource();
+  const [row] = await db().insert(orders).values({ ...attr, ...ad, status: "cart", ...values, stepReached: b.step, eventId: b.eventId ?? `o${randomUUID().replace(/-/g, "").slice(0, 20)}` })
     .returning({ id: orders.id, eventId: orders.eventId, total: orders.total, status: orders.status });
   return row;
 }

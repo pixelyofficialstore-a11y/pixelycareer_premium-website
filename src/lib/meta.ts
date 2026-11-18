@@ -7,8 +7,18 @@ export const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 type Fbq = (...a: unknown[]) => void;
 let enabled = false;
+/**
+ * Events sent before <Analytics /> has mounted (it renders inside Suspense, after the page) wait here and go out
+ * once the Pixel is turned on, so an event fired on page load (InitiateCheckout when the checkout opens) is never lost.
+ */
+let early: Parameters<typeof track>[] = [];
 /** Turned on by <Analytics /> once it decides the Pixel may run on this host. */
-export function enableMeta() { enabled = true; }
+export function enableMeta() {
+  enabled = true;
+  const q = early;
+  early = [];
+  q.forEach((a) => track(...a));
+}
 
 const cookie = (n: string) => (typeof document === "undefined" ? null : document.cookie.match(new RegExp(`(?:^|; )${n}=([^;]+)`))?.[1] ?? null);
 
@@ -51,7 +61,8 @@ export type MetaParams = { value?: number; currency?: string; content_ids?: stri
 
 /** Browser Pixel + server mirror. Never throws, never blocks. `server: false` when the server sends it itself (Lead). */
 export function track(eventName: MetaEvent, params: MetaParams = {}, userData?: MetaUser, opts: { eventId?: string; server?: boolean } = {}) {
-  if (typeof window === "undefined" || !META_PIXEL_ID || !enabled) return;
+  if (typeof window === "undefined" || !META_PIXEL_ID) return;
+  if (!enabled) { if (early.length < 20) early.push([eventName, params, userData, opts]); return; }
   const eventId = opts.eventId ?? newEventId();
   const fire = (tries = 0) => {
     const fbq = (window as unknown as { fbq?: Fbq }).fbq;

@@ -31,7 +31,7 @@ export default function ContactForm({ market }: { market: MarketKey }) {
   if (url) return <Handoff title="Message ready." level="h2" url={url} cta="contact-open-whatsapp" />;
 
   return (
-    <form ref={form} onSubmit={submit} noValidate className="grid gap-5">
+    <form ref={form} onSubmit={submit} noValidate className="grid gap-5" data-clarity-mask="true">
       <Field id="name" label="Name" required error={errors.name}>
         <input {...inputProps("name", errors.name, true)} type="text" autoComplete="name" />
       </Field>

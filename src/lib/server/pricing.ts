@@ -11,7 +11,7 @@ export type PriceInput = { market: string; package: string; addons: Record<strin
 export async function priceOrder(i: PriceInput) {
   if (!isMarketKey(i.market)) return null;
   const m = MARKETS[i.market];
-  // executive_bundle: the 11.11 Bundle as its own package (Executive + portfolio at the offer price).
+  // executive_bundle: the November Bundle as its own package (Executive + portfolio at the offer price).
   const asBundle = i.package === "executive_bundle";
   const pkgId = (asBundle ? "executive" : i.package) as PackageId;
   if (asBundle) i = { ...i, bundle: true };

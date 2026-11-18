@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 
 const clean = (v: string | null, max: number) => (v ?? "").replace(/[^\p{L}\p{N}\s&,.:'’!?+()/-]/gu, "").slice(0, max).trim();
 
-/** One branded share image for every page: /og?l=LABEL&t=TITLE, or /og?v=offer for the 11.11 version (normal card once the sale ends). */
+/** One branded share image for every page: /og?l=LABEL&t=TITLE, or /og?v=offer for the November Sale version (normal card once the sale ends). */
 export async function GET(req: Request) {
   const q = new URL(req.url).searchParams;
   const offer = q.get("v") === "offer" && offerOpen(BUNDLE, "pk");

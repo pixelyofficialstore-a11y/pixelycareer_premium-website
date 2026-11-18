@@ -42,7 +42,7 @@ export function useCountdown(ms = 60_000) {
   return timeLeft(BUNDLE.endsAt, now);
 }
 
-/** The 11.11 Sale (20% off online): live until ONLINE.endsAt, with its countdown. */
+/** The November Sale (20% off online): live until ONLINE.endsAt, with its countdown. */
 export function useSale(ms = 60_000) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {

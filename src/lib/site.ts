@@ -5,6 +5,9 @@ export const LINKEDIN_URL = "https://www.linkedin.com/company/pixelycareers";
 export const FACEBOOK_REVIEWS_URL = "https://www.facebook.com/pixelycareers.pk/reviews/";
 export const FACEBOOK_URL = "https://www.facebook.com/pixelycareers.pk/";
 export const whatsappMessage = (text: string) => `${WHATSAPP_URL}?text=${encodeURIComponent(text)}`;
+/** /offer WhatsApp links. Every wa.me click fires Contact (components/ui/Analytics). */
+export const OFFER_WA = whatsappMessage("Hi, I'm interested in a CV. Can you guide me?");
+export const FREE_REVIEW_WA = whatsappMessage("Hi, I'd like a free CV review.");
 
 export const NAV = [
   { label: "Services", href: "/services" },

@@ -20,19 +20,19 @@ export default function OrderSuccess({ id, contact, market, paid, amounts, pkg =
   const px = orderId ? `PX-${orderId}` : "";
   if (m.key === "pk") {
     const detail = [pkg, amounts?.total ? `Rs ${amounts.total.toLocaleString("en-US")}` : ""].filter(Boolean).join(", ");
-    const wa = whatsappMessage(talk ? `Hi, I just placed order ${px}${detail ? ` (${detail})` : ""} and want to talk first.` : `Hi, I just placed order ${px}.`);
+    const wa = whatsappMessage(`Hi, I just placed order ${px || "on the website"}${detail ? ` (${detail})` : ""}${talk ? " and want to talk first" : ""}.`);
     return (
       <div className={styles.success}>
         <svg className={styles.check} viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="25" /><path d="m18 29 7 7 13-14" /></svg>
-        <h1 className="display">{talk ? "Request received" : "Order received"}</h1>
+        <h1 className="display">Order received.</h1>
         {px && (
           <button type="button" className={styles.orderPill} onClick={() => { navigator.clipboard?.writeText(px).catch(() => {}); setCopied(true); setTimeout(() => setCopied(false), 1500); }} aria-label={copied ? "Order number copied" : `Copy order number ${px}`}>
             {px}<span aria-hidden="true">{copied ? "✓" : "⧉"}</span>
           </button>
         )}
-        <p className={styles.successText}>{talk ? "We\u2019ll message you on WhatsApp shortly. Your 20% discount is reserved." : "We\u2019ll confirm your payment on WhatsApp shortly."}</p>
+        <p className={styles.successText}>Our CV expert will WhatsApp you within 30 minutes.</p>
         <div className={styles.successActions}>
-          <a href={wa} target="_blank" rel="noopener noreferrer" className={`btn btn-primary min-h-14 px-8 ${talk ? styles.waGreen : ""}`} data-cta={talk ? "order-success-talk-whatsapp" : "order-success-whatsapp"}>{talk ? "Chat with us on WhatsApp now" : "Chat with us on WhatsApp"}</a>
+          <a href={wa} target="_blank" rel="noopener noreferrer" className={`btn btn-primary min-h-14 px-8 ${styles.waGreen}`} data-cta={talk ? "order-success-talk-whatsapp" : "order-success-whatsapp"}>Open WhatsApp</a>
           <Link href={m.path} className={styles.textLink}>Back to home</Link>
         </div>
       </div>

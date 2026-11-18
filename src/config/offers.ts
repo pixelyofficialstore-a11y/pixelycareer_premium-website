@@ -24,14 +24,14 @@ export type Offer = {
   active: boolean;
 };
 
-/** The 11.11 Bundle (Executive + website) is switched off. Its code stays; set true to bring it back. */
+/** The November Bundle (Executive + website) is switched off. Its code stays; set true to bring it back. */
 export const BUNDLE_ENABLED = false;
 
 export const OFFERS: Offer[] = [
   {
     id: "brand-bundle",
     markets: ["pk"],
-    title: "11.11 Sale",
+    title: "November Sale",
     headline: "Executive Branding + Personal Website",
     short: "Executive Branding & Website",
     includes: ["Executive Branding package", "Portfolio website with free domain and hosting for the first year"],
@@ -68,7 +68,7 @@ export type OfferState = { id: string; open: boolean; remaining: number; total: 
  * Online payment discount (pk). Applies to package + add-ons until ONLINE.endsAt, then prices go back to full.
  * Pay in full on the website (or order on WhatsApp and pay after the chat): 20% off.
  * The discounted total is rounded to the nearest Rs 50.
- * The 11.11 Bundle has its own fixed pay now prices and gets no extra percentage.
+ * The November Bundle has its own fixed pay now prices and gets no extra percentage.
  */
 export const ONLINE = {
   full: { pct: 20, label: "online_20" },
@@ -80,8 +80,8 @@ export type PayAmountType = "full";
 export type DiscountType = "online_20" | "bundle" | "none";
 export const onlineOpen = (now = Date.now()) => now < Date.parse(ONLINE.endsAt);
 export const ONLINE_ENDS_LABEL = "30 Nov";
-/** The 11.11 Sale: flat 20% off every package when paid online in full, until ONLINE.endsAt. */
-export const SALE = { tag: "11.11 SALE", headline: "Flat 20% off all packages", bullets: ["ATS CVs from Rs 1,600", "Pay online in full and save 20%", "100% money back guarantee"], endsAt: ONLINE.endsAt } as const;
+/** The November Sale: flat 20% off every package when paid online in full, until ONLINE.endsAt. */
+export const SALE = { tag: "NOVEMBER SALE", headline: "Flat 20% off all packages", bullets: ["ATS CVs from Rs 1,600", "Pay online in full and save 20%", "100% money back guarantee"], endsAt: ONLINE.endsAt } as const;
 
 export function payPlan(subtotal: number, type: PayAmountType, opts: { bundle?: boolean; now?: number } = {}) {
   const r = ONLINE.round;
@@ -98,6 +98,6 @@ export const onlinePrice = (price: number, type: PayAmountType = "full", now?: n
 export const BUNDLE_NOW = BUNDLE.price - ONLINE.bundleOff.full;
 export const BUNDLE_EXTRA_LINE = `Book your slot online and save an extra Rs ${ONLINE.bundleOff.full.toLocaleString("en-US")}.`;
 
-/** What the 11.11 Bundle includes. The pricing card and the order page both read this, so they never differ. */
+/** What the November Bundle includes. The pricing card and the order page both read this, so they never differ. */
 export const BUNDLE_ITEMS = ["Premium executive CV", "Personal portfolio website", "Free domain & hosting for 1 year", "Executive bio statement", "LinkedIn makeover + content pack (10 posts)", "Interview preparation guide"] as const;
 export const BUNDLE_ALL_LINE = "Includes everything in Executive Branding.";

@@ -3,11 +3,12 @@ import { HERO_PERSONAS } from "@/config/heroPersonas";
 import { orderHref, type Market } from "@/config/markets";
 import { ArrowDown, ArrowRight } from "@/components/ui/Icons";
 import HeroStack from "./HeroStack";
+import { OFFER_WA } from "@/lib/site";
 
 import styles from "./Hero.module.css";
 
 /** copy: replaces the market's headline and subtext (the /offer page). */
-export default function Hero({ market, centerMobileHeadline = false, copy }: { market: Market; centerMobileHeadline?: boolean; copy?: { line1: string; line2: string; sub: [string, string] } }) {
+export default function Hero({ market, centerMobileHeadline = false, copy, offer = false }: { market: Market; centerMobileHeadline?: boolean; copy?: { line1: string; line2: string; sub: [string, string] }; offer?: boolean }) {
   const persona = HERO_PERSONAS[market.key];
   const { line1, line2, sub } = copy ?? persona.heroCopy;
   let i = 0;
@@ -20,7 +21,7 @@ export default function Hero({ market, centerMobileHeadline = false, copy }: { m
       </Fragment>
     ));
   return (
-    <section id="top" className={`hero${centerMobileHeadline ? ` ${styles.mainMobileHero}` : ""}`}>
+    <section id="top" data-offer={offer || undefined} className={`hero${centerMobileHeadline ? ` ${styles.mainMobileHero}` : ""}${offer ? ` ${styles.offerHero}` : ""}`}>
       <div className="wrap hero-inner">
         <div className="grid12 hero-grid">
           <div className="hero-copy col-span-12 lg:col-span-6">
@@ -34,6 +35,14 @@ export default function Hero({ market, centerMobileHeadline = false, copy }: { m
             <p className="hero-sub">
               {copy ? sub.filter(Boolean).join(" ") : <><span className="lg:block">{sub[0]}</span> <span className="lg:block">{sub[1]}</span></>}
             </p>
+            {offer ? (
+              <>
+                <div className="hero-actions" data-hero-actions>
+                  <a href="#pricing" className="btn btn-primary min-h-14 px-8 text-[1.0625rem]" data-cta="offer-hero-order">Fix My CV <ArrowRight /></a>
+                  <a href={OFFER_WA} target="_blank" rel="noopener noreferrer" className="btn btn-outline min-h-14 px-8 text-[1.0625rem]" data-cta="offer-hero-whatsapp">Chat on WhatsApp</a>
+                </div>
+              </>
+            ) : (
             <div className="hero-actions">
               <a href={market.key === "pk" ? "#plans" : orderHref(market)} className="btn btn-primary min-h-14 px-8 text-[1.0625rem]" data-cta={true ? "home-hero-order" : "hero-see-packages"}>
                 {true ? "Start your order" : "See Packages"}
@@ -47,6 +56,7 @@ export default function Hero({ market, centerMobileHeadline = false, copy }: { m
                 Scroll ↓
               </span>}
             </div>
+            )}
           </div>
           <div className="hero-visual col-span-12 lg:col-span-6">
             <HeroStack persona={persona} />

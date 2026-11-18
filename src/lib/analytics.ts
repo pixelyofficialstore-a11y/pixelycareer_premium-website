@@ -24,7 +24,7 @@ export function gaInit() {
 
 /** GA4 promotion events for an offer: view_promotion once when seen, select_promotion on a Claim click. */
 export function trackPromotion(name: "view_promotion" | "select_promotion", promotionId: string, slot: string) {
-  sendGa(name, { promotion_id: promotionId, promotion_name: "11.11 Sale", creative_slot: slot, items: [{ promotion_id: promotionId, creative_slot: slot }] }, slot);
+  sendGa(name, { promotion_id: promotionId, promotion_name: "November Sale", creative_slot: slot, items: [{ promotion_id: promotionId, creative_slot: slot }] }, slot);
 }
 
 /** One id per visit's cart. It is the event_id until an order exists, so the Pixel and the Conversions API can be matched. */

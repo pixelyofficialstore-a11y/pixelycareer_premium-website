@@ -9,7 +9,7 @@ const DEFAULT_STATS = [
   { value: 5, suffix: "x", label: "More interview calls", short: "More interview calls" },
 ] as { value: number; suffix: string; label: string; short: string }[];
 
-export default function HomeTrustStrip({ reviewsUrl, stats = DEFAULT_STATS }: { reviewsUrl?: string; stats?: { value: number; suffix: string; label: string; short: string }[] }) {
+export default function HomeTrustStrip({ reviewsUrl, stats = DEFAULT_STATS, fast = false }: { fast?: boolean; reviewsUrl?: string; stats?: { value: number; suffix: string; label: string; short: string }[] }) {
   const strip = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(1);
   const [phase, setPhase] = useState<"idle" | "pending" | "running" | "done">("idle");
@@ -38,14 +38,14 @@ export default function HomeTrustStrip({ reviewsUrl, stats = DEFAULT_STATS }: { 
       let start = 0;
       const tick = (now: number) => {
         if (!start) start = now;
-        const elapsed = Math.min((now - start) / 1600, 1);
+        const elapsed = Math.min((now - start) / (fast ? 900 : 1600), 1);
         setProgress(1 - Math.pow(1 - elapsed, 3));
         if (elapsed < 1) frame = requestAnimationFrame(tick);
         else setPhase("done");
       };
       frame = requestAnimationFrame(tick);
       // Background tabs pause animation frames; never leave the count short of the final number.
-      window.setTimeout(() => { cancelAnimationFrame(frame); setProgress(1); setPhase("done"); }, 2400);
+      window.setTimeout(() => { cancelAnimationFrame(frame); setProgress(1); setPhase("done"); }, fast ? 1300 : 2400);
     };
     const onMotionChange = () => {
       if (media.matches) finish();

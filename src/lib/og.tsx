@@ -70,14 +70,14 @@ export function ogImage(label: string, title: string) {
   );
 }
 
-/** The 11.11 version: orange pill, bundle title, struck price, offer price, slots. */
+/** The November Sale version: orange pill, bundle title, struck price, offer price, slots. */
 export function ogOfferImage() {
   const rs = (n: number) => `Rs ${n.toLocaleString("en-US")}`;
   return new ImageResponse(
     (
       <Frame label="Pakistan">
         <div style={{ display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", alignSelf: "flex-start", padding: "6px 18px", borderRadius: 999, background: ORANGE, color: "#fff", fontSize: 22, letterSpacing: "0.06em", marginBottom: 18 }}>11.11 SALE</div>
+          <div style={{ display: "flex", alignSelf: "flex-start", padding: "6px 18px", borderRadius: 999, background: ORANGE, color: "#fff", fontSize: 22, letterSpacing: "0.06em", marginBottom: 18 }}>NOVEMBER SALE</div>
           <div style={{ display: "flex", fontSize: 46, lineHeight: 1.15, letterSpacing: "-0.02em", color: NAVY }}>{BUNDLE.headline}</div>
           <div style={{ display: "flex", alignItems: "baseline", marginTop: 22 }}>
             <div style={{ fontSize: 28, color: GREY, textDecoration: "line-through", marginRight: 18 }}>{rs(BUNDLE.compareAt)}</div>

@@ -15,7 +15,7 @@ import { addPlan } from "@/lib/cart";
 
 
 /** Card copy. The US says "resume" where the others say "CV"; Naukrigulf only for the Gulf and Pakistan. */
-function getCardContent(market: MarketKey) {
+export function getCardContent(market: MarketKey) {
   const doc = market === "us" ? "resume" : "CV";
   const gulf = market === "ae" || market === "sa" || market === "pk";
   return {
@@ -112,7 +112,10 @@ export default function Pricing({
   tag,
   bare = false,
   plain = false,
+  anchorless = false,
 }: {
+  /** No #pricing / #plans ids (the parent section owns them, /offer). */
+  anchorless?: boolean;
   /** No extra lines under the cards (the homepage and /pricing). */
   plain?: boolean;
   /** Cards only under the heading: no subtitle, no extra lines (the /offer page). */
@@ -129,7 +132,7 @@ export default function Pricing({
   const m = MARKETS[market];
   const packages = getPackages(m);
   const doc = market === "us" ? "resume" : "CV";
-  // 11.11 Sale (pk): a 4th card (first on mobile) and a bundle column. Gone after endsAt.
+  // November Sale (pk): a 4th card (first on mobile) and a bundle column. Gone after endsAt.
   const { live: saleLive, t: saleT, remaining: saleLeft } = useLive(market, 60_000);
   const showBundle = market === "pk" && saleLive;
   const online = market === "pk" && onlineOpen();
@@ -160,7 +163,7 @@ export default function Pricing({
 
   return (
     <div
-      id={compact ? "pricing" : undefined}
+      id={compact && !anchorless ? "pricing" : undefined}
       className={`${styles.page} ${standalone ? styles.standalone : ""} ${compact ? styles.compact : ""}`}
       data-pricing-surface
       data-pricing-page={standalone || undefined}
@@ -190,7 +193,7 @@ export default function Pricing({
         </div>
       </header>
 
-      <section id={market === "pk" ? "plans" : compact ? undefined : "pricing"} className={`${styles.packages} ${compact ? styles.compactPackages : ""}`} aria-label="Pricing packages">
+      <section id={anchorless ? undefined : market === "pk" ? "plans" : compact ? undefined : "pricing"} className={`${styles.packages} ${compact ? styles.compactPackages : ""}`} aria-label="Pricing packages">
         <div className={styles.sectionInner}>
           <ul className={`${styles.priceGrid} ${compact ? styles.compactPriceGrid : ""} ${packages.length === 4 ? styles.grid4 : ""}`}>
             {packages.map((p) => {
@@ -204,7 +207,7 @@ export default function Pricing({
                     {tag?.id === p.id && <span className="sp-includes">{tag.text}</span>}
                     <h3 className={`${styles.packageName} price-name`}>{content.name}</h3>
                     <p className={styles.audience}>{content.audience}</p>
-                    {online && <p className={styles.saleLabel}>11.11 Sale · Flat 20% off</p>}
+                    {online && <p className={styles.saleLabel}>November Sale · Flat 20% off</p>}
                     <div className={styles.pricePair}>
                       {online ? <><s className={styles.compareAt}><PriceAmount label={p.priceLabel} /></s><PriceAmount label={formatPricingPrice(m, onlinePrice(p.price))} /></> : <>{p.showCompareAt && <s className={styles.compareAt}><PriceAmount label={p.compareAtLabel} /></s>}<PriceAmount label={p.priceLabel} /></>}
                     </div>
@@ -249,14 +252,14 @@ export default function Pricing({
             })}
             {showBundle && (
               <li className={`${styles.cardSlot} ${styles.bundleWide}`} data-reveal>
-                <article className={`${styles.card} price-card ${styles.cardBundle} ${styles.bundleRow}`} aria-label="11.11 Sale Bundle package">
+                <article className={`${styles.card} price-card ${styles.cardBundle} ${styles.bundleRow}`} aria-label="November Sale Bundle package">
                   <div>
-                    <span className={`${styles.badge} ${styles.badgeSale}`}>11.11 Sale</span>
+                    <span className={`${styles.badge} ${styles.badgeSale}`}>November Sale</span>
                     <h3 className={`${styles.packageName} price-name`}>Executive Branding + Personal Website</h3>
                     <p className={styles.saleLabel} suppressHydrationWarning>{saleLeft ?? BUNDLE.totalSlots} slots left · ends in {inline(saleT)}</p>
                   </div>
                   <div className={styles.pricePair}><s className={styles.compareAt}><PriceAmount label={formatPricingPrice(m, BUNDLE.compareAt)} /></s><PriceAmount label={formatPricingPrice(m, BUNDLE_NOW)} /><span className={styles.bundleOnline}>online</span></div>
-                  <button type="button" onClick={() => { trackFunnel("cart", OFFER_ITEM); addPlan("executive", "11.11 Bundle", "brand-bundle"); }} className={`of-exec-claim ${styles.bundleCta}`} data-cta="pricing-claim-bundle">Claim<ArrowIcon /></button>
+                  <button type="button" onClick={() => { trackFunnel("cart", OFFER_ITEM); addPlan("executive", "November Bundle", "brand-bundle"); }} className={`of-exec-claim ${styles.bundleCta}`} data-cta="pricing-claim-bundle">Claim<ArrowIcon /></button>
                 </article>
               </li>
             )}

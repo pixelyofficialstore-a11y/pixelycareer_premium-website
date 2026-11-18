@@ -60,10 +60,14 @@ export default function AnnouncementBar() {
   };
 
   // pk: the Personal Brand Bundle replaces the page message while it is open (also for utm_campaign "bundle").
-  // The 11.11 Sale message replaces the page message until 30 Nov.
+  // The November Sale message replaces the page message until 30 Nov.
   const bundle = sale.live;
-  const message = bundle ? { key: "brand-bundle", text: "", href: BAR_MESSAGES[msg].href, ctaLabel: undefined } : getAnnouncement(market, path, campaign);
-  const inner = bundle ? (
+  // /offer: one fixed line that points at the plans on the same page.
+  const landing = bundle && path === "/offer";
+  const message = landing ? { key: "offer-sale", text: "", href: "#pricing", ctaLabel: undefined } : bundle ? { key: "brand-bundle", text: "", href: BAR_MESSAGES[msg].href, ctaLabel: undefined } : getAnnouncement(market, path, campaign);
+  const inner = landing ? (
+    <span className="of-ticker"><span className="of-msg of-msg-on"><span className="of-hl">November Sale:</span> Flat 20% off · ends 30 Nov</span></span>
+  ) : bundle ? (
     <>
       <Ticker i={msg} />
     </>

@@ -3,6 +3,7 @@
 import { useRef, useEffect } from "react";
 import { MARKETS, formatPrice, type MarketKey } from "@/config/markets";
 import { useGsapSection } from "@/lib/motion";
+import { onlineOpen, onlinePrice } from "@/config/offers";
 import styles from "./HomeProcess.module.css";
 
 /** Four steps. Pakistan pays by JazzCash, Easypaisa or bank and gets a manual check; the other markets get a payment link. */
@@ -25,12 +26,12 @@ const STEPS = {
 const CURVE = "M100 0 C 170 125, 30 125, 100 250 S 170 375, 100 500 S 30 625, 100 750 S 170 875, 100 1000";
 
 /** A line draws down the page as you scroll; each step slides in from its side when the line reaches it. */
-export default function HomeProcess({ marketKey = "us" }: { marketKey?: MarketKey }) {
+export default function HomeProcess({ marketKey = "us", sale = false }: { sale?: boolean; marketKey?: MarketKey }) {
   const m = MARKETS[marketKey];
   const root = useRef<HTMLElement>(null);
   const pk = marketKey === "pk";
   const steps = pk ? STEPS.pk : STEPS.link;
-  const choose = <div key="choose" className="mini mini-pack"><span>ATS Career</span><b>{pk ? `Rs ${m.prices["ats-career"].toLocaleString("en-US")}` : formatPrice(m, m.prices["ats-career"])}</b></div>;
+  const choose = <div key="choose" className="mini mini-pack"><span>ATS Career</span><b>{pk ? `Rs ${(sale && onlineOpen() ? onlinePrice(m.prices["ats-career"]) : m.prices["ats-career"]).toLocaleString("en-US")}` : formatPrice(m, m.prices["ats-career"])}</b></div>;
   const draft = <div key="draft" className="mini mini-draft"><em>Draft 1</em><i /><i /><i /><i /></div>;
   const visuals = pk ? [
     choose,

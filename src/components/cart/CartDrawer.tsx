@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { availableAddons, calcOrder, unitAt } from "@/config/addons";
 import { MARKETS, formatPricingPrice, marketOfPath } from "@/config/markets";
 import { BUNDLE, onlineOpen, onlinePrice, payPlan } from "@/config/offers";
-import { cartId, trackFunnel } from "@/lib/analytics";
+import { trackFunnel } from "@/lib/analytics";
 import { cartCount, removePlan, setAddon, useCart } from "@/lib/cart";
 import { whatsappMessage } from "@/lib/site";
 import styles from "./CartDrawer.module.css";
@@ -93,12 +93,12 @@ export default function CartDrawer() {
             ) : (
               <div className={styles.body}>
                 <div className={styles.plan}>
-                  <span className={styles.rowText}><b>{bundle ? "11.11 Bundle: Executive Branding + Personal Website" : order.pkg.name}</b><small>Plan</small></span>
+                  <span className={styles.rowText}><b>{bundle ? "November Bundle: Executive Branding + Personal Website" : order.pkg.name}</b><small>Plan</small></span>
                   <span className={styles.planPrice}>{online && !bundle ? <><s>{money(order.pkg.price)}</s><b>{money(onlinePrice(order.pkg.price))}</b></> : <b>{money(bundle ? BUNDLE.price : order.pkg.price)}</b>}</span>
                   <button type="button" className={styles.remove} aria-label="Remove plan" onClick={removePlan}>×</button>
                 </div>
                 {extras.length > 0 && (
-                  <details className={styles.extras} open>
+                  <details className={styles.extras}>
                     <summary>Add extras</summary>
                     <ul>
                       {extras.map((a) => {
@@ -126,8 +126,7 @@ export default function CartDrawer() {
               <footer className={styles.foot}>
                 <div className={styles.fSub}><span>Subtotal</span><span>{money(subtotal)}</span></div>
                 <div className={styles.fTotal}><span>{online && !bundle ? "Total (pay in full online)" : "Total"}</span><span>{money(payNow)}</span></div>
-                <Link href="/checkout" className={styles.fCheckout} data-cta="cart-checkout" onClick={() => { trackFunnel("checkout", { name: bundle ? BUNDLE.title : order.pkg.name, ids: [cart.plan!, ...Object.keys(sel).filter((k) => sel[k] > 0)], value: payNow, currency: "PKR", items: count }, cartId()); setOpen(false); }}>Place your order</Link>
-                <button type="button" className={styles.fContinue} onClick={() => setOpen(false)}>Continue browsing</button>
+                <Link href="/checkout" className={styles.fCheckout} data-cta="cart-checkout" onClick={() => setOpen(false)}>Place your order</Link>
               </footer>
             )}
           </aside>

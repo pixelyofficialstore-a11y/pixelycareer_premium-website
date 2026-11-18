@@ -255,7 +255,7 @@
 .sumBundle dt { color: #010c28 !important; font-weight: 600; }
 .sumBundle dd { display: grid; justify-items: end; }
 .sumBundle dd s { color: #8792a5; font-size: 12px; font-weight: 400; }
-/* 11.11 Sale: tokens come from components/offer/offer.css */
+/* November Sale: tokens come from components/offer/offer.css */
 .offerApplied { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 12px 16px; border: 1.5px solid var(--sale-border); border-radius: 14px; background: #fff; color: #010c28; font-size: 14px; }
 .offerApplied b { font-weight: 600; }
 .offerApplied em { margin-left: auto; font-style: normal; color: var(--sale-600); font-weight: 600; white-space: nowrap; }
@@ -287,7 +287,7 @@
 .contactNote { margin: 8px 0 20px; line-height: 1.4; color: #6b7280; font-size: 12px; }
 @media (max-width: 767px) { .payChoice { gap: 8px; } .payOpt { padding: 12px; } .payOpt strong { font-size: 19px; } .payOpt strong s { display: block; margin: 0; } }
 
-/* Executive card: 11.11 bundle upgrade */
+/* Executive card: November bundle upgrade */
 .up { position: relative; display: flex; gap: 12px; margin: 16px 0 0; padding: 16px 18px; border: 1px solid #fbd5c2; border-radius: 14px; background: #fff; color: #010c28; cursor: pointer; transition: background 200ms ease, border-color 200ms ease, box-shadow 200ms ease; }
 .upOn { padding: 15.5px 17.5px; border: 1.5px solid #f4733c; background: #fff5ef; box-shadow: 0 6px 20px rgb(244 115 60 / 0.12); }
 .up input { position: absolute; opacity: 0; pointer-events: none; }
@@ -405,7 +405,7 @@
   .review { padding: 4px 20px; }
 }
 
-/* 11.11 Bundle as its own package */
+/* November Bundle as its own package */
 .bundleCard { border-color: rgb(240 90 26 / 0.4); background: linear-gradient(180deg, #fff7f2, #fff 70%); }
 .bundleCard.cardOn { border-color: #f05a1a; box-shadow: 0 0 0 1px #f05a1a; }
 .pbadge.bundleBadge { background: #f05a1a; color: #fff; }
@@ -538,17 +538,6 @@ button.payBox { cursor: pointer; }
 .incNote { margin: 8px 0 0; color: #6b7280; font-size: 13px; line-height: 1.4; }
 .incSheetBody .incNote { margin: -12px 0 20px; }
 
-/* Phones: the terms tick sits in the sticky bar, just above the button */
-.mterms { display: none; }
-@media (max-width: 767px) {
-  .mbar:has(.mterms) { flex-wrap: wrap; row-gap: 8px; }
-  .mterms { display: block; flex: 0 0 100%; }
-  .mterms .terms { margin-top: 0; font-size: 13px; line-height: 1.4; }
-  .termsShake { animation: shake 400ms ease; }
-  .termsShake input { outline: 2px solid #d92d20; outline-offset: 1px; }
-  .mtermsErr { margin: 4px 0 0 28px; color: #d92d20; font-size: 13px; font-weight: 500; }
-}
-
 .payHelp { margin: 14px 0 4px; font-size: 14.5px; color: #444; }
 .payHelp a { color: #0048ff; font-weight: 600; text-decoration: underline; }
 .payTrust { display: flex; gap: 8px; align-items: center; margin: 0 0 14px; font-size: 13.5px; color: #555; }
@@ -655,3 +644,39 @@ button.opt { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16
 button.opt .optText { flex: 1 1 auto; }
 .optPrice { flex: none; margin-left: 8px; color: #010c28; font-family: var(--font-head); font-size: 16px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .optText b { white-space: nowrap; }
+
+/* Payment step: account note, optional screenshot hint, the agreement line under the button, no QR on phones */
+.acctNote { margin: 0; padding: 10px 14px; border-top: 1px solid #e6e9f0; color: #4b5563; font-size: 13px; font-weight: 500; }
+.shotHint { margin: -4px 0 12px; color: #4b5563; font-size: 13.5px; line-height: 1.45; }
+.agree { margin: 10px 0 0; color: #6b7280; font-size: 12.5px; line-height: 1.45; text-align: center; }
+.agree a { color: #0048ff; text-decoration: underline; }
+@media (max-width: 767px) {
+  .qr { display: none !important; }
+  .mbar:has(.agree) { flex-wrap: wrap; row-gap: 4px; }
+  .mbar .agree { flex: 0 0 100%; margin: 0; font-size: 12px; }
+}
+
+/* v5 payment step (mockup): stacked options, numbered pay steps */
+.opts .optRow { display: grid; gap: 10px; }
+.opts .opt { display: flex; width: 100%; align-items: center; gap: 12px; padding: 14px 16px; color: #010c28; font: inherit; text-align: left; cursor: pointer; }
+.opts .optText { display: grid; gap: 2px; }
+.opts .optText b { font-size: 15px; font-weight: 600; }
+.opts .optText small { color: #6b7280; font-size: 13px; }
+.optWa { margin-left: auto; color: #25d366; display: grid; }
+.optWa svg { width: 22px; height: 22px; }
+.sameLine { margin: 10px 0 0; color: #6b7280; font-size: 13px; text-align: center; }
+.waNote { margin: 14px 0 0; padding: 14px 16px; border-radius: 12px; background: #effaf3; color: #1f5137; font-size: 14px; line-height: 1.5; }
+.howPay { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e6e9f0; }
+.howTitle { margin: 0 0 14px; color: #010c28; font-family: var(--font-head); font-size: 15px; font-weight: 600; }
+.pstep { display: flex; gap: 12px; }
+.pstep + .pstep { margin-top: 18px; }
+.pnum { display: grid; flex: none; width: 26px; height: 26px; place-items: center; border-radius: 50%; background: #0048ff; color: #fff; font-size: 13px; font-weight: 600; }
+.pbody { flex: 1; min-width: 0; }
+.plabel { margin: 3px 0 10px; color: #010c28; font-size: 14.5px; font-weight: 600; }
+.plabel span { color: #6b7280; font-weight: 400; }
+.pbody .tabs { margin-bottom: 10px; }
+.pbody .qr { margin: 12px 0 0; }
+.pbody .shotHint { margin: 8px 0 0; color: #6b7280; font-size: 13px; }
+.txnLink { padding: 0; border: 0; background: none; color: #0048ff; font: inherit; font-weight: 500; text-decoration: underline; cursor: pointer; }
+.pbody .field { margin: 10px 0 0; }
+.pbody .qr img { width: 120px !important; height: 120px !important; }

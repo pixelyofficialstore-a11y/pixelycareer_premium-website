@@ -5,7 +5,7 @@ import { z } from "zod";
 import { clearOfferCache } from "@/lib/offer-server";
 import { ownUpload } from "@/lib/server/cloudinary";
 import { and, eq, notInArray } from "drizzle-orm";
-import { db, orders } from "@/lib/db";
+import { db, events, orders } from "@/lib/db";
 import { ORDER_COOKIE, orderBody, saveOrder } from "@/lib/server/orders";
 import { MARKETS } from "@/config/markets";
 import { sendCapi } from "@/lib/server/capi";
@@ -58,7 +58,8 @@ export async function POST(req: Request) {
     // PK sends CVs on WhatsApp; other markets may attach one. Uploads must be ours.
     const cvOk = !pk && ownUpload("cv", b.cvUrl, b.cvPublicId);
     const shotOk = pk && ownUpload("payment", b.screenshotUrl, b.screenshotPublicId);
-    if (pk && b.payChoice === "now" && !shotOk && !b.transactionId) { void logOrderIssue(req, "submit_no_screenshot", { ...info, hadUrl: !!b.screenshotUrl }); return fail(400, "Upload your payment screenshot."); }
+    // Pay now without a screenshot is allowed (it can be sent on WhatsApp later): the order is saved as new, and logged so the team knows to ask.
+    if (pk && b.payChoice === "now" && !shotOk && !b.transactionId) void logOrderIssue(req, "submit_no_screenshot", { ...info, hadUrl: !!b.screenshotUrl });
     const paid = pk && b.payChoice === "now" && (shotOk || !!b.transactionId);
     const attr = await attribution(req, { fbp: b.fbp, fbc: b.fbc, market: b.market });
     const ad = await adSource();
@@ -78,6 +79,11 @@ export async function POST(req: Request) {
     const ref = row.id.slice(0, 8).toUpperCase();
     const apiId = `AddPaymentInfo_${ref}`;
     await db().update(orders).set({ leadEventId: apiId }).where(eq(orders.id, row.id));
+    // The funnel log gets the same AddPaymentInfo row (same event_id) the browser and the Conversions API send, so the three counts match.
+    if (!(sourceUrl && /[?&]test=1(&|$)/.test(sourceUrl))) await db().insert(events).values({
+      ...attr, market: b.market, orderId: row.id, name: "add_payment_info", value: String(row.total), currency: MARKETS[b.market as keyof typeof MARKETS]?.currency ?? "PKR", page: sourceUrl,
+      meta: { event_id: apiId, content_ids: [b.package], content_category: b.payChoice === "now" ? "pay_now" : "whatsapp" },
+    }).catch((e) => console.error("add_payment_info log failed:", dbError(e)));
     void sendCapi("AddPaymentInfo", apiId, { phone: normalizePhone(b.whatsapp ?? "", b.code ?? ""), email: b.email, name: b.name, ip: attr.clientIp, ua: attr.userAgent, fbp: attr.fbp, fbc: attr.fbc, country: attr.country, externalId: [ad.externalId, row.id] },
       { value: row.total, currency: MARKETS[b.market as keyof typeof MARKETS]?.currency ?? "PKR", content_ids: [b.package], content_name: b.package, content_type: "product", content_category: b.payChoice === "now" ? "pay_now" : "whatsapp" }, sourceUrl);
     const res = NextResponse.json({ ref, eventId: row.eventId, total: row.total });

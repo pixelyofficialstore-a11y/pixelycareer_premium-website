@@ -140,7 +140,13 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   // Add-ons the visitor picked themselves. The bundled website lives in bundleOn, never in here.
   const [addons, setAddons] = useState<Selection>(initialAddons ?? {});
   const [bundleOn, setBundleOn] = useState(offerParam);
-  const [countries, setCountries] = useState<string[]>(() => restore?.countries?.length ? restore.countries : [restore?.country || COUNTRY[market]]);
+  // International Career Pro starts with no target country (the visitor picks one); other packages start with the market's country.
+  const [countries, setCountries] = useState<string[]>(() => restore?.countries?.length ? restore.countries : restore?.country ? [restore.country] : (initial ?? "international-pro") === "international-pro" ? [] : [COUNTRY[market]]);
+  const countriesTouched = useRef(!!(restore?.countries?.length || restore?.country));
+  useEffect(() => {
+    if (countriesTouched.current) return;
+    setCountries(packageId === "international-pro" ? [] : [COUNTRY[market]]);
+  }, [packageId, market]);
   const [v, setV] = useState(() => {
     // A restored cart stores the number with its country code; the form keeps them apart.
     const code = restore?.whatsapp ? CODES.filter((x) => restore.whatsapp.startsWith(x)).sort((a, b) => b.length - a.length)[0] ?? m.phoneCode : m.phoneCode;
@@ -152,6 +158,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const [incOpen, setIncOpen] = useState<string | null>(null);
   const [method, setMethod] = useState<"easypaisa" | "ubl">("easypaisa");
   const [txn, setTxn] = useState("");
+  const [txnOpen, setTxnOpen] = useState(false);
   const [shot, setShot] = useState<File | null>(null);
   // The screenshot uploads as soon as it is picked; submit only sends its URL.
   const [shotUp, setShotUp] = useState<{ secure_url: string; public_id: string } | null>(null);
@@ -161,7 +168,6 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const [noteOpen, setNoteOpen] = useState(false);
   const [failed, setFailed] = useState(false);
   const [qrOk, setQrOk] = useState(hasQr);
-  const [terms, setTerms] = useState(false);
   // Turnstile never blocks the order: the token is sent when there is one, and the server rate-limits orders without one.
   const tsRef = useRef("");
   const tsState = useRef<TsStatus>("checking");
@@ -176,8 +182,6 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const [mounted, setMounted] = useState(false);
   const [footerSeen, setFooterSeen] = useState(false);
   const [narrow, setNarrow] = useState(false);
-  const [termsHint, setTermsHint] = useState(false);
-  const [termsShake, setTermsShake] = useState(0);
   useEffect(() => { const q = window.matchMedia("(max-width: 767px)"); const f = () => setNarrow(q.matches); f(); q.addEventListener("change", f); return () => q.removeEventListener("change", f); }, []);
   useEffect(() => {
     if (!incOpen) return;
@@ -338,15 +342,13 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
         if (!ok) e.whatsapp = v.code === "+92" ? "Enter 10 digits after +92." : "Enter 7 to 15 digits.";
       }
       if (!countries.length) e.country = "Choose at least one target country.";
-      if (!v.role.trim()) e.role = "Enter your target role.";
       if (!pk && cv && (cv.size > CV_MAX || !/\.(pdf|docx?)$/i.test(cv.name))) e.cv = "Upload a PDF, DOC or DOCX under 5 MB.";
     }
     if (s === 3 && payNow) {
-      if (!shot) e.shot = "Upload your payment screenshot.";
-      else if (shotState === "uploading") e.shot = "Wait a moment, your screenshot is still uploading.";
+      // The screenshot is optional: it can be sent on WhatsApp after the order is placed.
+      if (shot && shotState === "uploading") e.shot = "Wait a moment, your screenshot is still uploading.";
       else if (shotState === "error") e.shot = shotMsg || "The upload failed. Remove the file and try again.";
     }
-    if (s === 3 && !terms) e.terms = "Please agree to continue.";
     return e;
   };
 
@@ -361,7 +363,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       return Object.keys(nextErr).length === keys.length && keys.every((k) => nextErr[k] === cur[k]) ? cur : nextErr;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [v, cv, shot, shotState, shotMsg, terms, later, byEmail]);
+  }, [v, cv, shot, shotState, shotMsg, later, byEmail]);
 
   const validate = (s: number) => {
     const e = check(s);
@@ -386,10 +388,18 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const go = (to: number) => { setErrors({}); setSheet(false); setStep(to); };
 
   // Funnel events. AddToCart is sent only from an explicit Add to cart click, never here.
-  // InitiateCheckout is sent from the cart drawer's "Place your order" click, not from here.
+  // InitiateCheckout: once when the checkout opens (after the cart has loaded), once per cart id for the visit,
+  // however the visitor got here (cart drawer, a direct /checkout link, a recovery link).
 
   // Draft: the open order is saved on every package, bundle, add-on, step or contact change (debounced). The server prices it.
   useEffect(() => { if (restore?.id) setCartId(restore.id.replace(/-/g, "").slice(0, 20)); }, [restore?.id]);
+  const checkoutSent = useRef(false);
+  useEffect(() => {
+    if (!cartReady || checkoutSent.current) return;
+    checkoutSent.current = true;
+    trackFunnel("checkout", item, cartId());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartReady]);
   const orderPayload = () => {
     const u = readUtm();
     return {
@@ -447,13 +457,13 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       // AddPaymentInfo for both options, once per order, valued at the discounted total. Orders never send Lead.
       trackFunnel("payment", { ...item, value: data.total ?? due, category: payNow ? "pay_now" : "whatsapp", orderId: data.ref }, data.ref);
       try { sessionStorage.removeItem("pixely-cart-id"); } catch {}
-      const q = new URLSearchParams({ id: data.ref, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1", t: String(data.total ?? due), p: String(plan?.today ?? due), d: String(plan?.discount ?? 0) } : { talk: "1", t: String(data.total ?? due), n: bundle ? "11.11 Bundle" : pkg.name }) });
+      const q = new URLSearchParams({ id: data.ref, c: byEmail ? "email" : "whatsapp", m: market, ...(payNow ? { paid: "1", t: String(data.total ?? due), p: String(plan?.today ?? due), d: String(plan?.discount ?? 0) } : { talk: "1", t: String(data.total ?? due), n: bundle ? "November Bundle" : pkg.name }) });
       if (pk) clearCart();
       // Order on WhatsApp: saved first (above), now the chat opens with the order and the success page shows here.
       if (viaWa) {
         const off = plan && plan.discount > 0 ? (bundle ? `, ${money(plan.discount)} off` : ", 20% off") : "";
         send("Contact", { key: "wa:order:" + data.ref, name: "order-on-whatsapp", ga: { method: "whatsapp", cta: "order-on-whatsapp" } });
-        const wa = whatsappMessage(`Hi, I'd like to order ${bundle ? "the 11.11 Bundle" : pkg.name} (${money(data.total ?? due)}${off}). Order no. PX-${data.ref}.`);
+        const wa = whatsappMessage(`Hi, I'd like to order ${bundle ? "the November Bundle" : pkg.name} (${money(data.total ?? due)}${off}). Order no. PX-${data.ref}.`);
         if (waWin) { try { waWin.location.href = wa; } catch { waWin.close(); } }
         // On a phone the success page opens WhatsApp itself, once, as soon as it shows.
         else { try { sessionStorage.setItem("pixely-open-wa", wa); } catch {} }
@@ -498,7 +508,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const summaryLines = (
     <>
       <dl className={styles.sumList}>
-        <div className={styles.sumLine}><dt>{bundle ? "11.11 Bundle" : pkg.name}</dt><dd>{money(bundle ? bundleLine : pkg.price)}</dd></div>
+        <div className={styles.sumLine}><dt>{bundle ? "November Bundle" : pkg.name}</dt><dd>{money(bundle ? bundleLine : pkg.price)}</dd></div>
         {shownList.map((a) => (
           <div key={a.id} className={styles.sumLine}><dt>{a.name}{a.qty > 1 ? ` × ${a.qty}` : ""} (add-on)</dt><dd>{money(a.total)}</dd></div>
         ))}
@@ -511,14 +521,10 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       </div>
     </>
   );
+  const agree = <p className={styles.agree}>By placing your order you agree to the <Link href="/terms" target="_blank">Terms</Link> &amp; <Link href="/refund-policy" target="_blank">Refund Policy</Link>.</p>;
   const extrasCount = list.length + (sameDay ? 1 : 0);
   const finish = (
     <>
-      {!narrow && <><label className={styles.terms}>
-        <input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} aria-invalid={errors.terms ? true : undefined} />
-        <span>I agree to the <Link href="/terms" target="_blank">Terms</Link> &amp; <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
-      </label>
-      {(errors.terms || (termsHint && !terms)) && <p className={styles.error}>{errors.terms || "Tick the box to place your order."}</p>}</>}
       {errors.submit && <p className={styles.error} role="alert">{errors.submit}</p>}
       {(failed || (payNow && shotState === "error")) && <a href={waOrder} target="_blank" rel="noopener noreferrer" className={styles.waFallback} data-cta="order-fail-whatsapp"><WaIcon /> Message us on WhatsApp</a>}
     </>
@@ -526,8 +532,8 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
 
   const pkCards = [
                   ...(pk && offerLive ? [{
-                    id: "executive_bundle", name: "11.11 Bundle · Executive Branding + Website", line: "", price: payPlan(offer.price, "full", { bundle: true }).total, was: offer.compareAt as number | undefined,
-                    meta: `5 days · ${slotsLeft ?? offer.totalSlots} slot${(slotsLeft ?? offer.totalSlots) === 1 ? "" : "s"} left`, badge: "11.11 Sale", tone: styles.pkSale,
+                    id: "executive_bundle", name: "November Bundle · Executive Branding + Website", line: "", price: payPlan(offer.price, "full", { bundle: true }).total, was: offer.compareAt as number | undefined,
+                    meta: `5 days · ${slotsLeft ?? offer.totalSlots} slot${(slotsLeft ?? offer.totalSlots) === 1 ? "" : "s"} left`, badge: "November Sale", tone: styles.pkSale,
                     items: [...BUNDLE_ITEMS] as string[], note: BUNDLE_ALL_LINE as string | undefined, sel: bundle,
                     pick: () => { choosePackage(offer.packageId); toggleBundle(true); },
                   }] : []),
@@ -610,11 +616,11 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
       </div>
 
       <div className={styles.layout}>
-        <form ref={formRef} className={styles.form} noValidate onSubmit={(e) => e.preventDefault()}>
+        <form ref={formRef} className={styles.form} noValidate data-clarity-mask="true" onSubmit={(e) => e.preventDefault()}>
           {pk && narrow && step > 1 && (
             <div className={`${styles.card} ${styles.yourOrder}`}>
               <button type="button" className={styles.yoToggle} onClick={() => setYoOpen((o) => !o)} aria-expanded={yoOpen}>
-                <span>Your order: {bundle ? "11.11 Bundle" : pkg.name}{shownList.length ? ` + ${shownList.length} extra${shownList.length > 1 ? "s" : ""}` : ""} · {money(due)}</span>
+                <span>Your order: {bundle ? "November Bundle" : pkg.name}{shownList.length ? ` + ${shownList.length} extra${shownList.length > 1 ? "s" : ""}` : ""} · {money(due)}</span>
                 <Chevron open={yoOpen} />
               </button>
               <button type="button" className={styles.yoEdit} onClick={openCart} data-cta="checkout-edit-order">Edit</button>
@@ -683,11 +689,11 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                     </div>
                   </Field>
                 )}
-                <Field id="country" label="Target countries *" error={errors.country}>
-                  <CountryPicker id="country" value={countries} onChange={(l) => { setCountries(l); set("country", l[0] ?? ""); }} invalid={!!errors.country} />
+                <Field id="role" label="Target role (optional)" error={errors.role}>
+                  <input id="role" className={styles.input} placeholder="Not sure yet? Leave blank" value={v.role} onChange={(e) => set("role", e.target.value)} aria-invalid={errors.role ? true : undefined} />
                 </Field>
-                <Field id="role" label="Target role *" error={errors.role}>
-                  <input id="role" className={styles.input} placeholder="Project Manager" value={v.role} onChange={(e) => set("role", e.target.value)} aria-invalid={errors.role ? true : undefined} />
+                <Field id="country" label="Target countries *" error={errors.country}>
+                  <CountryPicker id="country" value={countries} onChange={(l) => { countriesTouched.current = true; setCountries(l); set("country", l[0] ?? ""); }} invalid={!!errors.country} />
                 </Field>
               </div>
               {pk && (
@@ -719,32 +725,34 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                 <div className={styles.opts}>
                   <h2 id="pay-title" className={styles.optsTitle}>How would you like to order?</h2>
                   <div className={styles.optRow} role="radiogroup" aria-labelledby="pay-title">
-                    {([[false, "Pay now", talkPlan.discount > 0 ? `${bundle ? `${money(talkPlan.discount)} off` : "20% off"} · full payment` : "Full payment"], [true, "Order on WhatsApp", talkPlan.discount > 0 ? `${bundle ? `${money(talkPlan.discount)} off` : "20% off"} · pay after we chat` : "Pay after we chat"]] as const).map(([t, name, sub]) => (
+                    {([[false, "Pay now", "Easypaisa, JazzCash or UBL"], [true, "Order on WhatsApp", "Chat first, pay after"]] as const).map(([t, name, sub]) => (
                       <button key={name} type="button" role="radio" aria-checked={later === t} className={`${styles.opt} ${later === t ? styles.optOn : ""}`} onClick={() => setLater(t)} data-cta={t ? "order-pay-talk" : "order-pay-now"}>
                         <span className={styles.radioDot} aria-hidden="true" />
-                        <span className={styles.optText}><b>{name}</b>{sub && <small>{sub}</small>}</span>
-                        <strong className={styles.optPrice}>{money(talkPlan.total)}</strong>
+                        <span className={styles.optText}><b>{name}</b><small>{sub}</small></span>
+                        {t && <span className={styles.optWa}><WaIcon /></span>}
                       </button>
                     ))}
                   </div>
-                  <hr className={styles.optRule} />
+                  <p className={styles.sameLine}>Same {money(talkPlan.total)} either way{talkPlan.discount > 0 ? (bundle ? ` · ${money(talkPlan.discount)} off` : " · 20% off") : ""}</p>
                   {later ? (
-                    <p className={styles.optLine}>Your order is saved and WhatsApp opens with your details. Pay there after we&apos;ve spoken.</p>
+                    <p className={styles.waNote}>We&apos;ll open WhatsApp with your order. Our CV expert replies within 30 minutes, and you pay after the chat.</p>
                   ) : (
-                    <div className={styles.optBody}>
-                      <div className={styles.method}>
-                        <div className={styles.tabs} role="tablist" aria-label="Payment method">
-                          <button type="button" role="tab" aria-selected={method === "easypaisa"} className={method === "easypaisa" ? styles.tabOn : ""} onClick={() => setMethod("easypaisa")}>Easypaisa / JazzCash</button>
-                          <button type="button" role="tab" aria-selected={method === "ubl"} className={method === "ubl" ? styles.tabOn : ""} onClick={() => setMethod("ubl")}>UBL Bank</button>
-                        </div>
-                        <div className={styles.payGrid}>
+                    <div className={styles.howPay}>
+                      <p className={styles.howTitle}>How to pay</p>
+                      <div className={styles.pstep}>
+                        <span className={styles.pnum}>1</span>
+                        <div className={styles.pbody}>
+                          <p className={styles.plabel}>Send {money(talkPlan.total)} to</p>
+                          <div className={styles.tabs} role="tablist" aria-label="Payment method">
+                            <button type="button" role="tab" aria-selected={method === "easypaisa"} className={method === "easypaisa" ? styles.tabOn : ""} onClick={() => setMethod("easypaisa")}>Easypaisa / JazzCash</button>
+                            <button type="button" role="tab" aria-selected={method === "ubl"} className={method === "ubl" ? styles.tabOn : ""} onClick={() => setMethod("ubl")}>UBL Bank</button>
+                          </div>
                           <div className={styles.acct}>
-                            <PayRow label="Account title" value="Muhammad Hamza" copy="Muhammad Hamza" />
                             {method === "easypaisa" ? (
-                              <PayRow label="Account number" value={PAYMENTS.easypaisa.number} copy={PAYMENTS.easypaisa.copy} />
+                              <PayRow label="Muhammad Hamza · Pixely Careers" value={PAYMENTS.easypaisa.number} copy={PAYMENTS.easypaisa.copy} />
                             ) : (
                               <>
-                                <PayRow label="Account number" value={PAYMENTS.ubl.number} copy={PAYMENTS.ubl.number} />
+                                <PayRow label="Muhammad Hamza · Pixely Careers" value={PAYMENTS.ubl.number} copy={PAYMENTS.ubl.number} />
                                 <PayRow label="IBAN" value={PAYMENTS.ubl.iban.replace(/(.{4})(?=.)/g, "$1 ")} copy={PAYMENTS.ubl.iban} mono />
                               </>
                             )}
@@ -757,11 +765,18 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                           )}
                         </div>
                       </div>
-                      <div className={styles.payUpload}>
-                        <Dropzone id="shot" label="" title="Upload payment screenshot" note="Photo, screenshot or PDF · max 10 MB" accept="image/*,.heic,.heif,application/pdf" file={shot} onFile={onShot} error={errors.shot} state={shotState} small />
-                        <Field id="txn" label="Transaction ID (optional)">
-                          <input id="txn" className={styles.input} value={txn} onChange={(e) => setTxn(e.target.value)} />
-                        </Field>
+                      <div className={styles.pstep}>
+                        <span className={styles.pnum}>2</span>
+                        <div className={styles.pbody}>
+                          <p className={styles.plabel}>Add screenshot <span>(optional)</span></p>
+                          <Dropzone id="shot" label="" title="Upload screenshot" note="Photo, screenshot or PDF · max 10 MB" accept="image/*,.heic,.heif,application/pdf" file={shot} onFile={onShot} error={errors.shot} state={shotState} small />
+                          <p className={styles.shotHint}>Or send it on WhatsApp after ordering.{!txnOpen && <> <button type="button" className={styles.txnLink} onClick={() => setTxnOpen(true)}>Add transaction ID</button></>}</p>
+                          {txnOpen && (
+                            <Field id="txn" label="Transaction ID (optional)">
+                              <input id="txn" className={styles.input} value={txn} onChange={(e) => setTxn(e.target.value)} autoFocus />
+                            </Field>
+                          )}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -781,6 +796,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
           {summaryLines}
           {last && <div className={styles.sumFinish}>{finish}</div>}
           {continueBtn(styles.summaryContinue)}
+          {last && agree}
           {pk && last && !later && <p className={styles.secure}>🔒 Secure payment · Money back guarantee</p>}
         </aside>
       </div>
@@ -814,22 +830,12 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
             </>
           )}
           <div className={styles.mbar} role="region" aria-label="Order total">
-            {last && (
-              <div className={styles.mterms}>
-                <label key={termsShake} className={`${styles.terms} ${termsHint && !terms ? styles.termsShake : ""}`}>
-                  <input type="checkbox" checked={terms} onChange={(e) => { setTerms(e.target.checked); if (e.target.checked) setTermsHint(false); }} aria-invalid={termsHint && !terms ? true : undefined} />
-                  <span>I agree to the <Link href="/terms" target="_blank">Terms</Link> &amp; <Link href="/refund-policy" target="_blank">Refund Policy</Link></span>
-                </label>
-                {termsHint && !terms && <p className={styles.mtermsErr} role="alert">Please accept the terms</p>}
-              </div>
-            )}
             <button type="button" className={styles.mtotal} onClick={() => setSheet((s) => !s)} aria-expanded={sheet}>
               <span>Total payable ⌃</span>
               <strong key={due}>{money(due)}</strong>
             </button>
-            {last && !terms ? (
-              <button type="button" className={`btn btn-primary ${styles.continue} ${waBtn ? styles.waBtn : ""} ${styles.mcontinue}`} aria-disabled="true" onClick={() => { setTermsHint(true); setTermsShake((n) => n + 1); }}>{label}</button>
-            ) : continueBtn(styles.mcontinue)}
+            {continueBtn(styles.mcontinue)}
+            {last && agree}
           </div>
         </>,
         document.body,
