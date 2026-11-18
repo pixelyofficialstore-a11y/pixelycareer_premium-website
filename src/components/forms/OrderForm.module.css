@@ -680,3 +680,20 @@ button.opt .optText { flex: 1 1 auto; }
 .txnLink { padding: 0; border: 0; background: none; color: #0048ff; font: inherit; font-weight: 500; text-decoration: underline; cursor: pointer; }
 .pbody .field { margin: 10px 0 0; }
 .pbody .qr img { width: 120px !important; height: 120px !important; }
+
+/* v6 payment step: both accounts listed, no tabs */
+.opts .opt:not(.optOn) { border-color: transparent; background: none; }
+.waNote { background: #f4f6fa; color: #374151; }
+.howTitle { font-size: 16px; }
+.accts { border: 1px solid #e3e7ef; border-radius: 14px; background: #fff; }
+.acctRow { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+.acctRow + .acctRow { border-top: 1px solid #e3e7ef; }
+.acctText { display: grid; flex: 1; min-width: 0; gap: 1px; }
+.acctText span { color: #6b7280; font-size: 12.5px; }
+.acctText strong { color: #010c28; font-size: 18px; font-weight: 600; letter-spacing: .01em; }
+.acctText small { color: #6b7280; font-size: 13px; }
+.copyPill { display: inline-flex; flex: none; align-items: center; gap: 6px; padding: 8px 14px; border: 0; border-radius: 999px; background: #eaf0ff; color: #0048ff; font: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+.copyPill svg { width: 14px; height: 14px; }
+.acctsNote { margin: 8px 0 0; color: #6b7280; font-size: 12.5px; }
+.shotBox { margin-top: 16px; }
+.shotBox .shotHint { margin: 8px 0 0; color: #6b7280; font-size: 12.5px; text-align: center; }

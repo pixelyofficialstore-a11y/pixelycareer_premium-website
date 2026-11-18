@@ -86,6 +86,18 @@ function Dropzone({ id, label, title, note, accept, file, onFile, error, small, 
   );
 }
 
+function AcctRow({ method, number, copy, title }: { method: string; number: string; copy: string; title: string }) {
+  const [ok, setOk] = useState(false);
+  return (
+    <div className={styles.acctRow}>
+      <div className={styles.acctText}><span>{method}</span><strong>{number}</strong><small>{title}</small></div>
+      <button type="button" className={styles.copyPill} aria-label={ok ? `${method} number copied` : `Copy ${method} number`} onClick={() => { navigator.clipboard?.writeText(copy).catch(() => {}); setOk(true); setTimeout(() => setOk(false), 1500); }}>
+        {ok ? "✓ Copied" : <><CopyIcon /> Copy</>}
+      </button>
+    </div>
+  );
+}
+
 function PayRow({ label, value, copy, mono }: { label: string; value: string; copy?: string; mono?: boolean }) {
   const [ok, setOk] = useState(false);
   return (
@@ -158,7 +170,6 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
   const [incOpen, setIncOpen] = useState<string | null>(null);
   const [method, setMethod] = useState<"easypaisa" | "ubl">("easypaisa");
   const [txn, setTxn] = useState("");
-  const [txnOpen, setTxnOpen] = useState(false);
   const [shot, setShot] = useState<File | null>(null);
   // The screenshot uploads as soon as it is picked; submit only sends its URL.
   const [shotUp, setShotUp] = useState<{ secure_url: string; public_id: string } | null>(null);
@@ -498,7 +509,7 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
 
   const last = step === 3;
   const waBtn = last && pk && later;
-  const label = waBtn ? <><WaIcon /> Order on WhatsApp</> : last ? "Place order" : "Continue";
+  const label = waBtn ? <><WaIcon /> Continue on WhatsApp</> : last ? (pk ? <>Place order · {money(due)}</> : "Place order") : "Continue";
   const continueBtn = (cls: string) => (
     <button type="button" className={`btn btn-primary ${styles.continue} ${waBtn ? styles.waBtn : ""} ${cls}`} onClick={last ? submit : cont} disabled={busy} aria-busy={busy || undefined} data-cta={last ? "order-send-request" : "order-continue"}>
       {busy ? <><span className={styles.spinner} aria-hidden="true" /> Sending</> : label}
@@ -738,45 +749,15 @@ export default function OrderForm({ market, initial, initialAddons, offerParam =
                     <p className={styles.waNote}>We&apos;ll open WhatsApp with your order. Our CV expert replies within 30 minutes, and you pay after the chat.</p>
                   ) : (
                     <div className={styles.howPay}>
-                      <p className={styles.howTitle}>How to pay</p>
-                      <div className={styles.pstep}>
-                        <span className={styles.pnum}>1</span>
-                        <div className={styles.pbody}>
-                          <p className={styles.plabel}>Send {money(talkPlan.total)} to</p>
-                          <div className={styles.tabs} role="tablist" aria-label="Payment method">
-                            <button type="button" role="tab" aria-selected={method === "easypaisa"} className={method === "easypaisa" ? styles.tabOn : ""} onClick={() => setMethod("easypaisa")}>Easypaisa / JazzCash</button>
-                            <button type="button" role="tab" aria-selected={method === "ubl"} className={method === "ubl" ? styles.tabOn : ""} onClick={() => setMethod("ubl")}>UBL Bank</button>
-                          </div>
-                          <div className={styles.acct}>
-                            {method === "easypaisa" ? (
-                              <PayRow label="Muhammad Hamza · Pixely Careers" value={PAYMENTS.easypaisa.number} copy={PAYMENTS.easypaisa.copy} />
-                            ) : (
-                              <>
-                                <PayRow label="Muhammad Hamza · Pixely Careers" value={PAYMENTS.ubl.number} copy={PAYMENTS.ubl.number} />
-                                <PayRow label="IBAN" value={PAYMENTS.ubl.iban.replace(/(.{4})(?=.)/g, "$1 ")} copy={PAYMENTS.ubl.iban} mono />
-                              </>
-                            )}
-                          </div>
-                          {method === "easypaisa" && qrOk && (
-                            <figure className={styles.qr}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={PAYMENTS.easypaisa.qr} alt="Payment QR code" width={140} height={140} loading="lazy" onError={() => setQrOk(false)} />
-                            </figure>
-                          )}
-                        </div>
+                      <p className={styles.howTitle}>Send {money(talkPlan.total)} to either account</p>
+                      <div className={styles.accts}>
+                        <AcctRow method="Easypaisa / JazzCash" number={PAYMENTS.easypaisa.number} copy={PAYMENTS.easypaisa.copy} title="Muhammad Hamza" />
+                        <AcctRow method="UBL Bank" number={PAYMENTS.ubl.number} copy={PAYMENTS.ubl.number} title="Muhammad Hamza" />
                       </div>
-                      <div className={styles.pstep}>
-                        <span className={styles.pnum}>2</span>
-                        <div className={styles.pbody}>
-                          <p className={styles.plabel}>Add screenshot <span>(optional)</span></p>
-                          <Dropzone id="shot" label="" title="Upload screenshot" note="Photo, screenshot or PDF · max 10 MB" accept="image/*,.heic,.heif,application/pdf" file={shot} onFile={onShot} error={errors.shot} state={shotState} small />
-                          <p className={styles.shotHint}>Or send it on WhatsApp after ordering.{!txnOpen && <> <button type="button" className={styles.txnLink} onClick={() => setTxnOpen(true)}>Add transaction ID</button></>}</p>
-                          {txnOpen && (
-                            <Field id="txn" label="Transaction ID (optional)">
-                              <input id="txn" className={styles.input} value={txn} onChange={(e) => setTxn(e.target.value)} autoFocus />
-                            </Field>
-                          )}
-                        </div>
+                      <p className={styles.acctsNote}>Official Pixely Careers accounts</p>
+                      <div className={styles.shotBox}>
+                        <Dropzone id="shot" label="" title="Upload payment screenshot" note="" accept="image/*,.heic,.heif,application/pdf" file={shot} onFile={onShot} error={errors.shot} state={shotState} small />
+                        <p className={styles.shotHint}>Optional. You can also send it on WhatsApp later.</p>
                       </div>
                     </div>
                   )}
